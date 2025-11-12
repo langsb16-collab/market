@@ -263,8 +263,13 @@ function renderEvents() {
         const now = new Date()
         const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24))
         
+        // Ensure outcomes exist, create default if empty
+        const hasOutcomes = event.outcomes && event.outcomes.length > 0
+        const defaultOutcome = hasOutcomes ? event.outcomes[0].id : null
+        
         return `
-            <div class="card rounded-lg p-3 sm:p-4">
+            <div class="card rounded-lg p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                 onclick="openBetModalByEventId(${event.id})">
                 <div class="flex items-start justify-between mb-2">
                     <div class="flex items-center space-x-1.5">
                         <span class="text-base sm:text-lg">${event.category_icon}</span>
@@ -278,9 +283,9 @@ function renderEvents() {
                 <h4 class="text-sm font-bold mb-2 mobile-text leading-tight">${event.title}</h4>
                 
                 <div class="space-y-1.5 mb-2">
-                    ${event.outcomes.slice(0, 2).map(outcome => `
-                        <div class="cursor-pointer hover:opacity-80 p-1.5 rounded transition"
-                             onclick="openBetModalById(${event.id}, ${outcome.id})">
+                    ${hasOutcomes ? event.outcomes.slice(0, 2).map(outcome => `
+                        <div class="p-1.5 rounded hover:bg-opacity-10 hover:bg-blue-500"
+                             onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
                             <div class="flex justify-between items-center mb-0.5">
                                 <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
                                 <span class="text-xs font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
@@ -289,8 +294,17 @@ function renderEvents() {
                                 <div class="outcome-fill" style="width: ${outcome.probability * 100}%"></div>
                             </div>
                         </div>
-                    `).join('')}
-                    ${event.outcomes.length > 2 ? `
+                    `).join('') : `
+                        <div class="p-2 rounded bg-blue-500 bg-opacity-10 text-center">
+                            <span class="text-xs text-secondary mobile-text">
+                                ${currentLang === 'ko' ? '클릭하여 상세 정보 확인' :
+                                  currentLang === 'en' ? 'Click to view details' :
+                                  currentLang === 'zh' ? '点击查看详情' :
+                                  '詳細を表示するにはクリック'}
+                            </span>
+                        </div>
+                    `}
+                    ${hasOutcomes && event.outcomes.length > 2 ? `
                         <div class="text-xs text-secondary text-center mobile-text">
                             +${event.outcomes.length - 2} more
                         </div>
@@ -307,6 +321,32 @@ function renderEvents() {
             </div>
         `
     }).join('')
+}
+
+// Open bet modal by event ID (creates default outcome if none exist)
+function openBetModalByEventId(eventId) {
+    const event = events.find(e => e.id === eventId)
+    if (!event) {
+        console.error('Event not found:', eventId)
+        return
+    }
+    
+    // If event has outcomes, use the first one
+    if (event.outcomes && event.outcomes.length > 0) {
+        openBetModal(event, event.outcomes[0])
+    } else {
+        // Create default "Yes" outcome for events without outcomes
+        const defaultOutcome = {
+            id: 0,
+            name: currentLang === 'ko' ? '예' :
+                  currentLang === 'en' ? 'Yes' :
+                  currentLang === 'zh' ? '是' :
+                  'はい',
+            probability: 0.5,
+            total_bets: 0
+        }
+        openBetModal(event, defaultOutcome)
+    }
 }
 
 // Open bet modal by ID (finds event and outcome from events array)
@@ -761,6 +801,7 @@ function closeModalAndConnectWalletSubmit() {
 window.filterByCategory = filterByCategory
 window.openBetModal = openBetModal
 window.openBetModalById = openBetModalById
+window.openBetModalByEventId = openBetModalByEventId
 window.submitBet = submitBet
 window.openSubmitIssueModal = openSubmitIssueModal
 window.closeSubmitIssueModal = closeSubmitIssueModal
