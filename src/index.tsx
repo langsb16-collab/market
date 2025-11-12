@@ -598,25 +598,166 @@ app.get('/', (c) => {
                 font-size: 0.875rem;
             }
             
+            /* Mobile optimizations */
             @media (max-width: 640px) {
                 .mobile-text {
                     font-size: 0.75rem;
                 }
+                
                 h1 {
-                    font-size: 1.25rem;
+                    font-size: 1.125rem !important;
                 }
+                
                 h2 {
-                    font-size: 1.125rem;
+                    font-size: 1rem !important;
+                    padding: 0.5rem 0.75rem;
                 }
+                
+                h3 {
+                    font-size: 0.875rem !important;
+                }
+                
+                h4 {
+                    font-size: 0.8rem !important;
+                }
+                
                 .card {
+                    padding: 0.625rem !important;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .card h4 {
+                    font-size: 0.8rem !important;
+                    min-height: 2.2em;
+                    line-height: 1.3;
+                }
+                
+                .card p {
+                    font-size: 0.7rem !important;
+                }
+                
+                /* Header mobile optimization */
+                .header {
+                    padding: 0.5rem 0.75rem !important;
+                }
+                
+                /* Button sizes */
+                button {
+                    font-size: 0.75rem !important;
+                    padding: 0.375rem 0.625rem !important;
+                }
+                
+                .btn-primary {
+                    padding: 0.5rem 0.75rem !important;
+                }
+                
+                /* Input/Select mobile */
+                select, input, textarea {
+                    font-size: 0.875rem !important;
+                    padding: 0.5rem !important;
+                }
+                
+                /* Category buttons mobile */
+                .btn-category {
+                    font-size: 0.7rem !important;
+                    padding: 0.375rem 0.625rem !important;
+                    white-space: nowrap;
+                }
+                
+                /* Modal mobile */
+                .modal-content {
+                    margin: 0.5rem;
+                    padding: 1rem !important;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                }
+                
+                /* Hero section mobile */
+                #heroTitle {
+                    font-size: 0.875rem !important;
+                    padding: 0.5rem 0.75rem !important;
+                    line-height: 1.4;
+                }
+                
+                #heroSubtitle {
+                    font-size: 0.75rem !important;
+                }
+                
+                #heroDescription {
+                    font-size: 0.7rem !important;
+                }
+                
+                /* Crypto icons */
+                .text-accent.font-bold {
+                    font-size: 1rem !important;
+                }
+                
+                /* Grid spacing */
+                .grid {
+                    gap: 0.5rem !important;
+                }
+                
+                /* Space adjustments */
+                .space-x-2 > * + * {
+                    margin-left: 0.25rem !important;
+                }
+                
+                .space-x-4 > * + * {
+                    margin-left: 0.5rem !important;
+                }
+                
+                .space-x-6 > * + * {
+                    margin-left: 0.75rem !important;
+                }
+                
+                .mb-4 {
+                    margin-bottom: 0.75rem !important;
+                }
+                
+                .mb-6 {
+                    margin-bottom: 1rem !important;
+                }
+                
+                .mb-8 {
+                    margin-bottom: 1.25rem !important;
+                }
+                
+                /* Odds/Fee structure mobile */
+                .card.p-4 {
                     padding: 0.75rem !important;
                 }
-                .card h4 {
-                    font-size: 0.875rem;
-                    min-height: 2.4em;
+                
+                .card.p-6 {
+                    padding: 1rem !important;
+                }
+                
+                /* Form spacing mobile */
+                .space-y-3 > * + * {
+                    margin-top: 0.5rem !important;
+                }
+                
+                .space-y-4 > * + * {
+                    margin-top: 0.75rem !important;
+                }
+                
+                /* Hide non-essential text on mobile */
+                .hide-mobile {
+                    display: none;
                 }
             }
             
+            /* Tablet optimization */
+            @media (min-width: 641px) and (max-width: 1024px) {
+                .card h4 {
+                    font-size: 0.875rem;
+                }
+                
+                .card p {
+                    font-size: 0.8rem;
+                }
+            }
+            
+            /* Desktop optimization */
             @media (min-width: 1280px) {
                 .card h4 {
                     font-size: 0.9rem;
