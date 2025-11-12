@@ -550,17 +550,64 @@ function formatNumber(num) {
 
 // Open submit issue modal
 function openSubmitIssueModal() {
-    if (!currentWallet) {
-        alert(currentLang === 'en' ? 'Please connect your wallet first' :
-              currentLang === 'ko' ? '먼저 지갑을 연결해주세요' :
-              currentLang === 'zh' ? '请先连接您的钱包' :
-              'まず財布を接続してください')
-        return
-    }
-    
-    // Pre-fill wallet address
-    document.querySelector('[name="wallet_address"]').value = currentWallet
+    // Open modal regardless of wallet connection
     document.getElementById('submitIssueModal').classList.remove('hidden')
+    
+    // If wallet is connected, pre-fill wallet address and enable form
+    if (currentWallet) {
+        document.querySelector('[name="wallet_address"]').value = currentWallet
+        enableSubmitIssueForm(true)
+    } else {
+        // Wallet not connected - show warning and disable form
+        enableSubmitIssueForm(false)
+    }
+}
+
+// Enable or disable submit issue form based on wallet connection
+function enableSubmitIssueForm(enabled) {
+    const form = document.getElementById('submitIssueForm')
+    const submitBtn = document.getElementById('submitIssueBtn2')
+    const walletWarning = document.getElementById('walletWarningSubmit')
+    
+    if (!enabled) {
+        // Disable all form inputs
+        const inputs = form.querySelectorAll('input, textarea, select, button[type="submit"]')
+        inputs.forEach(input => {
+            if (input.type !== 'button' && input.id !== 'cancelSubmitBtn') {
+                input.disabled = true
+                input.classList.add('opacity-50', 'cursor-not-allowed')
+            }
+        })
+        
+        // Show wallet connection warning
+        if (walletWarning) {
+            walletWarning.classList.remove('hidden')
+        }
+        
+        // Disable submit button
+        if (submitBtn) {
+            submitBtn.disabled = true
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed')
+        }
+    } else {
+        // Enable all form inputs
+        const inputs = form.querySelectorAll('input, textarea, select, button[type="submit"]')
+        inputs.forEach(input => {
+            input.disabled = false
+            input.classList.remove('opacity-50', 'cursor-not-allowed')
+        })
+        
+        // Hide wallet connection warning
+        if (walletWarning) {
+            walletWarning.classList.add('hidden')
+        }
+        
+        // Enable submit button
+        if (submitBtn) {
+            submitBtn.disabled = false
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed')
+        }
+    }
 }
 
 // Close submit issue modal
@@ -595,6 +642,15 @@ function setupCryptoSelection() {
 // Submit issue form
 async function submitIssueForm(e) {
     e.preventDefault()
+    
+    // Check wallet connection before submitting
+    if (!currentWallet) {
+        alert(currentLang === 'en' ? 'Please connect your wallet first to submit an issue' :
+              currentLang === 'ko' ? '이슈를 제출하려면 먼저 지갑을 연결해주세요' :
+              currentLang === 'zh' ? '请先连接您的钱包以提交问题' :
+              'まず財布を接続して問題を提出してください')
+        return
+    }
     
     const formData = new FormData(e.target)
     const data = {
@@ -676,6 +732,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCryptoSelection()
 })
 
+// Close submit issue modal and open wallet connection
+function closeModalAndConnectWalletSubmit() {
+    closeSubmitIssueModal()
+    setTimeout(() => {
+        connectWallet()
+    }, 300)
+}
+
 // Make functions globally accessible
 window.filterByCategory = filterByCategory
 window.openBetModal = openBetModal
@@ -683,3 +747,5 @@ window.submitBet = submitBet
 window.openSubmitIssueModal = openSubmitIssueModal
 window.closeSubmitIssueModal = closeSubmitIssueModal
 window.closeModalAndConnectWallet = closeModalAndConnectWallet
+window.closeModalAndConnectWalletSubmit = closeModalAndConnectWalletSubmit
+window.enableSubmitIssueForm = enableSubmitIssueForm

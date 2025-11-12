@@ -1335,9 +1335,28 @@ app.get('/', (c) => {
                         </div>
                     </div>
 
+                    <!-- Wallet Connection Warning (hidden by default) -->
+                    <div id="walletWarningSubmit" class="hidden p-4 bg-yellow-500 bg-opacity-20 border-2 border-yellow-500 rounded-lg text-center">
+                        <i class="fas fa-wallet text-2xl text-yellow-500 mb-2"></i>
+                        <p class="text-sm font-bold mb-3">
+                            <span class="lang-ko">이슈를 제출하려면 지갑을 연결해주세요</span>
+                            <span class="lang-en hidden">Connect Wallet to Submit Issue</span>
+                            <span class="lang-zh hidden">连接钱包以提交问题</span>
+                            <span class="lang-ja hidden">ウォレットを接続して問題を提出してください</span>
+                        </p>
+                        <button type="button" onclick="closeModalAndConnectWalletSubmit()" 
+                                class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold text-sm transition">
+                            <i class="fas fa-plug mr-2"></i>
+                            <span class="lang-ko">지갑 연결</span>
+                            <span class="lang-en hidden">Connect Wallet</span>
+                            <span class="lang-zh hidden">连接钱包</span>
+                            <span class="lang-ja hidden">ウォレットを接続</span>
+                        </button>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="flex space-x-3">
-                        <button type="submit" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
+                        <button type="submit" id="submitIssueBtn2" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
                             <i class="fas fa-paper-plane mr-2"></i>
                             제출하기
                         </button>
