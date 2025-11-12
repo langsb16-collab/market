@@ -229,47 +229,45 @@ function renderEvents() {
         const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24))
         
         return `
-            <div class="card rounded-lg p-4 sm:p-6">
-                <div class="flex items-start justify-between mb-3 sm:mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-lg sm:text-xl">${event.category_icon}</span>
+            <div class="card rounded-lg p-3 sm:p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-base sm:text-lg">${event.category_icon}</span>
                         <span class="text-xs text-secondary mobile-text">${event.category_name}</span>
                     </div>
                     <div class="text-right">
-                        <div class="text-xs text-secondary mobile-text">${translations.volume}</div>
-                        <div class="text-xs sm:text-sm font-bold text-accent mobile-text">$${formatNumber(event.total_volume)}</div>
+                        <div class="text-xs font-bold text-accent mobile-text">$${formatNumber(event.total_volume)}</div>
                     </div>
                 </div>
                 
-                <h4 class="text-sm sm:text-lg font-bold mb-2 sm:mb-3 mobile-text">${event.title}</h4>
-                <p class="text-xs text-secondary mb-3 sm:mb-4 mobile-text line-clamp-2">${event.description}</p>
+                <h4 class="text-sm font-bold mb-2 mobile-text leading-tight">${event.title}</h4>
                 
-                <div class="space-y-2 mb-3 sm:mb-4">
-                    ${event.outcomes.slice(0, 3).map(outcome => `
-                        <div class="cursor-pointer hover:opacity-80 p-2 rounded transition"
+                <div class="space-y-1.5 mb-2">
+                    ${event.outcomes.slice(0, 2).map(outcome => `
+                        <div class="cursor-pointer hover:opacity-80 p-1.5 rounded transition"
                              onclick='openBetModal(${JSON.stringify(event)}, ${JSON.stringify(outcome)})'>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs sm:text-sm font-semibold mobile-text">${outcome.name}</span>
-                                <span class="text-xs sm:text-sm font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
+                                <span class="text-xs font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
-                            <div class="outcome-bar h-1.5 sm:h-2">
+                            <div class="outcome-bar h-1">
                                 <div class="outcome-fill" style="width: ${outcome.probability * 100}%"></div>
                             </div>
                         </div>
                     `).join('')}
-                    ${event.outcomes.length > 3 ? `
+                    ${event.outcomes.length > 2 ? `
                         <div class="text-xs text-secondary text-center mobile-text">
-                            +${event.outcomes.length - 3} more options
+                            +${event.outcomes.length - 2} more
                         </div>
                     ` : ''}
                 </div>
                 
-                <div class="flex items-center justify-between text-xs text-secondary mobile-text">
+                <div class="flex items-center justify-between text-xs text-secondary mobile-text pt-2 border-t" style="border-color: rgba(128,128,128,0.2)">
                     <span>
                         <i class="far fa-clock mr-1"></i>
-                        ${daysLeft > 0 ? `${daysLeft} days left` : 'Ending soon'}
+                        ${daysLeft > 0 ? `${daysLeft}d` : 'Soon'}
                     </span>
-                    <span>${translations.resolvesOn}: ${endDate.toLocaleDateString()}</span>
+                    <span>${endDate.toLocaleDateString('en', {month: 'short', day: 'numeric'})}</span>
                 </div>
             </div>
         `

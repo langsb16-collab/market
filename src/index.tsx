@@ -308,7 +308,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>PredictChain - Decentralized Prediction Market</title>
+        <title>EventBET - Decentralized Prediction Market</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -483,6 +483,36 @@ app.get('/', (c) => {
                 background-color: #3a3a3a;
             }
             
+            /* Hide scrollbar */
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            
+            /* Compact card design */
+            .card {
+                transition: all 0.2s ease;
+            }
+            
+            .card h4 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                line-height: 1.4;
+                min-height: 2.8em;
+            }
+            
+            .card p {
+                display: -webkit-box;
+                -webkit-line-clamp: 1;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
             /* Mobile text sizing */
             .mobile-text {
                 font-size: 0.875rem;
@@ -493,10 +523,26 @@ app.get('/', (c) => {
                     font-size: 0.75rem;
                 }
                 h1 {
-                    font-size: 1.5rem;
+                    font-size: 1.25rem;
                 }
                 h2 {
-                    font-size: 1.25rem;
+                    font-size: 1.125rem;
+                }
+                .card {
+                    padding: 0.75rem !important;
+                }
+                .card h4 {
+                    font-size: 0.875rem;
+                    min-height: 2.4em;
+                }
+            }
+            
+            @media (min-width: 1280px) {
+                .card h4 {
+                    font-size: 0.9rem;
+                }
+                .card p {
+                    font-size: 0.8rem;
                 }
             }
         </style>
@@ -508,7 +554,7 @@ app.get('/', (c) => {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2 sm:space-x-3">
                         <i class="fas fa-chart-line text-accent text-xl sm:text-2xl"></i>
-                        <h1 class="text-lg sm:text-2xl font-bold mobile-text">PredictChain</h1>
+                        <h1 class="text-lg sm:text-2xl font-bold mobile-text">EventBET</h1>
                     </div>
                     <div class="flex items-center space-x-2 sm:space-x-4">
                         <!-- Theme Toggle -->
@@ -533,33 +579,28 @@ app.get('/', (c) => {
 
         <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
             <!-- Hero Section -->
-            <div class="text-center mb-6 sm:mb-12">
-                <h2 class="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4" id="heroTitle">Bet on World Events with Cryptocurrency</h2>
-                <p class="text-sm sm:text-lg text-secondary mb-4 sm:mb-6 mobile-text" id="heroSubtitle">
+            <div class="text-center mb-4 sm:mb-8">
+                <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3" id="heroTitle">Bet on World Events with Cryptocurrency</h2>
+                <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroSubtitle">
                     Transparent, Secure, Decentralized Prediction Market
                 </p>
-                <div class="flex justify-center space-x-4 sm:space-x-6 text-xs sm:text-sm mobile-text">
+                <div class="flex justify-center space-x-6 text-xs mobile-text">
                     <div class="text-center">
-                        <div class="text-accent font-bold text-base sm:text-2xl">₿ BTC</div>
-                        <div class="text-secondary text-xs">Bitcoin</div>
+                        <div class="text-accent font-bold text-lg sm:text-xl">₿ BTC</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-accent font-bold text-base sm:text-2xl">Ξ ETH</div>
-                        <div class="text-secondary text-xs">Ethereum</div>
+                        <div class="text-accent font-bold text-lg sm:text-xl">Ξ ETH</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-accent font-bold text-base sm:text-2xl">₮ USDT</div>
-                        <div class="text-secondary text-xs">Tether</div>
+                        <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT</div>
                     </div>
                 </div>
             </div>
 
             <!-- Categories Filter -->
-            <div class="mb-6 sm:mb-8">
-                <div class="flex items-center justify-between mb-3 sm:mb-4">
-                    <h3 class="text-lg sm:text-xl font-bold mobile-text" id="categoriesTitle">Categories</h3>
-                </div>
-                <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 sm:space-x-3 pb-2">
+            <div class="mb-4 sm:mb-6">
+                <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categoriesTitle">Categories</h3>
+                <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
                     <!-- Categories will be loaded here -->
                 </div>
             </div>
@@ -567,7 +608,7 @@ app.get('/', (c) => {
             <!-- Markets Grid -->
             <div class="mb-6 sm:mb-8">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="marketsTitle">Trending Markets</h3>
-                <div id="marketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <!-- Markets will be loaded here -->
                 </div>
             </div>
