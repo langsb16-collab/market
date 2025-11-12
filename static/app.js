@@ -476,19 +476,23 @@ const getEventDescription = (event) => {
     return event[\`description_\${currentLang}\`] || event.description_en
 }
 
-// Get event image
-const getEventImage = (categorySlug) => {
-    const imageIds = {
-        'politics': '1060',
-        'sports': '449',
-        'technology': '180',
-        'cryptocurrency': '1068',
-        'entertainment': '399',
-        'economy': '1067',
-        'science': '1074',
-        'climate': '1080'
+// Get event image with category-specific variety
+const getEventImage = (categorySlug, eventId) => {
+    const imageIdsByCategory = {
+        'politics': [10, 15, 22, 30, 40, 82, 96, 106, 119, 152, 180, 201, 225, 250, 287, 302, 365, 403, 433, 480],
+        'sports': [62, 93, 144, 158, 169, 185, 213, 247, 272, 318, 349, 374, 401, 426, 456, 488, 512, 548, 572, 601],
+        'technology': [0, 1, 20, 36, 52, 77, 101, 123, 145, 173, 194, 219, 243, 268, 291, 320, 348, 381, 412, 447],
+        'cryptocurrency': [11, 28, 45, 67, 89, 111, 136, 161, 189, 212, 239, 263, 292, 316, 344, 371, 395, 423, 452, 481],
+        'entertainment': [16, 33, 54, 72, 94, 116, 141, 167, 195, 222, 246, 274, 300, 328, 355, 384, 410, 438, 465, 492],
+        'economy': [3, 25, 47, 69, 91, 113, 138, 163, 191, 217, 241, 266, 294, 322, 350, 379, 408, 434, 461, 490],
+        'science': [8, 18, 39, 60, 85, 109, 133, 157, 182, 208, 233, 257, 283, 309, 337, 363, 389, 419, 445, 475],
+        'climate': [12, 29, 50, 70, 95, 117, 142, 168, 196, 221, 248, 275, 303, 330, 358, 386, 413, 440, 468, 495]
     }
-    const imageId = imageIds[categorySlug] || '180'
+    
+    const categoryImages = imageIdsByCategory[categorySlug] || imageIdsByCategory['technology']
+    const imageIndex = (eventId - 1) % categoryImages.length
+    const imageId = categoryImages[imageIndex]
+    
     return \`https://picsum.photos/id/\${imageId}/120/120\`
 }
 
@@ -507,7 +511,7 @@ function renderMarkets() {
     
     container.innerHTML = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
-        const eventImage = getEventImage(event.category_slug)
+        const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         
         return \`
