@@ -267,91 +267,115 @@ function renderEvents() {
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         const defaultOutcome = hasOutcomes ? event.outcomes[0].id : null
         
-        // Get image for the event based on category
+        // Get real image for the event based on category and keywords
         const getEventImage = (categorySlug, title) => {
-            // Category-based placeholder images using UI Avatars
-            const categoryImages = {
-                'politics': `https://ui-avatars.com/api/?name=Politics&size=80&background=3b82f6&color=fff&bold=true`,
-                'sports': `https://ui-avatars.com/api/?name=Sports&size=80&background=10b981&color=fff&bold=true`,
-                'technology': `https://ui-avatars.com/api/?name=Tech&size=80&background=8b5cf6&color=fff&bold=true`,
-                'cryptocurrency': `https://ui-avatars.com/api/?name=Crypto&size=80&background=f59e0b&color=fff&bold=true`,
-                'entertainment': `https://ui-avatars.com/api/?name=Entertainment&size=80&background=ec4899&color=fff&bold=true`,
-                'economy': `https://ui-avatars.com/api/?name=Economy&size=80&background=06b6d4&color=fff&bold=true`,
-                'science': `https://ui-avatars.com/api/?name=Science&size=80&background=14b8a6&color=fff&bold=true`,
-                'climate': `https://ui-avatars.com/api/?name=Climate&size=80&background=22c55e&color=fff&bold=true`
+            // Use Picsum Photos for realistic images based on category
+            const imageIds = {
+                'politics': '1060', // Government buildings
+                'sports': '449', // Stadium/sports
+                'technology': '180', // Tech/abstract
+                'cryptocurrency': '1068', // Finance/money
+                'entertainment': '399', // Entertainment
+                'economy': '1067', // Business
+                'science': '1074', // Science/research
+                'climate': '1080' // Nature/environment
             }
-            return categoryImages[categorySlug] || categoryImages['technology']
+            const imageId = imageIds[categorySlug] || '180'
+            return `https://picsum.photos/id/${imageId}/120/120`
         }
         
         const eventImage = getEventImage(event.category_slug, event.title)
         
         return `
-            <div class="card rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+            <div class="card rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-all"
                  onclick="openBetModalByEventId(${event.id})">
-                <!-- Event Image Header -->
-                <div class="relative h-24 sm:h-28 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <img src="${eventImage}" 
-                         alt="${event.category_name}"
-                         class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-4xl\\'>${event.category_icon}</span>'">
-                    <div class="absolute top-2 left-2 px-2 py-1 bg-black bg-opacity-50 rounded text-xs text-white mobile-text">
-                        ${event.category_icon} ${event.category_name}
+                <!-- Polymarket Style Layout -->
+                <div class="flex p-3 sm:p-4">
+                    <!-- Left: Square Image -->
+                    <div class="flex-shrink-0 mr-3">
+                        <img src="${eventImage}" 
+                             alt="${event.category_name}"
+                             class="w-12 h-12 sm:w-16 sm:h-16 rounded object-cover"
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E${event.category_icon}%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="absolute top-2 right-2 px-2 py-1 bg-black bg-opacity-70 rounded text-xs font-bold text-yellow-400 mobile-text">
-                        $${formatNumber(event.total_volume)}
-                    </div>
-                </div>
+                    
+                    <!-- Right: Content -->
+                    <div class="flex-1 min-w-0">
+                        <!-- Category Badge and Volume -->
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                ${event.category_icon} ${event.category_name}
+                            </span>
+                            <span class="text-xs font-bold text-green-600 dark:text-green-400">
+                                $${formatNumber(event.total_volume)}
+                            </span>
+                        </div>
+                        
+                        <!-- Title -->
+                        <h4 class="text-sm font-bold mb-2 mobile-text leading-tight line-clamp-2">${event.title}</h4>
                 
-                <!-- Event Content -->
-                <div class="p-3 sm:p-4">
-                    <h4 class="text-sm font-bold mb-3 mobile-text leading-tight line-clamp-2">${event.title}</h4>
-                
-                    <div class="space-y-2 mb-3">
-                        ${hasOutcomes ? event.outcomes.slice(0, 2).map(outcome => `
-                            <div class="p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 transition-all"
-                                 style="background: linear-gradient(90deg, var(--accent-color) ${outcome.probability * 100}%, transparent ${outcome.probability * 100}%); background-size: 100% 100%; opacity: 0.1;"
-                                 onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
-                                <div class="relative z-10 flex justify-between items-center">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                                            ${outcome.name.charAt(0).toUpperCase()}
+                        <!-- Outcomes with Beautiful YES/NO Style -->
+                        <div class="space-y-1.5">
+                            ${hasOutcomes ? event.outcomes.slice(0, 2).map((outcome, idx) => {
+                                const isYes = outcome.name.toLowerCase().includes('yes') || outcome.name === '예' || outcome.name === '是' || outcome.name === 'はい'
+                                const isNo = outcome.name.toLowerCase().includes('no') || outcome.name === '아니오' || outcome.name === '否' || outcome.name === 'いいえ'
+                                const bgColor = isYes ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 
+                                               isNo ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 
+                                               'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                const textColor = isYes ? 'text-green-700 dark:text-green-300' : 
+                                                 isNo ? 'text-red-700 dark:text-red-300' : 
+                                                 'text-blue-700 dark:text-blue-300'
+                                const percentColor = isYes ? 'text-green-600 dark:text-green-400' : 
+                                                    isNo ? 'text-red-600 dark:text-red-400' : 
+                                                    'text-blue-600 dark:text-blue-400'
+                                return `
+                                <div class="relative overflow-hidden rounded-lg border ${bgColor} hover:shadow-md transition-all cursor-pointer"
+                                     onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
+                                    <!-- Background Progress Bar -->
+                                    <div class="absolute inset-0 ${isYes ? 'bg-green-200 dark:bg-green-700' : isNo ? 'bg-red-200 dark:bg-red-700' : 'bg-blue-200 dark:bg-blue-700'} opacity-20"
+                                         style="width: ${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
+                                    
+                                    <!-- Content -->
+                                    <div class="relative z-10 flex items-center justify-between p-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-bold text-sm ${textColor}">${outcome.name}</span>
                                         </div>
-                                        <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-lg font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(0)}%</span>
-                                        <div class="text-xs text-secondary mobile-text">
-                                            $${formatNumber(outcome.total_bets)}
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xl font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
+                                            ${outcome.total_bets > 0 ? `<span class="text-xs text-gray-500 dark:text-gray-400">$${formatNumber(outcome.total_bets)}</span>` : ''}
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('') : `
-                            <div class="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-center">
-                                <span class="text-xs text-white font-semibold mobile-text">
-                                    ${currentLang === 'ko' ? '클릭하여 상세 정보 확인' :
-                                      currentLang === 'en' ? 'Click to view details' :
-                                      currentLang === 'zh' ? '点击查看详情' :
-                                      '詳細を表示するにはクリック'}
-                                </span>
-                            </div>
-                        `}
-                        ${hasOutcomes && event.outcomes.length > 2 ? `
-                            <div class="text-xs text-secondary text-center mobile-text font-semibold">
-                                +${event.outcomes.length - 2} ${currentLang === 'ko' ? '개 더보기' :
-                                                                 currentLang === 'en' ? 'more options' :
-                                                                 currentLang === 'zh' ? '更多选项' :
-                                                                 'その他のオプション'}
-                            </div>
-                        ` : ''}
-                    </div>
-                    
-                    <div class="flex items-center justify-between text-xs mobile-text pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center space-x-2 text-secondary">
-                            <i class="far fa-clock"></i>
-                            <span>${daysLeft > 0 ? `${daysLeft}${currentLang === 'ko' ? '일' : currentLang === 'zh' ? '天' : currentLang === 'ja' ? '日' : 'd'}` : (currentLang === 'ko' ? '곧' : currentLang === 'zh' ? '即将' : currentLang === 'ja' ? 'まもなく' : 'Soon')}</span>
+                            `}).join('') : `
+                                <div class="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-center">
+                                    <span class="text-xs text-white font-semibold mobile-text">
+                                        ${currentLang === 'ko' ? '📊 클릭하여 상세 정보 확인' :
+                                          currentLang === 'en' ? '📊 Click to view details' :
+                                          currentLang === 'zh' ? '📊 点击查看详情' :
+                                          '📊 詳細を表示するにはクリック'}
+                                    </span>
+                                </div>
+                            `}
+                            ${hasOutcomes && event.outcomes.length > 2 ? `
+                                <div class="text-center">
+                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                                        +${event.outcomes.length - 2} ${currentLang === 'ko' ? '개 옵션 더보기' :
+                                                                         currentLang === 'en' ? 'more options' :
+                                                                         currentLang === 'zh' ? '更多选项' :
+                                                                         'その他のオプション'}
+                                    </span>
+                                </div>
+                            ` : ''}
                         </div>
-                        <span class="text-secondary">${endDate.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {month: 'short', day: 'numeric'})}</span>
+                        
+                        <!-- Footer: Time and Date -->
+                        <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
+                                <i class="far fa-clock"></i>
+                                <span>${daysLeft > 0 ? `${daysLeft}${currentLang === 'ko' ? '일 남음' : currentLang === 'zh' ? '天' : currentLang === 'ja' ? '日' : 'd left'}` : (currentLang === 'ko' ? '곧 마감' : currentLang === 'zh' ? '即将' : currentLang === 'ja' ? 'まもなく' : 'Soon')}</span>
+                            </div>
+                            <span class="text-gray-500 dark:text-gray-400">${endDate.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {month: 'short', day: 'numeric'})}</span>
+                        </div>
                     </div>
                 </div>
             </div>
