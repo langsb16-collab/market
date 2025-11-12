@@ -463,17 +463,17 @@ function filterByCategory(categorySlug) {
 
 // Get category name
 const getCategoryName = (category) => {
-    return category[\`name_\${currentLang}\`] || category.name_en
+    return category[`name_${currentLang}`] || category.name_en
 }
 
 // Get event title
 const getEventTitle = (event) => {
-    return event[\`title_\${currentLang}\`] || event.title_en
+    return event[`title_${currentLang}`] || event.title_en
 }
 
 // Get event description
 const getEventDescription = (event) => {
-    return event[\`description_\${currentLang}\`] || event.description_en
+    return event[`description_${currentLang}`] || event.description_en
 }
 
 // Get event image with category-specific variety
@@ -493,7 +493,7 @@ const getEventImage = (categorySlug, eventId) => {
     const imageIndex = (eventId - 1) % categoryImages.length
     const imageId = categoryImages[imageIndex]
     
-    return \`https://picsum.photos/id/\${imageId}/120/120\`
+    return `https://picsum.photos/id/${imageId}/120/120`
 }
 
 // Format number
@@ -514,36 +514,36 @@ function renderMarkets() {
         const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         
-        return \`
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(\${event.id})">
+        return `
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(${event.id})">
             <div class="flex p-2 sm:p-3">
                 <div class="flex-shrink-0 mr-2">
-                    <img src="\${eventImage}" 
-                         alt="\${getCategoryName(category)}"
+                    <img src="${eventImage}" 
+                         alt="${getCategoryName(category)}"
                          class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
-                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E\${category.icon}%3C/text%3E%3C/svg%3E'">
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E${category.icon}%3C/text%3E%3C/svg%3E'">
                 </div>
                 
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                            \${category.icon} \${getCategoryName(category)}
+                            ${category.icon} ${getCategoryName(category)}
                         </span>
                         <span class="text-xs font-bold text-green-600">
-                            $\${formatNumber(event.total_volume)}
+                            $${formatNumber(event.total_volume)}
                         </span>
                     </div>
                     
                     <h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">
-                        \${getEventTitle(event)}
+                        ${getEventTitle(event)}
                     </h3>
                     
                     <div class="flex items-center text-xs text-gray-500 mb-2">
                         <i class="far fa-calendar mr-1 text-xs"></i>
-                        <span class="text-xs">\${translations[currentLang].resolvesOn}: \${event.resolve_date}</span>
+                        <span class="text-xs">${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
                     </div>
                     
-                    \${hasOutcomes ? \`
+                    \${hasOutcomes ? `
                     <div class="grid grid-cols-2 gap-1.5">
                         \${event.outcomes.slice(0, 2).map((outcome) => {
                             const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
@@ -553,24 +553,24 @@ function renderMarkets() {
                             const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
                             const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
                             
-                            return \`
-                            <div class="relative overflow-hidden rounded border \${bgColor} hover:shadow-md transition-all">
-                                <div class="absolute inset-0 \${barColor} opacity-20"
-                                     style="width: \${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
+                            return `
+                            <div class="relative overflow-hidden rounded border ${bgColor} hover:shadow-md transition-all">
+                                <div class="absolute inset-0 ${barColor} opacity-20"
+                                     style="width: ${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
                                 
                                 <div class="relative z-10 flex items-center justify-between p-1.5">
-                                    <span class="font-bold text-xs \${textColor}">\${outcome.name}</span>
-                                    <span class="text-base font-bold \${percentColor}">\${(outcome.probability * 100).toFixed(1)}%</span>
+                                    <span class="font-bold text-xs ${textColor}">${outcome.name}</span>
+                                    <span class="text-base font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                                 </div>
                             </div>
-                            \`
+                            `
                         }).join('')}
                     </div>
-                    \` : ''}
+                    ` : ''}
                 </div>
             </div>
         </div>
-        \`
+        `
     }).join('')
     
     // Show/hide load more button
@@ -600,58 +600,58 @@ function openBetModal(eventId) {
     
     modalTitle.textContent = getEventTitle(event)
     
-    modalContent.innerHTML = \`
+    modalContent.innerHTML = `
         <div class="space-y-4">
             <div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    \${category.icon} \${getCategoryName(category)}
+                    ${category.icon} ${getCategoryName(category)}
                 </span>
             </div>
             
-            <p class="text-sm sm:text-base text-gray-600">\${getEventDescription(event)}</p>
+            <p class="text-sm sm:text-base text-gray-600">${getEventDescription(event)}</p>
             
             <div class="flex items-center text-sm text-gray-500">
                 <i class="far fa-calendar mr-2"></i>
-                <span>\${translations[currentLang].resolvesOn}: \${event.resolve_date}</span>
+                <span>${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
             </div>
             
             <div class="flex items-center text-sm text-gray-600">
                 <i class="fas fa-chart-line mr-2"></i>
-                <span>\${translations[currentLang].volume}: $\${formatNumber(event.total_volume)}</span>
+                <span>${translations[currentLang].volume}: $${formatNumber(event.total_volume)}</span>
             </div>
             
-            \${event.outcomes && event.outcomes.length > 0 ? \`
+            \${event.outcomes && event.outcomes.length > 0 ? `
             <div class="border-t pt-4">
-                <h4 class="text-lg font-bold mb-3">\${translations[currentLang].placeBet}</h4>
-                \${!currentWallet ? \`
+                <h4 class="text-lg font-bold mb-3">${translations[currentLang].placeBet}</h4>
+                \${!currentWallet ? `
                 <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
                     <p class="text-sm text-yellow-700">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
                         베팅하려면 지갑을 연결하세요
                     </p>
                 </div>
-                \` : ''}
+                ` : ''}
                 <div class="grid grid-cols-1 gap-3">
                     \${event.outcomes.map(outcome => {
                         const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                         const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
                         const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
-                        return \`
-                        <button class="w-full \${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all \${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
-                                \${!currentWallet ? 'disabled' : ''}>
+                        return `
+                        <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${!currentWallet ? 'disabled' : ''}>
                             <div class="flex justify-between items-center">
-                                <span class="font-bold \${textColor}">\${outcome.name}</span>
-                                <span class="text-2xl font-bold \${textColor}">\${(outcome.probability * 100).toFixed(1)}%</span>
+                                <span class="font-bold ${textColor}">${outcome.name}</span>
+                                <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                         </button>
-                        \`
+                        `
                     }).join('')}
                 </div>
             </div>
-            \` : ''}
+            ` : ''}
         </div>
-    \`
+    `
     
     modal.classList.remove('hidden')
     modal.classList.add('flex')
@@ -673,9 +673,9 @@ function openSubmitIssueModal() {
     
     if (!modal || !modalContent) return
     
-    modalContent.innerHTML = \`
+    modalContent.innerHTML = `
         <form id="issue-form" class="space-y-4">
-            \${!currentWallet ? \`
+            \${!currentWallet ? `
             <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
                 <p class="text-sm text-yellow-700">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -687,41 +687,41 @@ function openSubmitIssueModal() {
                     지갑 연결
                 </button>
             </div>
-            \` : ''}
+            ` : ''}
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">이슈 제목 (한국어) *</label>
-                    <input type="text" required \${!currentWallet ? 'disabled' : ''}
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Issue Title (English) *</label>
-                    <input type="text" required \${!currentWallet ? 'disabled' : ''}
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">问题标题 (中文) *</label>
-                    <input type="text" required \${!currentWallet ? 'disabled' : ''}
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">問題タイトル (日本語) *</label>
-                    <input type="text" required \${!currentWallet ? 'disabled' : ''}
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">설명 (선택사항)</label>
-                <textarea rows="3" \${!currentWallet ? 'disabled' : ''}
+                <textarea rows="3" ${!currentWallet ? 'disabled' : ''}
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">결과 옵션 *</label>
-                    <select required \${!currentWallet ? 'disabled' : ''}
+                    <select required ${!currentWallet ? 'disabled' : ''}
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option value="yes-no">예/아니오 (Yes/No)</option>
                         <option value="custom">커스텀 옵션</option>
@@ -729,7 +729,7 @@ function openSubmitIssueModal() {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">배팅 한도 (개수) *</label>
-                    <input type="number" min="1" max="1000" value="100" required \${!currentWallet ? 'disabled' : ''}
+                    <input type="number" min="1" max="1000" value="100" required ${!currentWallet ? 'disabled' : ''}
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
@@ -737,16 +737,16 @@ function openSubmitIssueModal() {
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">암호화폐 선택 *</label>
                 <div class="flex gap-4">
-                    <label class="flex items-center \${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="BTC" required \${!currentWallet ? 'disabled' : ''} class="mr-2">
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="BTC" required ${!currentWallet ? 'disabled' : ''} class="mr-2">
                         <i class="fab fa-bitcoin text-yellow-500 mr-1"></i> BTC
                     </label>
-                    <label class="flex items-center \${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="ETH" \${!currentWallet ? 'disabled' : ''} class="mr-2">
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="ETH" ${!currentWallet ? 'disabled' : ''} class="mr-2">
                         <i class="fab fa-ethereum text-blue-500 mr-1"></i> ETH
                     </label>
-                    <label class="flex items-center \${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="USDT" \${!currentWallet ? 'disabled' : ''} class="mr-2">
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="USDT" ${!currentWallet ? 'disabled' : ''} class="mr-2">
                         <i class="fas fa-dollar-sign text-green-500 mr-1"></i> USDT
                     </label>
                 </div>
@@ -760,31 +760,31 @@ function openSubmitIssueModal() {
                 <div class="space-y-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">지갑 주소 *</label>
-                        <input type="text" value="\${currentWallet || ''}" required readonly
+                        <input type="text" value="${currentWallet || ''}" required readonly
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
-                            <input type="email" required \${!currentWallet ? 'disabled' : ''}
+                            <input type="email" required ${!currentWallet ? 'disabled' : ''}
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">닉네임 *</label>
-                            <input type="text" required \${!currentWallet ? 'disabled' : ''}
+                            <input type="text" required ${!currentWallet ? 'disabled' : ''}
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
             </div>
             
-            <button type="submit" \${!currentWallet ? 'disabled' : ''}
-                    class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium \${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}">
+            <button type="submit" ${!currentWallet ? 'disabled' : ''}
+                    class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}">
                 <i class="fas fa-paper-plane mr-2"></i>
                 이슈 제출
             </button>
         </form>
-    \`
+    `
     
     const form = document.getElementById('issue-form')
     if (form) {
