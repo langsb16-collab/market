@@ -498,7 +498,7 @@ const getEventImage = (categorySlug, eventId) => {
 
 // Format number
 const formatNumber = (num) => {
-    return num.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",")
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 }
 
 // Render markets
