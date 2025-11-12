@@ -567,17 +567,13 @@ function renderMarkets() {
                             const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
                             const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
                             
-                            return `
-                            <div class="relative overflow-hidden rounded border ${bgColor} hover:shadow-md transition-all">
-                                <div class="absolute inset-0 ${barColor} opacity-20"
-                                     style="width: ${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
-                                
-                                <div class="relative z-10 flex items-center justify-between p-1.5">
-                                    <span class="font-bold text-xs ${textColor}">${outcome.name}</span>
-                                    <span class="text-base font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
-                                </div>
-                            </div>
-                            `
+                            return '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">' +
+                                '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>' +
+                                '<div class="relative z-10 flex items-center justify-between p-1.5">' +
+                                    '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>' +
+                                    '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>' +
+                                '</div>' +
+                            '</div>'
                         }).join('')}
                     </div>
                     ` : ''}
