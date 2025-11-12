@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventBET - Decentralized Prediction Market</title>
+    <title>EventBET - 예측 시장 블록체인 배팅 플랫폼</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -15,13 +15,13 @@
         }
         
         body.dark-mode {
-            background-color: #000000;
+            background-color: #0a0a0a;
             color: #ffffff;
         }
         
         /* Dark mode styles */
         body.dark-mode .bg-white { background-color: #1a1a1a !important; }
-        body.dark-mode .bg-gray-50 { background-color: #0a0a0a !important; }
+        body.dark-mode .bg-gray-50 { background-color: #0f0f0f !important; }
         body.dark-mode .bg-gray-100 { background-color: #1a1a1a !important; }
         body.dark-mode .text-gray-900 { color: #ffffff !important; }
         body.dark-mode .text-gray-800 { color: #e5e5e5 !important; }
@@ -38,6 +38,7 @@
         /* Card hover effect */
         .market-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
         }
         
         .market-card:hover {
@@ -64,6 +65,28 @@
         
         .market-card:hover img {
             transform: scale(1.05);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
@@ -92,10 +115,16 @@
                         <i class="fas fa-moon text-gray-700"></i>
                     </button>
                     
+                    <!-- Submit Issue Button -->
+                    <button id="submit-issue-btn" class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        <i class="fas fa-plus mr-1 sm:mr-2"></i>
+                        <span id="submit-issue-text">이슈 등록</span>
+                    </button>
+                    
                     <!-- Connect Wallet Button -->
                     <button id="connect-wallet" class="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                         <i class="fas fa-wallet mr-1 sm:mr-2"></i>
-                        <span id="connect-wallet-text">Connect Wallet</span>
+                        <span id="connect-wallet-text">지갑 연결</span>
                     </button>
                 </div>
             </div>
@@ -103,11 +132,31 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 sm:py-20">
+    <section class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 sm:py-20 border-4 border-red-500">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
-            <h2 id="hero-title" class="text-3xl sm:text-5xl font-bold mb-3 sm:mb-4">EventBET</h2>
-            <p id="hero-subtitle" class="text-lg sm:text-2xl mb-2 sm:mb-3 opacity-90">Where Global Events Meet Your Predictions</p>
-            <p id="hero-description" class="text-base sm:text-xl mb-6 sm:mb-8 opacity-80">전 세계 이슈와 당신의 예측이 만나는 곳</p>
+            <h2 id="hero-title" class="text-3xl sm:text-5xl font-bold mb-3 sm:mb-4 text-red-500">
+                EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼
+            </h2>
+            <p id="hero-subtitle" class="text-lg sm:text-2xl mb-2 sm:mb-3 opacity-90">
+                Where Global Events Meet Your Predictions
+            </p>
+            <p id="hero-description" class="text-base sm:text-xl mb-6 sm:mb-8 opacity-80">
+                전 세계 이슈와 당신의 예측이 만나는 곳
+            </p>
+            <div class="flex flex-wrap justify-center items-center gap-4 mb-6">
+                <div class="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-lg">
+                    <i class="fab fa-bitcoin text-yellow-400 text-2xl"></i>
+                    <span class="font-semibold">BTC</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-lg">
+                    <i class="fab fa-ethereum text-blue-400 text-2xl"></i>
+                    <span class="font-semibold">ETH</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-lg">
+                    <i class="fas fa-dollar-sign text-green-400 text-2xl"></i>
+                    <span class="font-semibold">USDT</span>
+                </div>
+            </div>
             <button id="explore-button" class="px-6 sm:px-8 py-2.5 sm:py-3 bg-white text-blue-600 rounded-lg font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors">
                 <i class="fas fa-compass mr-2"></i>
                 <span>마켓 탐색</span>
@@ -117,9 +166,18 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
+        <!-- Search Bar -->
+        <section class="mb-6 sm:mb-8">
+            <div class="relative">
+                <input type="text" id="search-input" placeholder="마켓 검색..." 
+                       class="w-full px-4 py-3 pl-12 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </section>
+
         <!-- Categories -->
         <section class="mb-8 sm:mb-12">
-            <h3 id="categories-title" class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Categories</h3>
+            <h3 id="categories-title" class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">카테고리</h3>
             <div id="categories-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                 <!-- Categories will be loaded here -->
             </div>
@@ -127,51 +185,112 @@
 
         <!-- Trending Markets -->
         <section>
-            <h3 id="trending-title" class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Trending Markets</h3>
+            <div class="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 id="trending-title" class="text-xl sm:text-2xl font-bold text-gray-900">인기 마켓</h3>
+                <div id="market-count" class="text-sm text-gray-600"></div>
+            </div>
             <div id="markets-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <!-- Markets will be loaded here -->
             </div>
-        </section>
-
-        <!-- User Submission Section -->
-        <section class="mt-8 sm:mt-12 bg-white rounded-lg shadow p-4 sm:p-6">
-            <h3 id="submit-title" class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Submit Your Prediction Market</h3>
-            <p id="submit-description" class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Have an interesting event? Submit it for review!</p>
             
-            <form id="submission-form" class="space-y-3 sm:space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2" id="label-title">Title</label>
-                    <input type="text" id="submit-title-input" required
-                           class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2" id="label-description">Description</label>
-                    <textarea id="submit-description-input" rows="3" required
-                              class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2" id="label-category">Category</label>
-                    <select id="submit-category-input" required
-                            class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <!-- Categories will be loaded here -->
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1 sm:mb-2" id="label-resolve-date">Resolution Date</label>
-                    <input type="date" id="submit-resolve-date-input" required
-                           class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
-                <button type="submit" class="w-full px-4 py-2 sm:py-2.5 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    <i class="fas fa-paper-plane mr-2"></i>
-                    <span id="submit-button-text">Submit</span>
+            <!-- Load More Button -->
+            <div class="text-center mt-8">
+                <button id="load-more-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium hidden">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    <span>더 보기</span>
                 </button>
-            </form>
+            </div>
         </section>
     </main>
+
+    <!-- Odds/Fee Section -->
+    <section class="bg-yellow-50 border-t-4 border-yellow-400 mt-12 sm:mt-16">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
+                <i class="fas fa-info-circle mr-2 text-yellow-600"></i>
+                <span id="odds-fee-title">배당률 및 수수료 구조</span>
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <!-- Odds Structure -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                        <span id="odds-title">✅ 배당률(Odds) 구조</span>
+                    </h4>
+                    <div class="space-y-4 text-sm sm:text-base text-gray-700">
+                        <p id="odds-desc-1">
+                            <strong>승자 배당 = 패자 총액 ÷ 승자 인원</strong><br>
+                            Polymarket의 방식을 따릅니다.
+                        </p>
+                        
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                            <p class="font-semibold mb-2" id="odds-example-title">📊 예시:</p>
+                            <ul class="space-y-1 text-sm" id="odds-example">
+                                <li>• 승자 100명: 90 USDT</li>
+                                <li>• 패자 100명: 110 USDT</li>
+                                <li>• 총 베팅: 200 USDT</li>
+                                <li>• 플랫폼 수수료 1%: 2 USDT</li>
+                                <li>• 배당 풀: 198 USDT</li>
+                                <li class="font-bold text-blue-700">• 승자 배당: 110 USDT ÷ 100명 = 1.1 USDT/인</li>
+                            </ul>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600" id="odds-note">
+                            * 본인이 투자한 비율에 따라 수익을 가져갑니다.
+                        </p>
+                        
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                            <p class="font-semibold text-red-700" id="odds-warning">
+                                ⚠️ 패자 손실: 결과가 발생하지 않으면 투자액 전액 손실
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fee Structure -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-coins mr-2 text-green-600"></i>
+                        <span id="fee-title">⚙️ 수수료(Fee) 구조</span>
+                    </h4>
+                    <div class="space-y-4 text-sm sm:text-base text-gray-700">
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                            <p class="font-semibold mb-2" id="fee-platform-title">💰 플랫폼 거래 수수료:</p>
+                            <p class="text-2xl font-bold text-green-700">1%</p>
+                            <p class="text-sm text-gray-600 mt-2" id="fee-platform-desc">
+                                모든 베팅에서 공제됩니다.
+                            </p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <p id="fee-additional-title">
+                                <strong>📋 추가 비용:</strong>
+                            </p>
+                            <ul class="space-y-1 text-sm" id="fee-additional">
+                                <li>• 입출금 수수료</li>
+                                <li>• 네트워크 송금 비용 (가스비)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                            <p class="font-semibold" id="fee-risk-title">⚠️ 리스크:</p>
+                            <p class="text-sm" id="fee-risk-desc">
+                                결과 미발생 시 투자액 전액 손실
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded">
+                            <p class="text-xs text-gray-600" id="fee-source">
+                                <i class="fas fa-link mr-1"></i>
+                                출처: <a href="https://docs.polymarket.com" target="_blank" class="text-blue-600 hover:underline">Polymarket 공식 문서</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Bet Modal -->
     <div id="bet-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
@@ -191,25 +310,26 @@
         </div>
     </div>
 
-    <!-- Footer with Odds/Fee Info -->
-    <footer class="bg-white border-t border-gray-200 mt-12 sm:mt-16">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-                <div>
-                    <h4 id="footer-odds-title" class="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3">Odds Calculation</h4>
-                    <p id="footer-odds-desc" class="text-xs sm:text-sm text-gray-600">Odds are calculated based on market probability</p>
+    <!-- Submit Issue Modal -->
+    <div id="submit-issue-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-4 sm:p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="submit-modal-title" class="text-xl sm:text-2xl font-bold text-gray-900">
+                        <i class="fas fa-plus-circle mr-2 text-green-600"></i>
+                        이슈 등록
+                    </h3>
+                    <button onclick="closeSubmitIssueModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl sm:text-2xl"></i>
+                    </button>
                 </div>
-                <div>
-                    <h4 id="footer-fee-title" class="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3">Transaction Fees</h4>
-                    <p id="footer-fee-desc" class="text-xs sm:text-sm text-gray-600">2% platform fee on all transactions</p>
-                </div>
-                <div>
-                    <h4 id="footer-support-title" class="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3">Cryptocurrencies</h4>
-                    <p id="footer-support-desc" class="text-xs sm:text-sm text-gray-600">BTC, ETH, USDT supported</p>
+                
+                <div id="submit-modal-content" class="space-y-4 sm:space-y-6">
+                    <!-- Form will be loaded here -->
                 </div>
             </div>
         </div>
-    </footer>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="./static/app.js"></script>
