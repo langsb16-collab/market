@@ -523,65 +523,55 @@ function renderMarkets() {
     const filteredEvents = getFilteredEvents()
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
     
-    container.innerHTML = eventsToShow.map(event => {
+    const html = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
         const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         
-        return `
-        <div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(${event.id})">
-            <div class="flex p-2 sm:p-3">
-                <div class="flex-shrink-0 mr-2">
-                    <img src="${eventImage}" 
-                         alt="${getCategoryName(category)}"
-                         class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
-                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E${category.icon}%3C/text%3E%3C/svg%3E'">
-                </div>
+        let card = '<div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(' + event.id + ')">'
+        card += '<div class="flex p-2 sm:p-3">'
+        card += '<div class="flex-shrink-0 mr-2">'
+        card += '<img src="' + eventImage + '" alt="' + getCategoryName(category) + '" class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E' + category.icon + '%3C/text%3E%3C/svg%3E\'">'
+        card += '</div>'
+        card += '<div class="flex-1 min-w-0">'
+        card += '<div class="flex items-center justify-between mb-1">'
+        card += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">'
+        card += category.icon + ' ' + getCategoryName(category)
+        card += '</span>'
+        card += '<span class="text-xs font-bold text-green-600">$' + formatNumber(event.total_volume) + '</span>'
+        card += '</div>'
+        card += '<h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">' + getEventTitle(event) + '</h3>'
+        card += '<div class="flex items-center text-xs text-gray-500 mb-2">'
+        card += '<i class="far fa-calendar mr-1 text-xs"></i>'
+        card += '<span class="text-xs">' + translations[currentLang].resolvesOn + ': ' + event.resolve_date + '</span>'
+        card += '</div>'
+        
+        if (hasOutcomes) {
+            card += '<div class="grid grid-cols-2 gap-1.5">'
+            event.outcomes.slice(0, 2).forEach(outcome => {
+                const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
+                const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
+                const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
+                const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
+                const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
+                const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
                 
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                            ${category.icon} ${getCategoryName(category)}
-                        </span>
-                        <span class="text-xs font-bold text-green-600">
-                            $${formatNumber(event.total_volume)}
-                        </span>
-                    </div>
-                    
-                    <h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">
-                        ${getEventTitle(event)}
-                    </h3>
-                    
-                    <div class="flex items-center text-xs text-gray-500 mb-2">
-                        <i class="far fa-calendar mr-1 text-xs"></i>
-                        <span class="text-xs">${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
-                    </div>
-                    
-                    ${hasOutcomes ? `
-                    <div class="grid grid-cols-2 gap-1.5">
-                        ${event.outcomes.slice(0, 2).map((outcome) => {
-                            const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
-                            const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
-                            const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
-                            const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
-                            const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
-                            const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
-                            
-                            return '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">' +
-                                '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>' +
-                                '<div class="relative z-10 flex items-center justify-between p-1.5">' +
-                                    '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>' +
-                                    '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>' +
-                                '</div>' +
-                            '</div>'
-                        }).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
-        </div>
-        `
+                card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
+                card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
+                card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
+                card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
+                card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
+                card += '</div>'
+                card += '</div>'
+            })
+            card += '</div>'
+        }
+        
+        card += '</div></div></div>'
+        return card
     }).join('')
+    
+    container.innerHTML = html
     
     // Show/hide load more button
     const loadMoreBtn = document.getElementById('load-more-btn')
