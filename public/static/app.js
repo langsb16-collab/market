@@ -325,27 +325,41 @@ function renderEvents() {
 
 // Open bet modal by event ID (creates default outcome if none exist)
 function openBetModalByEventId(eventId) {
-    const event = events.find(e => e.id === eventId)
-    if (!event) {
-        console.error('Event not found:', eventId)
-        return
-    }
-    
-    // If event has outcomes, use the first one
-    if (event.outcomes && event.outcomes.length > 0) {
-        openBetModal(event, event.outcomes[0])
-    } else {
-        // Create default "Yes" outcome for events without outcomes
-        const defaultOutcome = {
-            id: 0,
-            name: currentLang === 'ko' ? '예' :
-                  currentLang === 'en' ? 'Yes' :
-                  currentLang === 'zh' ? '是' :
-                  'はい',
-            probability: 0.5,
-            total_bets: 0
+    try {
+        console.log('openBetModalByEventId called with eventId:', eventId)
+        console.log('Events array length:', events.length)
+        
+        const event = events.find(e => e.id === eventId)
+        if (!event) {
+            console.error('Event not found:', eventId)
+            console.error('Available event IDs:', events.map(e => e.id))
+            alert('Event not found. Please refresh the page.')
+            return
         }
-        openBetModal(event, defaultOutcome)
+        
+        console.log('Found event:', event.title)
+        
+        // If event has outcomes, use the first one
+        if (event.outcomes && event.outcomes.length > 0) {
+            console.log('Opening modal with first outcome:', event.outcomes[0].name)
+            openBetModal(event, event.outcomes[0])
+        } else {
+            // Create default "Yes" outcome for events without outcomes
+            console.log('Creating default outcome for event without outcomes')
+            const defaultOutcome = {
+                id: 0,
+                name: currentLang === 'ko' ? '예' :
+                      currentLang === 'en' ? 'Yes' :
+                      currentLang === 'zh' ? '是' :
+                      'はい',
+                probability: 0.5,
+                total_bets: 0
+            }
+            openBetModal(event, defaultOutcome)
+        }
+    } catch (error) {
+        console.error('Error in openBetModalByEventId:', error)
+        alert('Error opening market details: ' + error.message)
     }
 }
 
@@ -368,11 +382,31 @@ function openBetModalById(eventId, outcomeId) {
 
 // Open bet modal
 function openBetModal(event, outcome) {
-    const modal = document.getElementById('betModal')
-    const content = document.getElementById('betModalContent')
-    
-    // Determine if wallet is connected
-    const isWalletConnected = !!currentWallet
+    try {
+        console.log('openBetModal called')
+        console.log('Event:', event)
+        console.log('Outcome:', outcome)
+        
+        const modal = document.getElementById('betModal')
+        const content = document.getElementById('betModalContent')
+        
+        if (!modal) {
+            console.error('Modal element not found!')
+            alert('Error: Modal element not found. Please refresh the page.')
+            return
+        }
+        
+        if (!content) {
+            console.error('Modal content element not found!')
+            alert('Error: Modal content element not found. Please refresh the page.')
+            return
+        }
+        
+        console.log('Modal elements found successfully')
+        
+        // Determine if wallet is connected
+        const isWalletConnected = !!currentWallet
+        console.log('Wallet connected:', isWalletConnected)
     
     // Get translations for connect wallet message
     const connectWalletMsg = {
@@ -443,16 +477,31 @@ function openBetModal(event, outcome) {
         </form>
     `
     
+    console.log('Setting modal content complete')
+    console.log('Removing hidden class from modal')
     modal.classList.remove('hidden')
+    console.log('Modal should now be visible')
     
     // Update potential payout on amount change (only if wallet connected)
     if (isWalletConnected) {
-        document.getElementById('betAmount').addEventListener('input', (e) => {
-            const amount = parseFloat(e.target.value) || 0
-            const payout = amount / outcome.probability
-            document.getElementById('potentialPayout').textContent = 
-                amount > 0 ? `$${payout.toFixed(2)}` : '-'
-        })
+        const betAmountInput = document.getElementById('betAmount')
+        if (betAmountInput) {
+            betAmountInput.addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value) || 0
+                const payout = amount / outcome.probability
+                const payoutElement = document.getElementById('potentialPayout')
+                if (payoutElement) {
+                    payoutElement.textContent = amount > 0 ? `$${payout.toFixed(2)}` : '-'
+                }
+            })
+        }
+    }
+    
+    console.log('openBetModal completed successfully')
+    } catch (error) {
+        console.error('Error in openBetModal:', error)
+        console.error('Error stack:', error.stack)
+        alert('Error opening bet modal: ' + error.message)
     }
 }
 
