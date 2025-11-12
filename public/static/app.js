@@ -280,7 +280,7 @@ function renderEvents() {
                 <div class="space-y-1.5 mb-2">
                     ${event.outcomes.slice(0, 2).map(outcome => `
                         <div class="cursor-pointer hover:opacity-80 p-1.5 rounded transition"
-                             onclick='openBetModal(${JSON.stringify(event)}, ${JSON.stringify(outcome)})'>
+                             onclick="openBetModalById(${event.id}, ${outcome.id})">
                             <div class="flex justify-between items-center mb-0.5">
                                 <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
                                 <span class="text-xs font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
@@ -307,6 +307,23 @@ function renderEvents() {
             </div>
         `
     }).join('')
+}
+
+// Open bet modal by ID (finds event and outcome from events array)
+function openBetModalById(eventId, outcomeId) {
+    const event = events.find(e => e.id === eventId)
+    if (!event) {
+        console.error('Event not found:', eventId)
+        return
+    }
+    
+    const outcome = event.outcomes.find(o => o.id === outcomeId)
+    if (!outcome) {
+        console.error('Outcome not found:', outcomeId)
+        return
+    }
+    
+    openBetModal(event, outcome)
 }
 
 // Open bet modal
@@ -743,6 +760,7 @@ function closeModalAndConnectWalletSubmit() {
 // Make functions globally accessible
 window.filterByCategory = filterByCategory
 window.openBetModal = openBetModal
+window.openBetModalById = openBetModalById
 window.submitBet = submitBet
 window.openSubmitIssueModal = openSubmitIssueModal
 window.closeSubmitIssueModal = closeSubmitIssueModal
