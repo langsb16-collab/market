@@ -311,13 +311,19 @@ function renderEvents() {
 
 // Open bet modal
 function openBetModal(event, outcome) {
-    if (!currentWallet) {
-        alert(translations.connectWallet)
-        return
-    }
-    
     const modal = document.getElementById('betModal')
     const content = document.getElementById('betModalContent')
+    
+    // Determine if wallet is connected
+    const isWalletConnected = !!currentWallet
+    
+    // Get translations for connect wallet message
+    const connectWalletMsg = {
+        en: 'Connect Wallet to Place Bet',
+        ko: '베팅하려면 지갑을 연결하세요',
+        zh: '连接钱包以下注',
+        ja: 'ベットするにはウォレットを接続してください'
+    }
     
     content.innerHTML = `
         <div class="mb-4">
@@ -331,11 +337,23 @@ function openBetModal(event, outcome) {
             </div>
         </div>
         
+        ${!isWalletConnected ? `
+            <div class="mb-4 p-4 bg-yellow-500 bg-opacity-20 border-2 border-yellow-500 rounded-lg text-center">
+                <i class="fas fa-wallet text-2xl text-yellow-500 mb-2"></i>
+                <p class="text-sm font-bold mobile-text">${connectWalletMsg[currentLang] || connectWalletMsg.en}</p>
+                <button type="button" onclick="closeModalAndConnectWallet()" 
+                        class="mt-3 px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold text-sm mobile-text transition">
+                    <i class="fas fa-plug mr-2"></i>
+                    ${translations.connectWallet}
+                </button>
+            </div>
+        ` : ''}
+        
         <form id="betForm" onsubmit="submitBet(event, ${event.id}, ${outcome.id}, ${outcome.probability})">
             <div class="mb-4">
                 <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.selectCrypto}</label>
-                <select id="cryptoType" required
-                        class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text">
+                <select id="cryptoType" required ${!isWalletConnected ? 'disabled' : ''}
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}">
                     <option value="USDT">₮ USDT (Tether)</option>
                     <option value="ETH">Ξ ETH (Ethereum)</option>
                     <option value="BTC">₿ BTC (Bitcoin)</option>
@@ -344,8 +362,8 @@ function openBetModal(event, outcome) {
             
             <div class="mb-4">
                 <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.amount}</label>
-                <input type="number" id="betAmount" required min="10" step="0.01"
-                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text"
+                <input type="number" id="betAmount" required min="10" step="0.01" ${!isWalletConnected ? 'disabled' : ''}
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}"
                        placeholder="Enter amount in USD">
             </div>
             
@@ -360,8 +378,8 @@ function openBetModal(event, outcome) {
                 </div>
             </div>
             
-            <button type="submit" 
-                    class="w-full btn-primary py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base mobile-text hover:shadow-xl transition">
+            <button type="submit" ${!isWalletConnected ? 'disabled' : ''}
+                    class="w-full btn-primary py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base mobile-text hover:shadow-xl transition ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}">
                 <i class="fas fa-check-circle mr-2"></i>
                 ${translations.placeBet}
             </button>
@@ -370,13 +388,23 @@ function openBetModal(event, outcome) {
     
     modal.classList.remove('hidden')
     
-    // Update potential payout on amount change
-    document.getElementById('betAmount').addEventListener('input', (e) => {
-        const amount = parseFloat(e.target.value) || 0
-        const payout = amount / outcome.probability
-        document.getElementById('potentialPayout').textContent = 
-            amount > 0 ? `$${payout.toFixed(2)}` : '-'
-    })
+    // Update potential payout on amount change (only if wallet connected)
+    if (isWalletConnected) {
+        document.getElementById('betAmount').addEventListener('input', (e) => {
+            const amount = parseFloat(e.target.value) || 0
+            const payout = amount / outcome.probability
+            document.getElementById('potentialPayout').textContent = 
+                amount > 0 ? `$${payout.toFixed(2)}` : '-'
+        })
+    }
+}
+
+// Close modal and open wallet connection
+function closeModalAndConnectWallet() {
+    closeBetModal()
+    setTimeout(() => {
+        connectWallet()
+    }, 300)
 }
 
 // Close bet modal
@@ -387,6 +415,15 @@ function closeBetModal() {
 // Submit bet
 async function submitBet(e, eventId, outcomeId, probability) {
     e.preventDefault()
+    
+    // Check wallet connection before submitting
+    if (!currentWallet) {
+        alert(currentLang === 'en' ? 'Please connect your wallet first' :
+              currentLang === 'ko' ? '먼저 지갑을 연결해주세요' :
+              currentLang === 'zh' ? '请先连接您的钱包' :
+              'まず財布を接続してください')
+        return
+    }
     
     const amount = parseFloat(document.getElementById('betAmount').value)
     const cryptoType = document.getElementById('cryptoType').value
@@ -645,3 +682,4 @@ window.openBetModal = openBetModal
 window.submitBet = submitBet
 window.openSubmitIssueModal = openSubmitIssueModal
 window.closeSubmitIssueModal = closeSubmitIssueModal
+window.closeModalAndConnectWallet = closeModalAndConnectWallet
