@@ -298,6 +298,82 @@ app.get('/api/bets/:wallet', async (c) => {
   return c.json({ bets })
 })
 
+// API: Submit user prediction market
+app.post('/api/submissions', async (c) => {
+  const { env } = c
+  const data = await c.req.json()
+  
+  // Validate required fields
+  const required = ['title_en', 'title_ko', 'title_zh', 'title_ja', 'wallet_address', 'crypto_type', 'outcomes']
+  for (const field of required) {
+    if (!data[field]) {
+      return c.json({ error: `Missing required field: ${field}` }, 400)
+    }
+  }
+  
+  // Validate crypto type
+  if (!['BTC', 'ETH', 'USDT'].includes(data.crypto_type)) {
+    return c.json({ error: 'Invalid crypto_type. Must be BTC, ETH, or USDT' }, 400)
+  }
+  
+  // Validate bet limits
+  const betMin = parseFloat(data.bet_limit_min) || 1.0
+  const betMax = parseFloat(data.bet_limit_max) || 1000.0
+  
+  if (betMin < 1 || betMax > 1000 || betMin > betMax) {
+    return c.json({ error: 'Invalid bet limits. Min: 1-1000, Max must be >= Min' }, 400)
+  }
+  
+  // Insert submission
+  const result = await env.DB.prepare(`
+    INSERT INTO user_submissions (
+      title_en, title_ko, title_zh, title_ja,
+      description_en, description_ko, description_zh, description_ja,
+      bet_limit_min, bet_limit_max, crypto_type, outcomes,
+      wallet_address, email, nickname, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+  `).bind(
+    data.title_en,
+    data.title_ko,
+    data.title_zh,
+    data.title_ja,
+    data.description_en || '',
+    data.description_ko || '',
+    data.description_zh || '',
+    data.description_ja || '',
+    betMin,
+    betMax,
+    data.crypto_type,
+    JSON.stringify(data.outcomes),
+    data.wallet_address,
+    data.email || null,
+    data.nickname || null
+  ).run()
+  
+  return c.json({ 
+    success: true, 
+    submission_id: result.meta.last_row_id,
+    message: 'Submission received. It will be reviewed by admin.'
+  })
+})
+
+// API: Get user submissions (for the user who submitted)
+app.get('/api/submissions/:wallet', async (c) => {
+  const wallet = c.req.param('wallet')
+  const { env } = c
+  
+  const { results } = await env.DB.prepare(`
+    SELECT id, title_en, title_ko, title_zh, title_ja,
+           crypto_type, bet_limit_min, bet_limit_max,
+           status, created_at, admin_notes
+    FROM user_submissions
+    WHERE wallet_address = ?
+    ORDER BY created_at DESC
+  `).bind(wallet).all()
+  
+  return c.json({ submissions: results })
+})
+
 // API: Get translations
 app.get('/api/translations/:lang', (c) => {
   const lang = c.req.param('lang') as keyof typeof translations
@@ -572,6 +648,11 @@ app.get('/', (c) => {
                             <option value="zh">🇨🇳 ZH</option>
                             <option value="ja">🇯🇵 JA</option>
                         </select>
+                        <!-- Submit Issue Button -->
+                        <button id="submitIssueBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                            <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
+                            <span>이슈 등록</span>
+                        </button>
                         <button id="connectWalletBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                             <i class="fas fa-wallet mr-1 sm:mr-2"></i>
                             <span id="walletBtnText">Connect Wallet</span>
@@ -720,6 +801,173 @@ app.get('/', (c) => {
                 <div id="betModalContent">
                     <!-- Bet form will be loaded here -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Submit Issue Modal -->
+        <div id="submitIssueModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+            <div class="modal-content rounded-lg p-4 sm:p-6 max-w-3xl w-full my-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg sm:text-2xl font-bold mobile-text">
+                        <i class="fas fa-plus-circle mr-2 text-accent"></i>
+                        이슈 등록하기
+                    </h3>
+                    <button id="closeSubmitModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="submitIssueForm" class="space-y-4">
+                    <!-- Title Section -->
+                    <div class="card p-4">
+                        <h4 class="font-semibold mb-3 text-accent">
+                            <i class="fas fa-heading mr-2"></i>
+                            이슈 제목 (4개 언어 필수)
+                        </h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">🇰🇷 한국어 제목 *</label>
+                                <input type="text" name="title_ko" required 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="예: 비트코인 2025년 말 $150,000 돌파?">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">🇬🇧 English Title *</label>
+                                <input type="text" name="title_en" required 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="e.g., Bitcoin reaches $150,000 by end of 2025?">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">🇨🇳 中文标题 *</label>
+                                <input type="text" name="title_zh" required 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="例如：比特币2025年底突破$150,000？">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">🇯🇵 日本語タイトル *</label>
+                                <input type="text" name="title_ja" required 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="例：ビットコイン2025年末$150,000突破？">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description Section (Optional) -->
+                    <div class="card p-4">
+                        <h4 class="font-semibold mb-3 text-accent">
+                            <i class="fas fa-align-left mr-2"></i>
+                            설명 (선택사항)
+                        </h4>
+                        <div class="space-y-3">
+                            <textarea name="description_ko" rows="2" 
+                                      class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                      placeholder="한국어 설명"></textarea>
+                            <textarea name="description_en" rows="2" 
+                                      class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                      placeholder="English description"></textarea>
+                            <textarea name="description_zh" rows="2" 
+                                      class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                      placeholder="中文描述"></textarea>
+                            <textarea name="description_ja" rows="2" 
+                                      class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                      placeholder="日本語の説明"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Outcomes Section -->
+                    <div class="card p-4">
+                        <h4 class="font-semibold mb-3 text-accent">
+                            <i class="fas fa-list-check mr-2"></i>
+                            결정 사항 (Yes/No) *
+                        </h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-4">
+                                <input type="radio" name="outcome_type" value="yes_no" checked class="w-4 h-4">
+                                <label class="text-sm">Yes / No (예 / 아니오)</label>
+                            </div>
+                            <p class="text-xs text-secondary pl-8">
+                                선택 결과는 자동으로 4개 언어로 변환됩니다
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Betting Limits Section -->
+                    <div class="card p-4">
+                        <h4 class="font-semibold mb-3 text-accent">
+                            <i class="fas fa-coins mr-2"></i>
+                            1인당 배팅 한도 *
+                        </h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">암호화폐 선택 *</label>
+                                <div class="flex space-x-3">
+                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-blue-500 bg-blue-500 bg-opacity-20 hover:bg-opacity-30" data-crypto="BTC">
+                                        <i class="fab fa-bitcoin mr-1"></i> BTC
+                                    </button>
+                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-gray-500 hover:bg-opacity-20" data-crypto="ETH">
+                                        <i class="fab fa-ethereum mr-1"></i> ETH
+                                    </button>
+                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-gray-500 hover:bg-opacity-20" data-crypto="USDT">
+                                        <i class="fas fa-dollar-sign mr-1"></i> USDT
+                                    </button>
+                                </div>
+                                <input type="hidden" name="crypto_type" value="BTC" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">최소 한도</label>
+                                    <input type="number" name="bet_limit_min" min="1" max="1000" value="1" required 
+                                           class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">최대 한도</label>
+                                    <input type="number" name="bet_limit_max" min="1" max="1000" value="1000" required 
+                                           class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm">
+                                </div>
+                            </div>
+                            <p class="text-xs text-secondary">* 1개 ~ 1,000개 범위 내에서 설정</p>
+                        </div>
+                    </div>
+
+                    <!-- User Info Section (Admin Only) -->
+                    <div class="card p-4 bg-yellow-500 bg-opacity-10 border border-yellow-500">
+                        <h4 class="font-semibold mb-3 text-yellow-500">
+                            <i class="fas fa-lock mr-2"></i>
+                            운영자 전용 정보 (비공개)
+                        </h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">지갑 주소 *</label>
+                                <input type="text" name="wallet_address" required 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="0x... (배당 받을 지갑 주소)">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">이메일</label>
+                                <input type="email" name="email" 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="your@email.com (선택사항)">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">닉네임</label>
+                                <input type="text" name="nickname" 
+                                       class="w-full px-3 py-2 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                                       placeholder="사용자 닉네임 (선택사항)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            제출하기
+                        </button>
+                        <button type="button" id="cancelSubmitBtn" class="px-6 py-3 rounded-lg font-semibold text-sm hover:bg-opacity-20">
+                            취소
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 

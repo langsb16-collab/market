@@ -472,7 +472,141 @@ function formatNumber(num) {
     return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
+// ========================================
+// ISSUE SUBMISSION FEATURE
+// ========================================
+
+// Open submit issue modal
+function openSubmitIssueModal() {
+    if (!currentWallet) {
+        alert(currentLang === 'en' ? 'Please connect your wallet first' :
+              currentLang === 'ko' ? '먼저 지갑을 연결해주세요' :
+              currentLang === 'zh' ? '请先连接您的钱包' :
+              'まず財布を接続してください')
+        return
+    }
+    
+    // Pre-fill wallet address
+    document.querySelector('[name="wallet_address"]').value = currentWallet
+    document.getElementById('submitIssueModal').classList.remove('hidden')
+}
+
+// Close submit issue modal
+function closeSubmitIssueModal() {
+    document.getElementById('submitIssueModal').classList.add('hidden')
+    document.getElementById('submitIssueForm').reset()
+    document.querySelector('[name="wallet_address"]').value = currentWallet || ''
+}
+
+// Handle crypto selection
+function setupCryptoSelection() {
+    const cryptoButtons = document.querySelectorAll('.crypto-select')
+    cryptoButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active state from all buttons
+            cryptoButtons.forEach(b => {
+                b.classList.remove('border-blue-500', 'bg-blue-500', 'bg-opacity-20')
+                b.classList.add('border-gray-500')
+            })
+            
+            // Add active state to clicked button
+            this.classList.add('border-blue-500', 'bg-blue-500', 'bg-opacity-20')
+            this.classList.remove('border-gray-500')
+            
+            // Update hidden input
+            const crypto = this.dataset.crypto
+            document.querySelector('[name="crypto_type"]').value = crypto
+        })
+    })
+}
+
+// Submit issue form
+async function submitIssueForm(e) {
+    e.preventDefault()
+    
+    const formData = new FormData(e.target)
+    const data = {
+        title_en: formData.get('title_en'),
+        title_ko: formData.get('title_ko'),
+        title_zh: formData.get('title_zh'),
+        title_ja: formData.get('title_ja'),
+        description_en: formData.get('description_en'),
+        description_ko: formData.get('description_ko'),
+        description_zh: formData.get('description_zh'),
+        description_ja: formData.get('description_ja'),
+        crypto_type: formData.get('crypto_type'),
+        bet_limit_min: parseFloat(formData.get('bet_limit_min')),
+        bet_limit_max: parseFloat(formData.get('bet_limit_max')),
+        wallet_address: formData.get('wallet_address'),
+        email: formData.get('email'),
+        nickname: formData.get('nickname'),
+        outcomes: [
+            { en: 'Yes', ko: '예', zh: '是', ja: 'はい' },
+            { en: 'No', ko: '아니오', zh: '否', ja: 'いいえ' }
+        ]
+    }
+    
+    try {
+        const response = await axios.post('/api/submissions', data)
+        
+        if (response.data.success) {
+            alert(currentLang === 'en' ? 'Submission received! It will be reviewed by admin.' :
+                  currentLang === 'ko' ? '제출되었습니다! 운영자 검토 후 게시됩니다.' :
+                  currentLang === 'zh' ? '已提交！管理员审核后发布。' :
+                  '提出されました！管理者のレビュー後に公開されます。')
+            closeSubmitIssueModal()
+        }
+    } catch (error) {
+        console.error('Submission error:', error)
+        alert(currentLang === 'en' ? 'Submission failed. Please try again.' :
+              currentLang === 'ko' ? '제출 실패. 다시 시도해주세요.' :
+              currentLang === 'zh' ? '提交失败。请重试。' :
+              '提出失敗。再試行してください。')
+    }
+}
+
+// Setup issue submission event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Submit issue button
+    const submitIssueBtn = document.getElementById('submitIssueBtn')
+    if (submitIssueBtn) {
+        submitIssueBtn.addEventListener('click', openSubmitIssueModal)
+    }
+    
+    // Close modal buttons
+    const closeSubmitModal = document.getElementById('closeSubmitModal')
+    if (closeSubmitModal) {
+        closeSubmitModal.addEventListener('click', closeSubmitIssueModal)
+    }
+    
+    const cancelSubmitBtn = document.getElementById('cancelSubmitBtn')
+    if (cancelSubmitBtn) {
+        cancelSubmitBtn.addEventListener('click', closeSubmitIssueModal)
+    }
+    
+    // Close on outside click
+    const submitIssueModal = document.getElementById('submitIssueModal')
+    if (submitIssueModal) {
+        submitIssueModal.addEventListener('click', (e) => {
+            if (e.target.id === 'submitIssueModal') {
+                closeSubmitIssueModal()
+            }
+        })
+    }
+    
+    // Form submission
+    const submitIssueForm = document.getElementById('submitIssueForm')
+    if (submitIssueForm) {
+        submitIssueForm.addEventListener('submit', submitIssueForm)
+    }
+    
+    // Crypto selection
+    setupCryptoSelection()
+})
+
 // Make functions globally accessible
 window.filterByCategory = filterByCategory
 window.openBetModal = openBetModal
 window.submitBet = submitBet
+window.openSubmitIssueModal = openSubmitIssueModal
+window.closeSubmitIssueModal = closeSubmitIssueModal
