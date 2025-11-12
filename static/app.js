@@ -376,11 +376,11 @@ function renderCategories() {
     container.innerHTML = allCategories.map(category => {
         const isActive = currentCategory === category.slug
         return `
-        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
+        <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
              onclick="filterByCategory('${category.slug}')">
             <div class="text-center">
-                <div class="text-3xl sm:text-4xl mb-2">${category.icon}</div>
-                <h4 class="text-sm sm:text-base font-semibold text-gray-900">${getCategoryName(category)}</h4>
+                <div class="text-xl sm:text-2xl mb-1">${category.icon}</div>
+                <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${getCategoryName(category)}</h4>
             </div>
         </div>
         `
@@ -446,17 +446,17 @@ function renderMarkets() {
         
         return `
         <div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(${event.id})">
-            <div class="flex p-3 sm:p-4">
-                <div class="flex-shrink-0 mr-3">
+            <div class="flex p-2 sm:p-3">
+                <div class="flex-shrink-0 mr-2">
                     <img src="${eventImage}" 
                          alt="${getCategoryName(category)}"
-                         class="w-12 h-12 sm:w-16 sm:h-16 rounded object-cover"
+                         class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover"
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E${category.icon}%3C/text%3E%3C/svg%3E'">
                 </div>
                 
                 <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             ${category.icon} ${getCategoryName(category)}
                         </span>
                         <span class="text-xs font-bold text-green-600">
@@ -464,17 +464,17 @@ function renderMarkets() {
                         </span>
                     </div>
                     
-                    <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-2 line-clamp-2">
+                    <h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">
                         ${getEventTitle(event)}
                     </h3>
                     
-                    <div class="flex items-center text-xs text-gray-500 mb-3">
-                        <i class="far fa-calendar mr-1"></i>
-                        <span>${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
+                    <div class="flex items-center text-xs text-gray-500 mb-2">
+                        <i class="far fa-calendar mr-1 text-xs"></i>
+                        <span class="text-xs">${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
                     </div>
                     
                     ${hasOutcomes ? `
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-1.5">
                         ${event.outcomes.slice(0, 2).map((outcome) => {
                             const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                             const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
@@ -484,13 +484,13 @@ function renderMarkets() {
                             const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
                             
                             return `
-                            <div class="relative overflow-hidden rounded-lg border ${bgColor} hover:shadow-md transition-all">
+                            <div class="relative overflow-hidden rounded border ${bgColor} hover:shadow-md transition-all">
                                 <div class="absolute inset-0 ${barColor} opacity-20"
                                      style="width: ${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
                                 
-                                <div class="relative z-10 flex items-center justify-between p-2">
-                                    <span class="font-bold text-sm ${textColor}">${outcome.name}</span>
-                                    <span class="text-xl font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
+                                <div class="relative z-10 flex items-center justify-between p-1.5">
+                                    <span class="font-bold text-xs ${textColor}">${outcome.name}</span>
+                                    <span class="text-base font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                                 </div>
                             </div>
                             `

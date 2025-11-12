@@ -30,6 +30,18 @@
         body.dark-mode .border-gray-200 { border-color: #404040 !important; }
         body.dark-mode .hover\:bg-gray-50:hover { background-color: #262626 !important; }
         
+        /* Dark mode select fix */
+        body.dark-mode select {
+            background-color: #1a1a1a !important;
+            color: #ffffff !important;
+            border-color: #404040 !important;
+        }
+        
+        body.dark-mode select option {
+            background-color: #1a1a1a !important;
+            color: #ffffff !important;
+        }
+        
         /* Smooth scrolling */
         html {
             scroll-behavior: smooth;
@@ -103,7 +115,7 @@
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Language Selector -->
-                    <select id="language-selector" class="px-2 sm:px-3 py-1 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="language-selector" class="px-2 sm:px-3 py-1 sm:py-2 text-sm bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="ko">🇰🇷 한국어</option>
                         <option value="en">🇺🇸 English</option>
                         <option value="zh">🇨🇳 中文</option>
@@ -176,26 +188,26 @@
         </section>
 
         <!-- Categories -->
-        <section class="mb-8 sm:mb-12">
-            <h3 id="categories-title" class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">카테고리</h3>
-            <div id="categories-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+        <section class="mb-6 sm:mb-8">
+            <h3 id="categories-title" class="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">카테고리</h3>
+            <div id="categories-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-2 sm:gap-3">
                 <!-- Categories will be loaded here -->
             </div>
         </section>
 
         <!-- Trending Markets -->
         <section>
-            <div class="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 id="trending-title" class="text-xl sm:text-2xl font-bold text-gray-900">인기 마켓</h3>
-                <div id="market-count" class="text-sm text-gray-600"></div>
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+                <h3 id="trending-title" class="text-base sm:text-lg font-bold text-gray-900">인기 마켓</h3>
+                <div id="market-count" class="text-xs sm:text-sm text-gray-600"></div>
             </div>
-            <div id="markets-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div id="markets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 <!-- Markets will be loaded here -->
             </div>
             
             <!-- Load More Button -->
-            <div class="text-center mt-8">
-                <button id="load-more-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium hidden">
+            <div class="text-center mt-4 sm:mt-6">
+                <button id="load-more-btn" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium hidden">
                     <i class="fas fa-plus-circle mr-2"></i>
                     <span>더 보기</span>
                 </button>
@@ -204,8 +216,8 @@
     </main>
 
     <!-- Odds/Fee Section -->
-    <section class="bg-yellow-50 border-t-4 border-yellow-400 mt-12 sm:mt-16">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <section class="bg-yellow-50 border-t-4 border-yellow-400 mt-8 sm:mt-12">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
             <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
                 <i class="fas fa-info-circle mr-2 text-yellow-600"></i>
                 <span id="odds-fee-title">배당률 및 수수료 구조</span>
