@@ -312,38 +312,182 @@ app.get('/', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
+            /* Light Mode (Default) */
             body {
-                background-color: #1e3a5f;
+                background-color: #ffffff;
+                color: #000000;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+            
+            body.dark-mode {
+                background-color: #000000;
                 color: #ffffff;
             }
-            .card {
-                background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
-                border: 1px solid #4a5568;
+            
+            /* Header */
+            .header {
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #e0e0e0;
             }
+            
+            body.dark-mode .header {
+                background-color: #1a1a1a;
+                border-bottom: 1px solid #333333;
+            }
+            
+            /* Cards */
+            .card {
+                background: #ffffff;
+                border: 1px solid #e0e0e0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            body.dark-mode .card {
+                background: #1a1a1a;
+                border: 1px solid #333333;
+                box-shadow: 0 2px 4px rgba(255,255,255,0.05);
+            }
+            
             .card:hover {
-                border-color: #63b3ed;
+                border-color: #3b82f6;
                 transform: translateY(-2px);
                 transition: all 0.3s ease;
             }
+            
+            body.dark-mode .card:hover {
+                border-color: #60a5fa;
+            }
+            
+            /* Buttons */
             .btn-primary {
-                background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: #ffffff;
             }
+            
             .btn-primary:hover {
-                background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             }
+            
+            .btn-category {
+                background-color: #f3f4f6;
+                color: #000000;
+                border: 1px solid #e0e0e0;
+            }
+            
+            body.dark-mode .btn-category {
+                background-color: #2a2a2a;
+                color: #ffffff;
+                border: 1px solid #404040;
+            }
+            
+            .btn-category:hover {
+                background-color: #e5e7eb;
+            }
+            
+            body.dark-mode .btn-category:hover {
+                background-color: #3a3a3a;
+            }
+            
+            .btn-category.active {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: #ffffff;
+                border-color: #3b82f6;
+            }
+            
+            /* Outcome bars */
             .outcome-bar {
-                background: rgba(66, 153, 225, 0.2);
+                background: #e5e7eb;
                 border-radius: 4px;
                 overflow: hidden;
             }
+            
+            body.dark-mode .outcome-bar {
+                background: #2a2a2a;
+            }
+            
             .outcome-fill {
-                background: linear-gradient(90deg, #4299e1 0%, #63b3ed 100%);
+                background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
                 height: 100%;
                 transition: width 0.3s ease;
             }
+            
+            /* Text colors */
+            .text-secondary {
+                color: #6b7280;
+            }
+            
+            body.dark-mode .text-secondary {
+                color: #9ca3af;
+            }
+            
+            .text-accent {
+                color: #3b82f6;
+            }
+            
+            body.dark-mode .text-accent {
+                color: #60a5fa;
+            }
+            
+            /* Inputs and selects */
+            select, input {
+                background-color: #f9fafb;
+                color: #000000;
+                border: 1px solid #e0e0e0;
+            }
+            
+            body.dark-mode select,
+            body.dark-mode input {
+                background-color: #1a1a1a;
+                color: #ffffff;
+                border: 1px solid #404040;
+            }
+            
+            select:focus, input:focus {
+                border-color: #3b82f6;
+                outline: none;
+            }
+            
+            /* Modal */
+            .modal-content {
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+            }
+            
+            body.dark-mode .modal-content {
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+            }
+            
+            /* Theme toggle button */
+            .theme-toggle {
+                background-color: #f3f4f6;
+                color: #000000;
+                border: 1px solid #e0e0e0;
+                cursor: pointer;
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+            
+            body.dark-mode .theme-toggle {
+                background-color: #2a2a2a;
+                color: #ffffff;
+                border: 1px solid #404040;
+            }
+            
+            .theme-toggle:hover {
+                background-color: #e5e7eb;
+            }
+            
+            body.dark-mode .theme-toggle:hover {
+                background-color: #3a3a3a;
+            }
+            
+            /* Mobile text sizing */
             .mobile-text {
                 font-size: 0.875rem;
             }
+            
             @media (max-width: 640px) {
                 .mobile-text {
                     font-size: 0.75rem;
@@ -359,22 +503,26 @@ app.get('/', (c) => {
     </head>
     <body class="min-h-screen">
         <!-- Header -->
-        <header class="bg-gray-900 bg-opacity-50 backdrop-blur-md sticky top-0 z-50 border-b border-gray-700">
+        <header class="header sticky top-0 z-50">
             <div class="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2 sm:space-x-3">
-                        <i class="fas fa-chart-line text-blue-400 text-xl sm:text-2xl"></i>
+                        <i class="fas fa-chart-line text-accent text-xl sm:text-2xl"></i>
                         <h1 class="text-lg sm:text-2xl font-bold mobile-text">PredictChain</h1>
                     </div>
                     <div class="flex items-center space-x-2 sm:space-x-4">
+                        <!-- Theme Toggle -->
+                        <button id="themeToggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
+                            <i class="fas fa-moon" id="themeIcon"></i>
+                        </button>
                         <!-- Language Selector -->
-                        <select id="langSelect" class="bg-gray-800 text-white text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg border border-gray-600 focus:border-blue-400 focus:outline-none">
+                        <select id="langSelect" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
                             <option value="en">🇬🇧 EN</option>
                             <option value="ko">🇰🇷 KO</option>
                             <option value="zh">🇨🇳 ZH</option>
                             <option value="ja">🇯🇵 JA</option>
                         </select>
-                        <button id="connectWalletBtn" class="btn-primary text-white text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <button id="connectWalletBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                             <i class="fas fa-wallet mr-1 sm:mr-2"></i>
                             <span id="walletBtnText">Connect Wallet</span>
                         </button>
@@ -387,21 +535,21 @@ app.get('/', (c) => {
             <!-- Hero Section -->
             <div class="text-center mb-6 sm:mb-12">
                 <h2 class="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4" id="heroTitle">Bet on World Events with Cryptocurrency</h2>
-                <p class="text-sm sm:text-lg text-gray-300 mb-4 sm:mb-6 mobile-text" id="heroSubtitle">
+                <p class="text-sm sm:text-lg text-secondary mb-4 sm:mb-6 mobile-text" id="heroSubtitle">
                     Transparent, Secure, Decentralized Prediction Market
                 </p>
                 <div class="flex justify-center space-x-4 sm:space-x-6 text-xs sm:text-sm mobile-text">
                     <div class="text-center">
-                        <div class="text-blue-400 font-bold text-base sm:text-2xl">₿ BTC</div>
-                        <div class="text-gray-400 text-xs">Bitcoin</div>
+                        <div class="text-accent font-bold text-base sm:text-2xl">₿ BTC</div>
+                        <div class="text-secondary text-xs">Bitcoin</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-blue-400 font-bold text-base sm:text-2xl">Ξ ETH</div>
-                        <div class="text-gray-400 text-xs">Ethereum</div>
+                        <div class="text-accent font-bold text-base sm:text-2xl">Ξ ETH</div>
+                        <div class="text-secondary text-xs">Ethereum</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-blue-400 font-bold text-base sm:text-2xl">₮ USDT</div>
-                        <div class="text-gray-400 text-xs">Tether</div>
+                        <div class="text-accent font-bold text-base sm:text-2xl">₮ USDT</div>
+                        <div class="text-secondary text-xs">Tether</div>
                     </div>
                 </div>
             </div>
@@ -435,10 +583,10 @@ app.get('/', (c) => {
 
         <!-- Bet Modal -->
         <div id="betModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4">
-            <div class="bg-gray-900 rounded-lg p-4 sm:p-8 max-w-md w-full border border-gray-700">
+            <div class="modal-content rounded-lg p-4 sm:p-8 max-w-md w-full">
                 <div class="flex justify-between items-center mb-4 sm:mb-6">
                     <h3 class="text-lg sm:text-2xl font-bold mobile-text" id="betModalTitle">Place Bet</h3>
-                    <button id="closeBetModal" class="text-gray-400 hover:text-white text-xl sm:text-2xl">
+                    <button id="closeBetModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>

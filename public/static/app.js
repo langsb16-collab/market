@@ -5,9 +5,15 @@ let currentWallet = null
 let categories = []
 let events = []
 let translations = {}
+let isDarkMode = false
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    isDarkMode = savedTheme === 'dark'
+    applyTheme()
+    
     // Load saved language
     const savedLang = localStorage.getItem('preferred_language') || 'en'
     currentLang = savedLang
@@ -36,6 +42,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 })
 
+// Theme management
+function applyTheme() {
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode')
+        document.getElementById('themeIcon').className = 'fas fa-sun'
+    } else {
+        document.body.classList.remove('dark-mode')
+        document.getElementById('themeIcon').className = 'fas fa-moon'
+    }
+}
+
+function toggleTheme() {
+    isDarkMode = !isDarkMode
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
+    applyTheme()
+}
+
 // Load translations
 async function loadTranslations() {
     try {
@@ -62,6 +85,10 @@ function updateUITexts() {
 
 // Setup event listeners
 function setupEventListeners() {
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme)
+    
+    // Language selector
     document.getElementById('langSelect').addEventListener('change', async (e) => {
         currentLang = e.target.value
         localStorage.setItem('preferred_language', currentLang)
@@ -73,6 +100,7 @@ function setupEventListeners() {
         }
     })
     
+    // Wallet connection
     document.getElementById('connectWalletBtn').addEventListener('click', connectWallet)
     document.getElementById('closeBetModal').addEventListener('click', closeBetModal)
     
@@ -149,12 +177,12 @@ function renderCategories() {
     const container = document.getElementById('categoriesContainer')
     container.innerHTML = `
         <button onclick="filterByCategory(null)" 
-                class="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap hover:bg-blue-700 transition">
+                class="btn-category active px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition">
             All
         </button>
     ` + categories.map(cat => `
         <button onclick="filterByCategory('${cat.slug}')" 
-                class="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-700 text-white rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap hover:bg-gray-600 transition">
+                class="btn-category px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition">
             ${cat.icon} ${cat.name}
         </button>
     `).join('')
@@ -185,7 +213,7 @@ function renderEvents() {
     
     if (events.length === 0) {
         container.innerHTML = `
-            <div class="col-span-full text-center py-12 text-gray-400 text-sm mobile-text">
+            <div class="col-span-full text-center py-12 text-secondary text-sm mobile-text">
                 ${currentLang === 'en' ? 'No active markets available' :
                   currentLang === 'ko' ? '활성 마켓이 없습니다' :
                   currentLang === 'zh' ? '没有可用的活跃市场' :
@@ -201,28 +229,28 @@ function renderEvents() {
         const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24))
         
         return `
-            <div class="card rounded-lg p-4 sm:p-6 shadow-lg">
+            <div class="card rounded-lg p-4 sm:p-6">
                 <div class="flex items-start justify-between mb-3 sm:mb-4">
                     <div class="flex items-center space-x-2">
                         <span class="text-lg sm:text-xl">${event.category_icon}</span>
-                        <span class="text-xs text-gray-400 mobile-text">${event.category_name}</span>
+                        <span class="text-xs text-secondary mobile-text">${event.category_name}</span>
                     </div>
                     <div class="text-right">
-                        <div class="text-xs text-gray-400 mobile-text">${translations.volume}</div>
-                        <div class="text-xs sm:text-sm font-bold text-blue-400 mobile-text">$${formatNumber(event.total_volume)}</div>
+                        <div class="text-xs text-secondary mobile-text">${translations.volume}</div>
+                        <div class="text-xs sm:text-sm font-bold text-accent mobile-text">$${formatNumber(event.total_volume)}</div>
                     </div>
                 </div>
                 
                 <h4 class="text-sm sm:text-lg font-bold mb-2 sm:mb-3 mobile-text">${event.title}</h4>
-                <p class="text-xs text-gray-300 mb-3 sm:mb-4 mobile-text line-clamp-2">${event.description}</p>
+                <p class="text-xs text-secondary mb-3 sm:mb-4 mobile-text line-clamp-2">${event.description}</p>
                 
                 <div class="space-y-2 mb-3 sm:mb-4">
                     ${event.outcomes.slice(0, 3).map(outcome => `
-                        <div class="cursor-pointer hover:bg-gray-700 hover:bg-opacity-30 p-2 rounded transition"
+                        <div class="cursor-pointer hover:opacity-80 p-2 rounded transition"
                              onclick='openBetModal(${JSON.stringify(event)}, ${JSON.stringify(outcome)})'>
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-xs sm:text-sm font-semibold mobile-text">${outcome.name}</span>
-                                <span class="text-xs sm:text-sm font-bold text-blue-400 mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
+                                <span class="text-xs sm:text-sm font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                             <div class="outcome-bar h-1.5 sm:h-2">
                                 <div class="outcome-fill" style="width: ${outcome.probability * 100}%"></div>
@@ -230,13 +258,13 @@ function renderEvents() {
                         </div>
                     `).join('')}
                     ${event.outcomes.length > 3 ? `
-                        <div class="text-xs text-gray-400 text-center mobile-text">
+                        <div class="text-xs text-secondary text-center mobile-text">
                             +${event.outcomes.length - 3} more options
                         </div>
                     ` : ''}
                 </div>
                 
-                <div class="flex items-center justify-between text-xs text-gray-400 mobile-text">
+                <div class="flex items-center justify-between text-xs text-secondary mobile-text">
                     <span>
                         <i class="far fa-clock mr-1"></i>
                         ${daysLeft > 0 ? `${daysLeft} days left` : 'Ending soon'}
@@ -260,12 +288,12 @@ function openBetModal(event, outcome) {
     
     content.innerHTML = `
         <div class="mb-4">
-            <div class="text-xs text-gray-400 mb-1 mobile-text">${event.category_name}</div>
+            <div class="text-xs text-secondary mb-1 mobile-text">${event.category_name}</div>
             <h4 class="text-base sm:text-lg font-bold mb-2 mobile-text">${event.title}</h4>
-            <div class="bg-blue-900 bg-opacity-30 p-3 rounded-lg">
+            <div class="card p-3 rounded-lg">
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-semibold mobile-text">${outcome.name}</span>
-                    <span class="text-lg font-bold text-blue-400">${(outcome.probability * 100).toFixed(1)}%</span>
+                    <span class="text-lg font-bold text-accent">${(outcome.probability * 100).toFixed(1)}%</span>
                 </div>
             </div>
         </div>
@@ -274,7 +302,7 @@ function openBetModal(event, outcome) {
             <div class="mb-4">
                 <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.selectCrypto}</label>
                 <select id="cryptoType" required
-                        class="w-full bg-gray-800 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-600 focus:border-blue-400 focus:outline-none text-xs sm:text-sm mobile-text">
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text">
                     <option value="USDT">₮ USDT (Tether)</option>
                     <option value="ETH">Ξ ETH (Ethereum)</option>
                     <option value="BTC">₿ BTC (Bitcoin)</option>
@@ -284,23 +312,23 @@ function openBetModal(event, outcome) {
             <div class="mb-4">
                 <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.amount}</label>
                 <input type="number" id="betAmount" required min="10" step="0.01"
-                       class="w-full bg-gray-800 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-600 focus:border-blue-400 focus:outline-none text-xs sm:text-sm mobile-text"
+                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text"
                        placeholder="Enter amount in USD">
             </div>
             
-            <div class="mb-6 p-3 bg-gray-800 rounded-lg">
+            <div class="mb-6 p-3 card rounded-lg">
                 <div class="flex justify-between text-xs sm:text-sm mobile-text">
-                    <span class="text-gray-400">Current Odds:</span>
+                    <span class="text-secondary">Current Odds:</span>
                     <span class="font-semibold">${(outcome.probability * 100).toFixed(1)}%</span>
                 </div>
                 <div class="flex justify-between text-xs sm:text-sm mobile-text mt-2">
-                    <span class="text-gray-400">${translations.potentialPayout}:</span>
-                    <span class="font-bold text-green-400" id="potentialPayout">-</span>
+                    <span class="text-secondary">${translations.potentialPayout}:</span>
+                    <span class="font-bold text-accent" id="potentialPayout">-</span>
                 </div>
             </div>
             
             <button type="submit" 
-                    class="w-full btn-primary text-white py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base mobile-text hover:shadow-xl transition">
+                    class="w-full btn-primary py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base mobile-text hover:shadow-xl transition">
                 <i class="fas fa-check-circle mr-2"></i>
                 ${translations.placeBet}
             </button>
@@ -388,7 +416,7 @@ function renderUserBets(bets) {
     
     if (bets.length === 0) {
         container.innerHTML = `
-            <div class="card rounded-lg p-6 text-center text-gray-400 text-sm mobile-text">
+            <div class="card rounded-lg p-6 text-center text-secondary text-sm mobile-text">
                 ${currentLang === 'en' ? 'No bets yet. Start predicting!' :
                   currentLang === 'ko' ? '아직 베팅이 없습니다. 예측을 시작하세요!' :
                   currentLang === 'zh' ? '还没有投注。开始预测！' :
@@ -400,40 +428,40 @@ function renderUserBets(bets) {
     
     container.innerHTML = bets.map(bet => {
         const createdDate = new Date(bet.created_at).toLocaleDateString()
-        const statusColor = bet.status === 'confirmed' ? 'text-green-400' :
-                           bet.status === 'won' ? 'text-blue-400' :
-                           bet.status === 'lost' ? 'text-red-400' :
-                           'text-yellow-400'
+        const statusColor = bet.status === 'confirmed' ? 'text-green-500' :
+                           bet.status === 'won' ? 'text-accent' :
+                           bet.status === 'lost' ? 'text-red-500' :
+                           'text-yellow-500'
         
         return `
             <div class="card rounded-lg p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div class="flex-1">
-                        <div class="text-xs text-gray-400 mb-1 mobile-text">${createdDate}</div>
+                        <div class="text-xs text-secondary mb-1 mobile-text">${createdDate}</div>
                         <h5 class="text-sm sm:text-base font-bold mb-1 mobile-text">${bet.event_title}</h5>
-                        <div class="text-xs sm:text-sm text-blue-400 mobile-text">
+                        <div class="text-xs sm:text-sm text-accent mobile-text">
                             <i class="fas fa-arrow-right mr-1"></i>
                             ${bet.outcome_name}
                         </div>
                     </div>
                     <div class="text-left sm:text-right">
-                        <div class="text-base sm:text-lg font-bold text-white">${bet.crypto_amount.toFixed(4)} ${bet.crypto_type}</div>
-                        <div class="text-xs text-gray-400 mobile-text">≈ $${bet.amount.toFixed(2)}</div>
+                        <div class="text-base sm:text-lg font-bold">${bet.crypto_amount.toFixed(4)} ${bet.crypto_type}</div>
+                        <div class="text-xs text-secondary mobile-text">≈ $${bet.amount.toFixed(2)}</div>
                         <div class="text-xs ${statusColor} font-semibold mt-1 mobile-text">${bet.status.toUpperCase()}</div>
                     </div>
                 </div>
-                <div class="mt-3 pt-3 border-t border-gray-700">
+                <div class="mt-3 pt-3 border-t" style="border-color: var(--border-color, #e0e0e0);">
                     <div class="flex justify-between text-xs mobile-text">
-                        <span class="text-gray-400">Odds at bet:</span>
+                        <span class="text-secondary">Odds at bet:</span>
                         <span>${(bet.probability_at_bet * 100).toFixed(1)}%</span>
                     </div>
                     <div class="flex justify-between text-xs mobile-text mt-1">
-                        <span class="text-gray-400">Current odds:</span>
+                        <span class="text-secondary">Current odds:</span>
                         <span>${(bet.current_probability * 100).toFixed(1)}%</span>
                     </div>
                     <div class="flex justify-between text-xs mobile-text mt-1">
-                        <span class="text-gray-400">${translations.potentialPayout}:</span>
-                        <span class="text-green-400 font-bold">$${bet.potential_payout.toFixed(2)}</span>
+                        <span class="text-secondary">${translations.potentialPayout}:</span>
+                        <span class="text-green-500 font-bold">$${bet.potential_payout.toFixed(2)}</span>
                     </div>
                 </div>
             </div>
