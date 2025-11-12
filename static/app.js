@@ -543,9 +543,9 @@ function renderMarkets() {
                         <span class="text-xs">${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
                     </div>
                     
-                    \${hasOutcomes ? `
+                    ${hasOutcomes ? `
                     <div class="grid grid-cols-2 gap-1.5">
-                        \${event.outcomes.slice(0, 2).map((outcome) => {
+                        ${event.outcomes.slice(0, 2).map((outcome) => {
                             const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                             const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                             const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
@@ -620,10 +620,10 @@ function openBetModal(eventId) {
                 <span>${translations[currentLang].volume}: $${formatNumber(event.total_volume)}</span>
             </div>
             
-            \${event.outcomes && event.outcomes.length > 0 ? `
+            ${event.outcomes && event.outcomes.length > 0 ? `
             <div class="border-t pt-4">
                 <h4 class="text-lg font-bold mb-3">${translations[currentLang].placeBet}</h4>
-                \${!currentWallet ? `
+                ${!currentWallet ? `
                 <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
                     <p class="text-sm text-yellow-700">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -632,7 +632,7 @@ function openBetModal(eventId) {
                 </div>
                 ` : ''}
                 <div class="grid grid-cols-1 gap-3">
-                    \${event.outcomes.map(outcome => {
+                    ${event.outcomes.map(outcome => {
                         const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                         const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
@@ -675,7 +675,7 @@ function openSubmitIssueModal() {
     
     modalContent.innerHTML = `
         <form id="issue-form" class="space-y-4">
-            \${!currentWallet ? `
+            ${!currentWallet ? `
             <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
                 <p class="text-sm text-yellow-700">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
