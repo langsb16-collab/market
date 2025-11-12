@@ -1,12 +1,16 @@
 // EventBET - Static Frontend Application
 // Enhanced with 450 markets (50 per category, all within 1 month)
 
+console.log('EventBET: Script loaded')
+
 let currentLang = 'ko'
 let currentWallet = null
 let isDarkMode = false
 let currentCategory = 'all'
 let displayedMarkets = 12
 const MARKETS_PER_PAGE = 12
+
+console.log('EventBET: Variables initialized')
 
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
@@ -206,9 +210,11 @@ const eventTemplates = {
 
 // Generate 450 events (50 per category)
 const generateEvents = () => {
+    console.log('EventBET: generateEvents() called')
     const allEvents = []
     let id = 1
     
+    console.log('EventBET: Categories count:', categories.length)
     categories.forEach(category => {
         const templates = eventTemplates[category.slug]
         
@@ -243,12 +249,15 @@ const generateEvents = () => {
     return allEvents.sort(() => Math.random() - 0.5)
 }
 
+console.log('EventBET: About to call generateEvents()')
 const events = generateEvents()
 
 console.log(`Generated ${events.length} events`)
 
 // Initialize app
+console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('EventBET: DOMContentLoaded fired!')
     const savedTheme = localStorage.getItem('theme') || 'light'
     isDarkMode = savedTheme === 'dark'
     applyTheme()
@@ -503,8 +512,13 @@ const formatNumber = (num) => {
 
 // Render markets
 function renderMarkets() {
+    console.log('EventBET: renderMarkets() called')
     const container = document.getElementById('markets-container')
-    if (!container) return
+    if (!container) {
+        console.error('EventBET: markets-container not found!')
+        return
+    }
+    console.log('EventBET: markets-container found, rendering...')
     
     const filteredEvents = getFilteredEvents()
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
