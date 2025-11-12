@@ -267,56 +267,92 @@ function renderEvents() {
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         const defaultOutcome = hasOutcomes ? event.outcomes[0].id : null
         
+        // Get image for the event based on category
+        const getEventImage = (categorySlug, title) => {
+            // Category-based placeholder images using UI Avatars
+            const categoryImages = {
+                'politics': `https://ui-avatars.com/api/?name=Politics&size=80&background=3b82f6&color=fff&bold=true`,
+                'sports': `https://ui-avatars.com/api/?name=Sports&size=80&background=10b981&color=fff&bold=true`,
+                'technology': `https://ui-avatars.com/api/?name=Tech&size=80&background=8b5cf6&color=fff&bold=true`,
+                'cryptocurrency': `https://ui-avatars.com/api/?name=Crypto&size=80&background=f59e0b&color=fff&bold=true`,
+                'entertainment': `https://ui-avatars.com/api/?name=Entertainment&size=80&background=ec4899&color=fff&bold=true`,
+                'economy': `https://ui-avatars.com/api/?name=Economy&size=80&background=06b6d4&color=fff&bold=true`,
+                'science': `https://ui-avatars.com/api/?name=Science&size=80&background=14b8a6&color=fff&bold=true`,
+                'climate': `https://ui-avatars.com/api/?name=Climate&size=80&background=22c55e&color=fff&bold=true`
+            }
+            return categoryImages[categorySlug] || categoryImages['technology']
+        }
+        
+        const eventImage = getEventImage(event.category_slug, event.title)
+        
         return `
-            <div class="card rounded-lg p-3 sm:p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            <div class="card rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                  onclick="openBetModalByEventId(${event.id})">
-                <div class="flex items-start justify-between mb-2">
-                    <div class="flex items-center space-x-1.5">
-                        <span class="text-base sm:text-lg">${event.category_icon}</span>
-                        <span class="text-xs text-secondary mobile-text">${event.category_name}</span>
+                <!-- Event Image Header -->
+                <div class="relative h-24 sm:h-28 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <img src="${eventImage}" 
+                         alt="${event.category_name}"
+                         class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-4xl\\'>${event.category_icon}</span>'">
+                    <div class="absolute top-2 left-2 px-2 py-1 bg-black bg-opacity-50 rounded text-xs text-white mobile-text">
+                        ${event.category_icon} ${event.category_name}
                     </div>
-                    <div class="text-right">
-                        <div class="text-xs font-bold text-accent mobile-text">$${formatNumber(event.total_volume)}</div>
+                    <div class="absolute top-2 right-2 px-2 py-1 bg-black bg-opacity-70 rounded text-xs font-bold text-yellow-400 mobile-text">
+                        $${formatNumber(event.total_volume)}
                     </div>
                 </div>
                 
-                <h4 class="text-sm font-bold mb-2 mobile-text leading-tight">${event.title}</h4>
+                <!-- Event Content -->
+                <div class="p-3 sm:p-4">
+                    <h4 class="text-sm font-bold mb-3 mobile-text leading-tight line-clamp-2">${event.title}</h4>
                 
-                <div class="space-y-1.5 mb-2">
-                    ${hasOutcomes ? event.outcomes.slice(0, 2).map(outcome => `
-                        <div class="p-1.5 rounded hover:bg-opacity-10 hover:bg-blue-500"
-                             onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
-                            <div class="flex justify-between items-center mb-0.5">
-                                <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
-                                <span class="text-xs font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(1)}%</span>
+                    <div class="space-y-2 mb-3">
+                        ${hasOutcomes ? event.outcomes.slice(0, 2).map(outcome => `
+                            <div class="p-2 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 transition-all"
+                                 style="background: linear-gradient(90deg, var(--accent-color) ${outcome.probability * 100}%, transparent ${outcome.probability * 100}%); background-size: 100% 100%; opacity: 0.1;"
+                                 onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
+                                <div class="relative z-10 flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                                            ${outcome.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span class="text-xs font-semibold mobile-text">${outcome.name}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-lg font-bold text-accent mobile-text">${(outcome.probability * 100).toFixed(0)}%</span>
+                                        <div class="text-xs text-secondary mobile-text">
+                                            $${formatNumber(outcome.total_bets)}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="outcome-bar h-1">
-                                <div class="outcome-fill" style="width: ${outcome.probability * 100}%"></div>
+                        `).join('') : `
+                            <div class="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-center">
+                                <span class="text-xs text-white font-semibold mobile-text">
+                                    ${currentLang === 'ko' ? '클릭하여 상세 정보 확인' :
+                                      currentLang === 'en' ? 'Click to view details' :
+                                      currentLang === 'zh' ? '点击查看详情' :
+                                      '詳細を表示するにはクリック'}
+                                </span>
                             </div>
+                        `}
+                        ${hasOutcomes && event.outcomes.length > 2 ? `
+                            <div class="text-xs text-secondary text-center mobile-text font-semibold">
+                                +${event.outcomes.length - 2} ${currentLang === 'ko' ? '개 더보기' :
+                                                                 currentLang === 'en' ? 'more options' :
+                                                                 currentLang === 'zh' ? '更多选项' :
+                                                                 'その他のオプション'}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-xs mobile-text pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center space-x-2 text-secondary">
+                            <i class="far fa-clock"></i>
+                            <span>${daysLeft > 0 ? `${daysLeft}${currentLang === 'ko' ? '일' : currentLang === 'zh' ? '天' : currentLang === 'ja' ? '日' : 'd'}` : (currentLang === 'ko' ? '곧' : currentLang === 'zh' ? '即将' : currentLang === 'ja' ? 'まもなく' : 'Soon')}</span>
                         </div>
-                    `).join('') : `
-                        <div class="p-2 rounded bg-blue-500 bg-opacity-10 text-center">
-                            <span class="text-xs text-secondary mobile-text">
-                                ${currentLang === 'ko' ? '클릭하여 상세 정보 확인' :
-                                  currentLang === 'en' ? 'Click to view details' :
-                                  currentLang === 'zh' ? '点击查看详情' :
-                                  '詳細を表示するにはクリック'}
-                            </span>
-                        </div>
-                    `}
-                    ${hasOutcomes && event.outcomes.length > 2 ? `
-                        <div class="text-xs text-secondary text-center mobile-text">
-                            +${event.outcomes.length - 2} more
-                        </div>
-                    ` : ''}
-                </div>
-                
-                <div class="flex items-center justify-between text-xs text-secondary mobile-text pt-2 border-t" style="border-color: rgba(128,128,128,0.2)">
-                    <span>
-                        <i class="far fa-clock mr-1"></i>
-                        ${daysLeft > 0 ? `${daysLeft}d` : 'Soon'}
-                    </span>
-                    <span>${endDate.toLocaleDateString('en', {month: 'short', day: 'numeric'})}</span>
+                        <span class="text-secondary">${endDate.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {month: 'short', day: 'numeric'})}</span>
+                    </div>
                 </div>
             </div>
         `

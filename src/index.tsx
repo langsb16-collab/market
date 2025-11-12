@@ -438,6 +438,23 @@ app.get('/', (c) => {
                 border-color: #60a5fa;
             }
             
+            /* Line Clamp */
+            .line-clamp-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            /* Image Styles */
+            .card img {
+                transition: transform 0.3s ease;
+            }
+            
+            .card:hover img {
+                transform: scale(1.05);
+            }
+            
             /* Buttons */
             .btn-primary {
                 background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
