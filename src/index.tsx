@@ -826,13 +826,37 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Odds & Fee Structure Section -->
-            <div class="mb-6 sm:mb-8 card p-4 sm:p-6">
+            <!-- Categories Filter -->
+            <div class="mb-4 sm:mb-6">
+                <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categoriesTitle">Categories</h3>
+                <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+                    <!-- Categories will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Markets Grid -->
+            <div class="mb-6 sm:mb-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="marketsTitle">Trending Markets</h3>
+                <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                    <!-- Markets will be loaded here -->
+                </div>
+            </div>
+
+            <!-- My Bets Section -->
+            <div id="myBetsSection" class="hidden">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="myBetsTitle">My Bets</h3>
+                <div id="myBetsContainer" class="space-y-3 sm:space-y-4">
+                    <!-- User bets will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Odds & Fee Structure Section (Multilingual) -->
+            <div class="mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionKO">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
                     <i class="fas fa-calculator mr-2"></i>배당률(Odds)과 수수료(Fee) 구조
                 </h3>
                 
-                <!-- Odds Structure -->
+                <!-- Odds Structure KO -->
                 <div class="mb-4 sm:mb-6">
                     <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
                         <span class="text-green-500 mr-2">✅</span> 배당률(Odds) 구조
@@ -864,7 +888,7 @@ app.get('/', (c) => {
                     </div>
                 </div>
 
-                <!-- Fee Structure -->
+                <!-- Fee Structure KO -->
                 <div class="mb-4">
                     <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
                         <span class="text-blue-500 mr-2">⚙️</span> 수수료(Fee) 구조
@@ -905,27 +929,240 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Categories Filter -->
-            <div class="mb-4 sm:mb-6">
-                <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categoriesTitle">Categories</h3>
-                <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
-                    <!-- Categories will be loaded here -->
+            <!-- Odds & Fee Structure Section (English) -->
+            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionEN">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
+                    <i class="fas fa-calculator mr-2"></i>Odds and Fee Structure
+                </h3>
+                
+                <!-- Odds Structure EN -->
+                <div class="mb-4 sm:mb-6">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-green-500 mr-2">✅</span> Odds Structure
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>Polymarket uses <strong class="text-accent">"Winner Payout = Loser Total ÷ Number of Winners"</strong> instead of traditional odds.</p>
+                        
+                        <div class="bg-opacity-20 bg-blue-500 p-3 sm:p-4 rounded-lg mt-3">
+                            <p class="font-semibold mb-2">📊 Example:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>100 Winners</strong>: Total 90 USDT bet</li>
+                                <li><strong>100 Losers</strong>: Total 110 USDT bet</li>
+                                <li><strong>Total Bets</strong>: 200 USDT</li>
+                                <li><strong>Platform Fee 1%</strong>: 2 USDT</li>
+                                <li><strong>Payout Pool</strong>: 198 USDT</li>
+                            </ul>
+                            <p class="mt-3 font-semibold text-accent">
+                                💰 Winner Payout: 110 USDT ÷ 100 Winners = <span class="text-green-400">1.1 USDT/person</span>
+                            </p>
+                            <p class="text-xs mt-2 text-secondary">
+                                * Actual profit is distributed based on your initial bet ratio.
+                            </p>
+                        </div>
+
+                        <p class="mt-3">
+                            <span class="text-red-500 font-semibold">⚠️ Loser Loss:</span> 
+                            If the outcome doesn't occur, all bets are <strong class="text-red-500">lost</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fee Structure EN -->
+                <div class="mb-4">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-blue-500 mr-2">⚙️</span> Fee Structure
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>
+                            Polymarket official documentation states 
+                            <strong class="text-accent">"trading fee is 1%"</strong>.
+                        </p>
+                        <p>
+                            This means users pay <strong class="text-accent">1%</strong> to the platform when participating in markets.
+                        </p>
+                        
+                        <div class="mt-3 space-y-2">
+                            <div class="flex items-start">
+                                <span class="text-accent mr-2">•</span>
+                                <span><strong>Platform Trading Fee:</strong> 1% (deducted from all bets)</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-yellow-500 mr-2">⚠️</span>
+                                <span><strong>Additional Costs:</strong> Deposit/withdrawal and network transfer fees may apply</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-red-500 mr-2">⚠️</span>
+                                <span><strong>Risk:</strong> Total loss of investment if outcome doesn't occur</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 bg-opacity-20 bg-yellow-500 p-3 rounded-lg">
+                            <p class="text-xs sm:text-sm">
+                                <strong>Reference:</strong> 
+                                <a href="https://docs.polymarket.com" target="_blank" class="text-accent hover:underline">
+                                    docs.polymarket.com
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Markets Grid -->
-            <div class="mb-6 sm:mb-8">
-                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="marketsTitle">Trending Markets</h3>
-                <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                    <!-- Markets will be loaded here -->
+            <!-- Odds & Fee Structure Section (Chinese) -->
+            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionZH">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
+                    <i class="fas fa-calculator mr-2"></i>赔率(Odds)和手续费(Fee)结构
+                </h3>
+                
+                <!-- Odds Structure ZH -->
+                <div class="mb-4 sm:mb-6">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-green-500 mr-2">✅</span> 赔率(Odds)结构
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>Polymarket采用<strong class="text-accent">"赢家赔付 = 输家总额 ÷ 赢家人数"</strong>方式，而非传统赔率。</p>
+                        
+                        <div class="bg-opacity-20 bg-blue-500 p-3 sm:p-4 rounded-lg mt-3">
+                            <p class="font-semibold mb-2">📊 示例：</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>赢家100人</strong>：共90 USDT投注</li>
+                                <li><strong>输家100人</strong>：共110 USDT投注</li>
+                                <li><strong>总投注额</strong>：200 USDT</li>
+                                <li><strong>平台手续费1%</strong>：2 USDT</li>
+                                <li><strong>赔付池</strong>：198 USDT</li>
+                            </ul>
+                            <p class="mt-3 font-semibold text-accent">
+                                💰 赢家赔付：110 USDT ÷ 100人 = <span class="text-green-400">1.1 USDT/人</span>
+                            </p>
+                            <p class="text-xs mt-2 text-secondary">
+                                * 实际收益按您最初投注比例分配。
+                            </p>
+                        </div>
+
+                        <p class="mt-3">
+                            <span class="text-red-500 font-semibold">⚠️ 输家损失：</span> 
+                            如果结果未发生，该交易将<strong class="text-red-500">全部损失</strong>。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fee Structure ZH -->
+                <div class="mb-4">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-blue-500 mr-2">⚙️</span> 手续费(Fee)结构
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>
+                            Polymarket官方文档明确说明
+                            <strong class="text-accent">"交易手续费为1%"</strong>。
+                        </p>
+                        <p>
+                            即，用户参与市场时向平台支付<strong class="text-accent">1%</strong>手续费。
+                        </p>
+                        
+                        <div class="mt-3 space-y-2">
+                            <div class="flex items-start">
+                                <span class="text-accent mr-2">•</span>
+                                <span><strong>平台交易手续费：</strong>1%（从所有投注中扣除）</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-yellow-500 mr-2">⚠️</span>
+                                <span><strong>额外费用：</strong>可能产生存取款及网络转账相关费用</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-red-500 mr-2">⚠️</span>
+                                <span><strong>风险：</strong>结果未发生时投资额全额损失</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 bg-opacity-20 bg-yellow-500 p-3 rounded-lg">
+                            <p class="text-xs sm:text-sm">
+                                <strong>参考：</strong> 
+                                <a href="https://docs.polymarket.com" target="_blank" class="text-accent hover:underline">
+                                    docs.polymarket.com
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- My Bets Section -->
-            <div id="myBetsSection" class="hidden">
-                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="myBetsTitle">My Bets</h3>
-                <div id="myBetsContainer" class="space-y-3 sm:space-y-4">
-                    <!-- User bets will be loaded here -->
+            <!-- Odds & Fee Structure Section (Japanese) -->
+            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionJA">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
+                    <i class="fas fa-calculator mr-2"></i>オッズ(Odds)と手数料(Fee)構造
+                </h3>
+                
+                <!-- Odds Structure JA -->
+                <div class="mb-4 sm:mb-6">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-green-500 mr-2">✅</span> オッズ(Odds)構造
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>Polymarketは従来のオッズではなく<strong class="text-accent">"勝者配当 = 敗者総額 ÷ 勝者人数"</strong>方式を採用しています。</p>
+                        
+                        <div class="bg-opacity-20 bg-blue-500 p-3 sm:p-4 rounded-lg mt-3">
+                            <p class="font-semibold mb-2">📊 例：</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>勝者100名</strong>：合計90 USDTベット</li>
+                                <li><strong>敗者100名</strong>：合計110 USDTベット</li>
+                                <li><strong>総ベット額</strong>：200 USDT</li>
+                                <li><strong>プラットフォーム手数料1%</strong>：2 USDT</li>
+                                <li><strong>配当プール</strong>：198 USDT</li>
+                            </ul>
+                            <p class="mt-3 font-semibold text-accent">
+                                💰 勝者配当：110 USDT ÷ 100名 = <span class="text-green-400">1.1 USDT/人</span>
+                            </p>
+                            <p class="text-xs mt-2 text-secondary">
+                                * 実際の収益は最初のベット比率に応じて配分されます。
+                            </p>
+                        </div>
+
+                        <p class="mt-3">
+                            <span class="text-red-500 font-semibold">⚠️ 敗者損失：</span> 
+                            結果が発生しない場合、該当取引は<strong class="text-red-500">すべて損失</strong>となります。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fee Structure JA -->
+                <div class="mb-4">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-blue-500 mr-2">⚙️</span> 手数料(Fee)構造
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>
+                            Polymarket公式文書には
+                            <strong class="text-accent">"取引手数料は1%"</strong>と明記されています。
+                        </p>
+                        <p>
+                            つまり、ユーザーは市場参加時にプラットフォームに<strong class="text-accent">1%</strong>を支払います。
+                        </p>
+                        
+                        <div class="mt-3 space-y-2">
+                            <div class="flex items-start">
+                                <span class="text-accent mr-2">•</span>
+                                <span><strong>プラットフォーム取引手数料：</strong>1%（すべてのベットから控除）</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-yellow-500 mr-2">⚠️</span>
+                                <span><strong>追加費用：</strong>入出金およびネットワーク送金関連費用が発生する場合があります</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-red-500 mr-2">⚠️</span>
+                                <span><strong>リスク：</strong>結果未発生時は投資額全額損失</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 bg-opacity-20 bg-yellow-500 p-3 rounded-lg">
+                            <p class="text-xs sm:text-sm">
+                                <strong>参照：</strong> 
+                                <a href="https://docs.polymarket.com" target="_blank" class="text-accent hover:underline">
+                                    docs.polymarket.com
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

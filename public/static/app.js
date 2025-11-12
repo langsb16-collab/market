@@ -81,6 +81,41 @@ function updateUITexts() {
     document.getElementById('marketsTitle').textContent = translations.trending
     document.getElementById('myBetsTitle').textContent = translations.myBets
     document.getElementById('betModalTitle').textContent = translations.placeBet
+    
+    // Update Odds/Fee section visibility based on language
+    updateOddsFeeSection()
+}
+
+// Update Odds/Fee section based on current language
+function updateOddsFeeSection() {
+    // Hide all sections
+    const sections = ['oddsFeeSectionKO', 'oddsFeeSectionEN', 'oddsFeeSectionZH', 'oddsFeeSectionJA']
+    sections.forEach(id => {
+        const element = document.getElementById(id)
+        if (element) element.classList.add('hidden')
+    })
+    
+    // Show current language section
+    let sectionId = 'oddsFeeSectionEN' // default
+    switch(currentLang) {
+        case 'ko':
+            sectionId = 'oddsFeeSectionKO'
+            break
+        case 'en':
+            sectionId = 'oddsFeeSectionEN'
+            break
+        case 'zh':
+            sectionId = 'oddsFeeSectionZH'
+            break
+        case 'ja':
+            sectionId = 'oddsFeeSectionJA'
+            break
+    }
+    
+    const currentSection = document.getElementById(sectionId)
+    if (currentSection) {
+        currentSection.classList.remove('hidden')
+    }
 }
 
 // Setup event listeners
