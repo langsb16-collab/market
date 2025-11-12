@@ -17,8 +17,9 @@ app.use('/static/*', serveStatic({ root: './public' }))
 // Translation helper
 const translations = {
   en: {
-    title: 'PredictChain - Decentralized Prediction Market',
-    subtitle: 'Bet on World Events with Cryptocurrency',
+    title: 'EventBET - Blockchain Betting Platform',
+    subtitle: 'Where Global Events Meet Your Predictions',
+    description: 'Your predictions meet real-world events',
     explore: 'Explore Markets',
     categories: 'Categories',
     trending: 'Trending Markets',
@@ -34,8 +35,9 @@ const translations = {
     volume: 'Volume',
   },
   ko: {
-    title: 'PredictChain - 탈중앙화 예측 시장',
-    subtitle: '암호화폐로 세계 이슈에 베팅하세요',
+    title: 'EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼',
+    subtitle: 'Where Global Events Meet Your Predictions',
+    description: '전 세계 이슈와 당신의 예측이 만나는 곳',
     explore: '마켓 탐색',
     categories: '카테고리',
     trending: '인기 마켓',
@@ -51,8 +53,9 @@ const translations = {
     volume: '거래량',
   },
   zh: {
-    title: 'PredictChain - 去中心化预测市场',
-    subtitle: '用加密货币投注世界事件',
+    title: 'EventBET - 区块链博彩平台',
+    subtitle: 'Where Global Events Meet Your Predictions',
+    description: '全球事件与您的预测相遇之处',
     explore: '探索市场',
     categories: '分类',
     trending: '热门市场',
@@ -68,8 +71,9 @@ const translations = {
     volume: '交易量',
   },
   ja: {
-    title: 'PredictChain - 分散型予測市場',
-    subtitle: '暗号通貨で世界のイベントに賭ける',
+    title: 'EventBET - ブロックチェーンベッティングプラットフォーム',
+    subtitle: 'Where Global Events Meet Your Predictions',
+    description: '世界のイベントとあなたの予測が出会う場所',
     explore: 'マーケットを探す',
     categories: 'カテゴリー',
     trending: 'トレンドマーケット',
@@ -580,9 +584,12 @@ app.get('/', (c) => {
         <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
             <!-- Hero Section -->
             <div class="text-center mb-4 sm:mb-8">
-                <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3" id="heroTitle">Bet on World Events with Cryptocurrency</h2>
-                <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroSubtitle">
-                    Transparent, Secure, Decentralized Prediction Market
+                <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3 text-red-500 border-2 border-red-500 inline-block px-4 py-2 rounded-lg" id="heroTitle">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
+                <p class="text-base sm:text-lg mb-2 mobile-text font-semibold" id="heroSubtitle">
+                    Where Global Events Meet Your Predictions.
+                </p>
+                <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroDescription">
+                    전 세계 이슈와 당신의 예측이 만나는 곳.
                 </p>
                 <div class="flex justify-center space-x-6 text-xs mobile-text">
                     <div class="text-center">
@@ -593,6 +600,85 @@ app.get('/', (c) => {
                     </div>
                     <div class="text-center">
                         <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Odds & Fee Structure Section -->
+            <div class="mb-6 sm:mb-8 card p-4 sm:p-6">
+                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
+                    <i class="fas fa-calculator mr-2"></i>배당률(Odds)과 수수료(Fee) 구조
+                </h3>
+                
+                <!-- Odds Structure -->
+                <div class="mb-4 sm:mb-6">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-green-500 mr-2">✅</span> 배당률(Odds) 구조
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>Polymarket에서는 전통적인 '배당률'이 아닌 <strong class="text-accent">"승자 배당 = 패자 총액 ÷ 승자 인원"</strong> 방식이 적용됩니다.</p>
+                        
+                        <div class="bg-opacity-20 bg-blue-500 p-3 sm:p-4 rounded-lg mt-3">
+                            <p class="font-semibold mb-2">📊 예시:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>승자 100명</strong>: 총 90 USDT 베팅</li>
+                                <li><strong>패자 100명</strong>: 총 110 USDT 베팅</li>
+                                <li><strong>총 베팅액</strong>: 200 USDT</li>
+                                <li><strong>플랫폼 수수료 1%</strong>: 2 USDT</li>
+                                <li><strong>배당 풀</strong>: 198 USDT</li>
+                            </ul>
+                            <p class="mt-3 font-semibold text-accent">
+                                💰 승자 배당: 110 USDT ÷ 승자 100명 = <span class="text-green-400">1.1 USDT/인</span>
+                            </p>
+                            <p class="text-xs mt-2 text-secondary">
+                                * 실제 수익은 본인이 최초 베팅한 비율에 따라 배분됩니다.
+                            </p>
+                        </div>
+
+                        <p class="mt-3">
+                            <span class="text-red-500 font-semibold">⚠️ 패자 손실:</span> 
+                            결과가 발생하지 않으면 해당 거래는 <strong class="text-red-500">모두 손실</strong>됩니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fee Structure -->
+                <div class="mb-4">
+                    <h4 class="text-base sm:text-lg font-semibold mb-2 flex items-center">
+                        <span class="text-blue-500 mr-2">⚙️</span> 수수료(Fee) 구조
+                    </h4>
+                    <div class="text-sm sm:text-base text-secondary space-y-2 pl-4 sm:pl-6">
+                        <p>
+                            Polymarket 공식 문서에는 
+                            <strong class="text-accent">"거래 수수료는 1%"</strong>로 명시되어 있습니다.
+                        </p>
+                        <p>
+                            즉, 사용자가 시장 참여 시 플랫폼 자체에 지불하는 수수료는 <strong class="text-accent">1%</strong>를 의미합니다.
+                        </p>
+                        
+                        <div class="mt-3 space-y-2">
+                            <div class="flex items-start">
+                                <span class="text-accent mr-2">•</span>
+                                <span><strong>플랫폼 거래 수수료:</strong> 1% (모든 베팅에서 공제)</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-yellow-500 mr-2">⚠️</span>
+                                <span><strong>추가 비용:</strong> 입출금 및 네트워크 송금 관련 비용이 발생할 수 있습니다</span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="text-red-500 mr-2">⚠️</span>
+                                <span><strong>리스크:</strong> 결과 미발생 시 투자액 전액 손실</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 bg-opacity-20 bg-yellow-500 p-3 rounded-lg">
+                            <p class="text-xs sm:text-sm">
+                                <strong>참고:</strong> 
+                                <a href="https://docs.polymarket.com" target="_blank" class="text-accent hover:underline">
+                                    docs.polymarket.com
+                                </a>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
