@@ -319,6 +319,28 @@ MIT License
 
 문제가 발생하면 GitHub Issues를 통해 문의해주세요.
 
+## 🔧 플랫폼 개발 문의
+
+플랫폼 개발, 기술 지원, 파트너십 문의는 다음 연락처로 문의해주세요:
+
+### 📱 WeChat
+- **ID**: 금 (jin)
+- QR 코드 스캔: http://cashiq.my (하단 참고)
+
+### 📱 Telegram
+- **ID**: @HERB4989
+- QR 코드 스캔: http://cashiq.my (하단 참고)
+
+### 📧 이메일
+- **개발자 문의**: locks88@naver.com
+- **답변 시간**: 24시간 이내
+- **지원 언어**: 한국어, 영어, 중국어, 일본어
+
+### 💼 파트너십 문의
+- 플랫폼 개발 협력
+- 기술 지원 및 자문
+- 비즈니스 제휴
+
 ---
 
 **Made with ❤️ using Hono + Cloudflare Workers**
