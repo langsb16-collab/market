@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 로그인 - EventBET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container w-full max-w-md px-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <!-- Logo Section -->
+            <div class="text-center mb-8">
+                <div class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full p-4 mb-4">
+                    <i class="fas fa-shield-alt text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">관리자 페이지</h1>
+                <p class="text-gray-600">EventBET 관리자 로그인</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-6">
+                <!-- Admin ID -->
+                <div>
+                    <label for="admin-id" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>관리자 ID
+                    </label>
+                    <input 
+                        type="text" 
+                        id="admin-id" 
+                        name="admin-id"
+                        placeholder="관리자 ID를 입력하세요"
+                        class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
+                        required
+                    >
+                </div>
+                
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-blue-600"></i>비밀번호
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            placeholder="비밀번호를 입력하세요"
+                            class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-all"
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            id="toggle-password"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <i class="fas fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="error-message" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                        <p class="text-red-700 text-sm font-medium" id="error-text"></p>
+                    </div>
+                </div>
+                
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>로그인
+                </button>
+            </form>
+            
+            <!-- Back to Home -->
+            <div class="mt-6 text-center">
+                <a href="../index.html" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-arrow-left mr-1"></i>메인 페이지로 돌아가기
+                </a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-6 text-white text-sm">
+            <p>&copy; 2024 EventBET. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById('toggle-password')
+        const passwordInput = document.getElementById('password')
+        const eyeIcon = document.getElementById('eye-icon')
+        
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password'
+            passwordInput.type = type
+            eyeIcon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash'
+        })
+        
+        // Login Form Submission
+        const loginForm = document.getElementById('login-form')
+        const errorMessage = document.getElementById('error-message')
+        const errorText = document.getElementById('error-text')
+        
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            
+            const adminId = document.getElementById('admin-id').value
+            const password = document.getElementById('password').value
+            
+            // Hardcoded credentials
+            const ADMIN_ID = 'admin'
+            const ADMIN_PASSWORD = '1234!@#$'
+            
+            if (adminId === ADMIN_ID && password === ADMIN_PASSWORD) {
+                // Store login session
+                sessionStorage.setItem('admin_logged_in', 'true')
+                sessionStorage.setItem('admin_id', adminId)
+                sessionStorage.setItem('login_time', new Date().getTime())
+                
+                // Redirect to admin dashboard
+                window.location.href = 'index.html'
+            } else {
+                // Show error message
+                errorMessage.classList.remove('hidden')
+                errorText.textContent = 'ID 또는 비밀번호가 올바르지 않습니다.'
+                
+                // Shake animation
+                loginForm.classList.add('animate-shake')
+                setTimeout(() => {
+                    loginForm.classList.remove('animate-shake')
+                }, 500)
+            }
+        })
+        
+        // Check if already logged in
+        if (sessionStorage.getItem('admin_logged_in') === 'true') {
+            window.location.href = 'index.html'
+        }
+    </script>
+</body>
+</html>

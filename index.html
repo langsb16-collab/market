@@ -232,19 +232,19 @@
                     </h4>
                     <div class="space-y-4 text-sm sm:text-base text-gray-700">
                         <p id="odds-desc-1">
-                            <strong>승자 배당 = 패자 총액 ÷ 승자 인원</strong><br>
-                            Polymarket의 방식을 따릅니다.
+                            <strong>승자 독식 배당 = 총 베팅액 - 수수료</strong><br>
+                            승자들이 전체 배팅 풀을 투자 비율에 따라 분배받습니다.
                         </p>
                         
                         <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
                             <p class="font-semibold mb-2" id="odds-example-title">📊 예시:</p>
                             <ul class="space-y-1 text-sm" id="odds-example">
-                                <li>• 승자 100명: 90 USDT</li>
-                                <li>• 패자 100명: 110 USDT</li>
-                                <li>• 총 베팅: 200 USDT</li>
-                                <li>• 플랫폼 수수료 1%: 2 USDT</li>
-                                <li>• 배당 풀: 198 USDT</li>
-                                <li class="font-bold text-blue-700">• 승자 배당: 110 USDT ÷ 100명 = 1.1 USDT/인</li>
+                                <li>• 예측 A에 베팅: 100명 × 1 USDT = 100 USDT</li>
+                                <li>• 예측 B에 베팅: 50명 × 1 USDT = 50 USDT</li>
+                                <li>• 총 베팅: 150 USDT</li>
+                                <li>• 플랫폼 수수료 7%: 10.5 USDT</li>
+                                <li>• 승자 배당 풀: 139.5 USDT</li>
+                                <li class="font-bold text-blue-700">• 예측 A 승리 시: 각 승자는 1.395 USDT 수령 (39.5% 수익)</li>
                             </ul>
                         </div>
                         
@@ -269,7 +269,7 @@
                     <div class="space-y-4 text-sm sm:text-base text-gray-700">
                         <div class="bg-green-50 border-l-4 border-green-500 p-4">
                             <p class="font-semibold mb-2" id="fee-platform-title">💰 플랫폼 거래 수수료:</p>
-                            <p class="text-2xl font-bold text-green-700">1%</p>
+                            <p class="text-2xl font-bold text-green-700">7%</p>
                             <p class="text-sm text-gray-600 mt-2" id="fee-platform-desc">
                                 모든 베팅에서 공제됩니다.
                             </p>

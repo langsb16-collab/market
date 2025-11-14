@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - EventBET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Malgun Gothic', sans-serif;
+        }
+        
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #34495e;
+        }
+        
+        .sidebar-item.active {
+            background-color: #3498db;
+            border-left-color: #2980b9;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        th {
+            background-color: #3a4a5a;
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        td {
+            padding: 10px 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        tr:hover td {
+            background-color: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 flex-shrink-0">
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-500 rounded-full p-2">
+                        <i class="fas fa-user-shield text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg">ADMINISTRATOR</h2>
+                        <p class="text-xs text-gray-400" id="admin-name">admin</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="py-4">
+                <div class="sidebar-item active" data-page="dashboard">
+                    <i class="fas fa-home mr-3"></i>대시보드
+                </div>
+                <div class="sidebar-item" data-page="events">
+                    <i class="fas fa-calendar-check mr-3"></i>당일관급할 관리
+                </div>
+                <div class="sidebar-item" data-page="users">
+                    <i class="fas fa-users mr-3"></i>사용자 관리
+                </div>
+                <div class="sidebar-item" data-page="categories">
+                    <i class="fas fa-tags mr-3"></i>카테고리 관리
+                </div>
+                <div class="sidebar-item" data-page="statistics">
+                    <i class="fas fa-chart-bar mr-3"></i>통계 및 분석
+                </div>
+                <div class="sidebar-item" data-page="settings">
+                    <i class="fas fa-cog mr-3"></i>설정
+                </div>
+                <div class="sidebar-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt mr-3"></i>로그아웃
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Header -->
+            <header class="admin-header p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold">관리자 페이지</h1>
+                        <p class="text-sm opacity-90 mt-1">EventBET 관리자 대시보드</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <p class="text-sm opacity-90">마지막 로그인</p>
+                            <p class="text-xs" id="last-login"></p>
+                        </div>
+                        <a href="../index.html" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-home mr-2"></i>메인 페이지
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="p-6">
+                <!-- Dashboard Page -->
+                <div id="page-dashboard" class="page-content">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">총 이벤트</p>
+                                    <p class="text-3xl font-bold text-blue-600">400</p>
+                                </div>
+                                <div class="bg-blue-100 rounded-full p-4">
+                                    <i class="fas fa-calendar-alt text-blue-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">대기중 승인</p>
+                                    <p class="text-3xl font-bold text-yellow-600">8</p>
+                                </div>
+                                <div class="bg-yellow-100 rounded-full p-4">
+                                    <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">활성 사용자</p>
+                                    <p class="text-3xl font-bold text-green-600">1,234</p>
+                                </div>
+                                <div class="bg-green-100 rounded-full p-4">
+                                    <i class="fas fa-users text-green-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">총 거래량</p>
+                                    <p class="text-3xl font-bold text-purple-600">$58.2M</p>
+                                </div>
+                                <div class="bg-purple-100 rounded-full p-4">
+                                    <i class="fas fa-dollar-sign text-purple-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="table-container p-6">
+                        <h3 class="text-xl font-bold mb-4">최근 활동</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th>시간</th>
+                                        <th>활동</th>
+                                        <th>사용자</th>
+                                        <th>상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2024-11-14 10:23</td>
+                                        <td>새 이벤트 등록</td>
+                                        <td>user@example.com</td>
+                                        <td><span class="badge badge-pending">대기중</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2024-11-14 09:45</td>
+                                        <td>이벤트 승인</td>
+                                        <td>admin</td>
+                                        <td><span class="badge badge-approved">승인완료</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2024-11-14 08:30</td>
+                                        <td>배팅 참여</td>
+                                        <td>user2@example.com</td>
+                                        <td><span class="badge badge-approved">완료</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Events Management Page -->
+                <div id="page-events" class="page-content hidden">
+                    <div class="table-container p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold">당일관급할 등록 관리</h3>
+                            <button onclick="openAddEventModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>새 이벤트 등록
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th>번호</th>
+                                        <th>이슈명</th>
+                                        <th>구분</th>
+                                        <th>종류</th>
+                                        <th>채택확률</th>
+                                        <th>긍정확률</th>
+                                        <th>미채택구간율</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="events-table-body">
+                                    <tr>
+                                        <td>1</td>
+                                        <td>미국 대선 결과</td>
+                                        <td><span class="badge badge-pending">대기중</span></td>
+                                        <td>정치</td>
+                                        <td>75%</td>
+                                        <td>52%</td>
+                                        <td>25%</td>
+                                        <td>
+                                            <button class="text-blue-600 hover:text-blue-800 mr-2">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 계열현황 Section -->
+                    <div class="table-container p-6 mt-6">
+                        <h3 class="text-xl font-bold mb-4">계열현황</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th>진행</th>
+                                        <th>종료</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>0</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>기준주수</td>
+                                        <td>0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1단계월누수</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Other Pages (Placeholders) -->
+                <div id="page-users" class="page-content hidden">
+                    <div class="table-container p-6">
+                        <h3 class="text-2xl font-bold mb-4">사용자 관리</h3>
+                        <p class="text-gray-600">사용자 목록 및 관리 기능이 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+                
+                <div id="page-categories" class="page-content hidden">
+                    <div class="table-container p-6">
+                        <h3 class="text-2xl font-bold mb-4">카테고리 관리</h3>
+                        <p class="text-gray-600">카테고리 목록 및 관리 기능이 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+                
+                <div id="page-statistics" class="page-content hidden">
+                    <div class="table-container p-6">
+                        <h3 class="text-2xl font-bold mb-4">통계 및 분석</h3>
+                        <p class="text-gray-600">통계 데이터가 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+                
+                <div id="page-settings" class="page-content hidden">
+                    <div class="table-container p-6">
+                        <h3 class="text-2xl font-bold mb-4">설정</h3>
+                        <p class="text-gray-600">시스템 설정이 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Add Event Modal -->
+    <div id="add-event-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">새 이벤트 등록</h3>
+                    <button onclick="closeAddEventModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="add-event-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">이슈명</label>
+                        <input type="text" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="이슈명을 입력하세요" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">구분</label>
+                            <select class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="pending">대기중</option>
+                                <option value="approved">승인됨</option>
+                                <option value="rejected">거부됨</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">종류</label>
+                            <select class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="politics">정치</option>
+                                <option value="economy">경제</option>
+                                <option value="sports">스포츠</option>
+                                <option value="entertainment">엔터테인먼트</option>
+                                <option value="technology">기술</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">채택확률 (%)</label>
+                            <input type="number" min="0" max="100" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="75">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">긍정확률 (%)</label>
+                            <input type="number" min="0" max="100" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="52">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">미채택률 (%)</label>
+                            <input type="number" min="0" max="100" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="25">
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-check mr-2"></i>등록
+                        </button>
+                        <button type="button" onclick="closeAddEventModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                            <i class="fas fa-times mr-2"></i>취소
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        if (sessionStorage.getItem('admin_logged_in') !== 'true') {
+            window.location.href = 'login.html'
+        }
+        
+        // Display admin info
+        document.getElementById('admin-name').textContent = sessionStorage.getItem('admin_id') || 'admin'
+        document.getElementById('last-login').textContent = new Date(parseInt(sessionStorage.getItem('login_time'))).toLocaleString('ko-KR')
+        
+        // Sidebar navigation
+        const sidebarItems = document.querySelectorAll('.sidebar-item[data-page]')
+        const pageContents = document.querySelectorAll('.page-content')
+        
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageName = item.dataset.page
+                
+                // Update active state
+                sidebarItems.forEach(i => i.classList.remove('active'))
+                item.classList.add('active')
+                
+                // Show selected page
+                pageContents.forEach(page => {
+                    if (page.id === `page-${pageName}`) {
+                        page.classList.remove('hidden')
+                    } else {
+                        page.classList.add('hidden')
+                    }
+                })
+            })
+        })
+        
+        // Logout function
+        function logout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                sessionStorage.clear()
+                window.location.href = 'login.html'
+            }
+        }
+        
+        // Modal functions
+        function openAddEventModal() {
+            document.getElementById('add-event-modal').classList.remove('hidden')
+            document.getElementById('add-event-modal').classList.add('flex')
+        }
+        
+        function closeAddEventModal() {
+            document.getElementById('add-event-modal').classList.add('hidden')
+            document.getElementById('add-event-modal').classList.remove('flex')
+        }
+        
+        // Add event form submission
+        document.getElementById('add-event-form').addEventListener('submit', (e) => {
+            e.preventDefault()
+            alert('이벤트가 성공적으로 등록되었습니다!')
+            closeAddEventModal()
+        })
+    </script>
+</body>
+</html>
