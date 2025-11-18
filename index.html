@@ -446,10 +446,20 @@
                         <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
                         <span>이슈 등록</span>
                     </button>
-                    <button id="connect-wallet" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-wallet mr-1 sm:mr-2"></i>
-                        <span id="connect-wallet-text">Connect Wallet</span>
+                    <button id="login-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
+                        <span>B85cAdf8C778</span>
                     </button>
+                    <button id="register-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
+                        <span>D68cC6d0Ac00C785</span>
+                    </button>
+                    <div id="user-profile" class="hidden flex items-center space-x-2">
+                        <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
+                        <button id="logout-btn" class="btn-primary text-xs sm:text-sm px-2 py-1 rounded-lg font-semibold">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -726,5 +736,128 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="/static/chatbot.js"></script>
+    <script src="/static/auth.js"></script>
     <script src="/static/app.js"></script>
 </body>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="modal-content rounded-lg p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">
+                    <i class="fas fa-sign-in-alt mr-2 text-accent"></i>
+                    로그인
+                </h3>
+                <button onclick="closeLoginModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <input type="email" id="login-email" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="your@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                    <input type="password" id="login-password" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    로그인
+                </button>
+                <p class="text-center text-sm text-secondary">
+                    계정이 없으신가요?
+                    <button type="button" onclick="closeLoginModal(); showRegisterModal()" class="text-accent hover:underline">
+                        회원가입
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="modal-content rounded-lg p-6 max-w-2xl w-full my-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">
+                    <i class="fas fa-user-plus mr-2 text-accent"></i>
+                    회원가입
+                </h3>
+                <button onclick="closeRegisterModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleRegister(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">이름 *</label>
+                        <input type="text" id="register-name" required 
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="홍길동">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">전화번호 *</label>
+                        <input type="tel" id="register-phone" required 
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="010-1234-5678">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">
+                        USDT 지갑주소 *
+                        <span class="text-xs text-secondary ml-2">(배당 받을 주소)</span>
+                    </label>
+                    <input type="text" id="register-wallet" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="0x...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <input type="email" id="register-email" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="your@email.com">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                        <input type="password" id="register-password" required minlength="6"
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="최소 6자 이상">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">비밀번호 확인 *</label>
+                        <input type="password" id="register-confirm-password" required minlength="6"
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="비밀번호 재입력">
+                    </div>
+                </div>
+                <div class="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-500 mb-2">
+                        <i class="fas fa-star mr-2"></i>
+                        회원 전용 혜택
+                    </h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>모든 마켓 상세 정보 조회</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>베팅 및 이슈 등록 권한</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>신규 이벤트 알림 서비스</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>배당 내역 관리</li>
+                    </ul>
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    회원가입
+                </button>
+                <p class="text-center text-sm text-secondary">
+                    이미 계정이 있으신가요?
+                    <button type="button" onclick="closeRegisterModal(); showLoginModal()" class="text-accent hover:underline">
+                        로그인
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+

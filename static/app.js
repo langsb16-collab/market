@@ -623,6 +623,12 @@ function renderMarkets() {
 
 // Open bet modal
 function openBetModal(eventId) {
+    // Check if user is logged in
+    if (window.EventBETAuth && !window.EventBETAuth.isLoggedIn()) {
+        window.EventBETAuth.showAuthRequiredModal('마켓 상세 정보를 보려면 로그인이 필요합니다.')
+        return
+    }
+    
     const event = events.find(e => e.id === eventId)
     if (!event) return
     
