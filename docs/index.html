@@ -362,6 +362,19 @@
                 font-size: 0.75rem;
             }
             
+            /* Enhanced mobile button styles */
+            .btn-notice, .btn-issue, .btn-login, .btn-register {
+                font-size: 0.9rem !important;
+                padding: 0.625rem 1rem !important;
+                min-width: 75px;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+            }
+            
+            .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
+                font-size: 1rem !important;
+            }
+            
             h1 {
                 font-size: 1.125rem !important;
             }
@@ -504,6 +517,25 @@
             }
         }
         
+        /* Extra small mobile optimization (iPhone SE, small Android) */
+        @media (max-width: 375px) {
+            .btn-notice, .btn-issue, .btn-login, .btn-register {
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.75rem !important;
+                min-width: 65px;
+            }
+            
+            .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
+                font-size: 0.9rem !important;
+                margin-right: 0.25rem !important;
+            }
+            
+            /* Reduce spacing between buttons on very small screens */
+            .space-x-2 > * + * {
+                margin-left: 0.25rem !important;
+            }
+        }
+        
         /* Tablet optimization */
         @media (min-width: 641px) and (max-width: 1024px) {
             .card h4 {
@@ -548,23 +580,23 @@
                         <option value="ja">🇯🇵 JA</option>
                     </select>
                     <!-- Notice Button - Orange -->
-                    <button id="notice-btn" class="btn-notice text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-bullhorn mr-1 sm:mr-2"></i>
+                    <button id="notice-btn" class="btn-notice text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-bullhorn mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
                         <span id="notice-btn-text">공지</span>
                     </button>
                     <!-- Submit Issue Button - Green -->
-                    <button id="submit-issue-btn" class="btn-issue text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
+                    <button id="submit-issue-btn" class="btn-issue text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-plus-circle mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
                         <span id="submit-issue-btn-text">이슈 등록</span>
                     </button>
                     <!-- Login Button - Blue -->
-                    <button id="login-btn" class="btn-login text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
+                    <button id="login-btn" class="btn-login text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-sign-in-alt mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
                         <span id="login-btn-text">로그인</span>
                     </button>
                     <!-- Register Button - Purple -->
-                    <button id="register-btn" class="btn-register text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
+                    <button id="register-btn" class="btn-register text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-user-plus mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
                         <span id="register-btn-text">회원가입</span>
                     </button>
                     <div id="user-profile" class="hidden flex items-center space-x-2">
