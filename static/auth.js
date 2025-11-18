@@ -100,13 +100,20 @@ function handleLogin(event) {
     const user = users.find(u => u.email === email && u.password === password)
     
     if (user) {
+        // Check if user is suspended
+        if (user.status === 'suspended') {
+            alert('정지된 계정입니다. 관리자에게 문의하세요.')
+            return
+        }
+        
         currentUser = {
             id: user.id,
             name: user.name,
             email: user.email,
             phone: user.phone,
             wallet: user.wallet,
-            role: user.role || 'user'
+            role: user.role || 'user',
+            status: user.status || 'active'
         }
         localStorage.setItem('eventbet_user', JSON.stringify(currentUser))
         updateUIForLoggedInUser()
