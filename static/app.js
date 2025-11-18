@@ -9,6 +9,7 @@ let isDarkMode = false
 let currentCategory = 'all'
 let displayedMarkets = 12
 const MARKETS_PER_PAGE = 12
+let currentSortBy = 'date' // 'date', 'volume', 'participants'
 
 console.log('EventBET: Variables initialized')
 
@@ -414,7 +415,37 @@ function getFilteredEvents() {
         )
     }
     
+    // Apply sorting
+    if (currentSortBy === 'date') {
+        // Sort by resolve_date (earliest first)
+        filtered.sort((a, b) => new Date(a.resolve_date) - new Date(b.resolve_date))
+    } else if (currentSortBy === 'volume') {
+        // Sort by total_volume (highest first)
+        filtered.sort((a, b) => b.total_volume - a.total_volume)
+    } else if (currentSortBy === 'participants') {
+        // Sort by estimated participants (based on volume / 10)
+        filtered.sort((a, b) => b.total_volume - a.total_volume)
+    }
+    
     return filtered
+}
+
+// Sort markets
+function sortMarkets(sortBy) {
+    currentSortBy = sortBy
+    displayedMarkets = MARKETS_PER_PAGE
+    
+    // Update button states
+    document.getElementById('sort-date')?.classList.remove('active')
+    document.getElementById('sort-volume')?.classList.remove('active')
+    document.getElementById('sort-participants')?.classList.remove('active')
+    
+    const activeBtn = document.getElementById('sort-' + sortBy)
+    if (activeBtn) {
+        activeBtn.classList.add('active')
+    }
+    
+    renderMarkets()
 }
 
 // Handle search
