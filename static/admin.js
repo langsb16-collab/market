@@ -1,0 +1,499 @@
+// EventBET Admin Panel JavaScript
+
+// 섹션 전환
+function showSection(section) {
+    // 모든 섹션 숨기기
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    
+    // 선택된 섹션 표시
+    document.getElementById(`${section}-section`).classList.add('active');
+    event.target.closest('.sidebar-item').classList.add('active');
+    
+    // 데이터 로드
+    if (section === 'banners') loadBanners();
+    if (section === 'notices') loadNotices();
+    if (section === 'popups') loadPopups();
+    if (section === 'members') loadMembers();
+}
+
+// ========== 배너 관리 ==========
+function loadBanners() {
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    const container = document.getElementById('banners-list');
+    
+    if (banners.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">등록된 배너가 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = banners.map((banner, index) => `
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <h4 class="font-bold text-lg mb-2">${banner.title}</h4>
+                    ${banner.type === 'image' ? 
+                        `<img src="${banner.image}" class="w-full max-h-48 object-cover rounded-lg mb-2">` :
+                        `<div class="bg-gray-100 p-4 rounded-lg mb-2">
+                            <i class="fab fa-youtube text-red-600 text-2xl mr-2"></i>
+                            <span class="text-sm text-gray-600">유튜브: ${banner.youtube}</span>
+                        </div>`
+                    }
+                    ${banner.link ? `<p class="text-sm text-gray-600"><i class="fas fa-link mr-1"></i>링크: ${banner.link}</p>` : ''}
+                </div>
+                <div class="flex space-x-2 ml-4">
+                    <button onclick="editBanner(${index})" class="btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteBanner(${index})" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openBannerModal(index = null) {
+    const modal = document.getElementById('banner-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+        const banner = banners[index];
+        
+        document.getElementById('banner-id').value = index;
+        document.getElementById('banner-title').value = banner.title;
+        document.getElementById('banner-type').value = banner.type;
+        document.getElementById('banner-link').value = banner.link || '';
+        
+        if (banner.type === 'image') {
+            document.getElementById('banner-image').value = banner.image;
+            toggleBannerInputs();
+        } else {
+            document.getElementById('banner-youtube').value = banner.youtube;
+            toggleBannerInputs();
+        }
+    } else {
+        document.getElementById('banner-id').value = '';
+        document.getElementById('banner-title').value = '';
+        document.getElementById('banner-image').value = '';
+        document.getElementById('banner-youtube').value = '';
+        document.getElementById('banner-link').value = '';
+        toggleBannerInputs();
+    }
+}
+
+function closeBannerModal() {
+    document.getElementById('banner-modal').classList.remove('active');
+}
+
+function toggleBannerInputs() {
+    const type = document.getElementById('banner-type').value;
+    const imageInput = document.getElementById('banner-image-input');
+    const youtubeInput = document.getElementById('banner-youtube-input');
+    
+    if (type === 'image') {
+        imageInput.classList.remove('hidden');
+        youtubeInput.classList.add('hidden');
+    } else {
+        imageInput.classList.add('hidden');
+        youtubeInput.classList.remove('hidden');
+    }
+}
+
+function saveBanner(event) {
+    event.preventDefault();
+    
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    const id = document.getElementById('banner-id').value;
+    const type = document.getElementById('banner-type').value;
+    
+    // 최대 3개 체크
+    if (id === '' && banners.length >= 3) {
+        alert('배너는 최대 3개까지만 등록할 수 있습니다.');
+        return;
+    }
+    
+    const banner = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('banner-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('banner-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('banner-youtube').value : '',
+        link: document.getElementById('banner-link').value,
+        createdAt: id !== '' ? banners[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        banners[id] = banner;
+    } else {
+        banners.push(banner);
+    }
+    
+    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
+    closeBannerModal();
+    loadBanners();
+    alert('배너가 저장되었습니다.');
+}
+
+function editBanner(index) {
+    openBannerModal(index);
+}
+
+function deleteBanner(index) {
+    if (!confirm('이 배너를 삭제하시겠습니까?')) return;
+    
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    banners.splice(index, 1);
+    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
+    loadBanners();
+    alert('배너가 삭제되었습니다.');
+}
+
+// ========== 공지 관리 ==========
+function loadNotices() {
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const tbody = document.getElementById('notices-list');
+    
+    if (notices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-8">등록된 공지가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = notices.map((notice, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${notice.title}</td>
+            <td class="max-w-xs truncate">${notice.content}</td>
+            <td>${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
+            <td>
+                <button onclick="editNotice(${index})" class="btn-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteNotice(${index})" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openNoticeModal(index = null) {
+    const modal = document.getElementById('notice-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        const notice = notices[index];
+        
+        document.getElementById('notice-id').value = index;
+        document.getElementById('notice-title').value = notice.title;
+        document.getElementById('notice-content').value = notice.content;
+    } else {
+        document.getElementById('notice-id').value = '';
+        document.getElementById('notice-title').value = '';
+        document.getElementById('notice-content').value = '';
+    }
+}
+
+function closeNoticeModal() {
+    document.getElementById('notice-modal').classList.remove('active');
+}
+
+function saveNotice(event) {
+    event.preventDefault();
+    
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const id = document.getElementById('notice-id').value;
+    
+    // 최대 30개 체크
+    if (id === '' && notices.length >= 30) {
+        alert('공지는 최대 30개까지만 등록할 수 있습니다.');
+        return;
+    }
+    
+    const notice = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('notice-title').value,
+        content: document.getElementById('notice-content').value,
+        createdAt: id !== '' ? notices[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        notices[id] = notice;
+    } else {
+        notices.push(notice);
+    }
+    
+    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
+    closeNoticeModal();
+    loadNotices();
+    alert('공지가 저장되었습니다.');
+}
+
+function editNotice(index) {
+    openNoticeModal(index);
+}
+
+function deleteNotice(index) {
+    if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+    
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    notices.splice(index, 1);
+    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
+    loadNotices();
+    alert('공지가 삭제되었습니다.');
+}
+
+// ========== 팝업 관리 ==========
+function loadPopups() {
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const container = document.getElementById('popups-list');
+    
+    if (popups.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">등록된 팝업이 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = popups.map((popup, index) => `
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h4 class="font-bold text-lg">${popup.title}</h4>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${popup.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                            ${popup.enabled ? '활성' : '비활성'}
+                        </span>
+                    </div>
+                    ${popup.type === 'image' ? 
+                        `<img src="${popup.image}" class="w-full max-h-48 object-cover rounded-lg">` :
+                        `<div class="bg-gray-100 p-4 rounded-lg">
+                            <i class="fab fa-youtube text-red-600 text-2xl mr-2"></i>
+                            <span class="text-sm text-gray-600">유튜브: ${popup.youtube}</span>
+                        </div>`
+                    }
+                </div>
+                <div class="flex space-x-2 ml-4">
+                    <button onclick="editPopup(${index})" class="btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deletePopup(${index})" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openPopupModal(index = null) {
+    const modal = document.getElementById('popup-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        const popup = popups[index];
+        
+        document.getElementById('popup-id').value = index;
+        document.getElementById('popup-title').value = popup.title;
+        document.getElementById('popup-type').value = popup.type;
+        document.getElementById('popup-enabled').checked = popup.enabled;
+        
+        if (popup.type === 'image') {
+            document.getElementById('popup-image').value = popup.image;
+            togglePopupInputs();
+        } else {
+            document.getElementById('popup-youtube').value = popup.youtube;
+            togglePopupInputs();
+        }
+    } else {
+        document.getElementById('popup-id').value = '';
+        document.getElementById('popup-title').value = '';
+        document.getElementById('popup-image').value = '';
+        document.getElementById('popup-youtube').value = '';
+        document.getElementById('popup-enabled').checked = true;
+        togglePopupInputs();
+    }
+}
+
+function closePopupModal() {
+    document.getElementById('popup-modal').classList.remove('active');
+}
+
+function togglePopupInputs() {
+    const type = document.getElementById('popup-type').value;
+    const imageInput = document.getElementById('popup-image-input');
+    const youtubeInput = document.getElementById('popup-youtube-input');
+    
+    if (type === 'image') {
+        imageInput.classList.remove('hidden');
+        youtubeInput.classList.add('hidden');
+    } else {
+        imageInput.classList.add('hidden');
+        youtubeInput.classList.remove('hidden');
+    }
+}
+
+function savePopup(event) {
+    event.preventDefault();
+    
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const id = document.getElementById('popup-id').value;
+    const type = document.getElementById('popup-type').value;
+    
+    const popup = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('popup-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('popup-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('popup-youtube').value : '',
+        enabled: document.getElementById('popup-enabled').checked,
+        createdAt: id !== '' ? popups[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        popups[id] = popup;
+    } else {
+        popups.push(popup);
+    }
+    
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    closePopupModal();
+    loadPopups();
+    alert('팝업이 저장되었습니다.');
+}
+
+function editPopup(index) {
+    openPopupModal(index);
+}
+
+function deletePopup(index) {
+    if (!confirm('이 팝업을 삭제하시겠습니까?')) return;
+    
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    popups.splice(index, 1);
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    loadPopups();
+    alert('팝업이 삭제되었습니다.');
+}
+
+// ========== 회원 관리 ==========
+function loadMembers() {
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    
+    // 통계 업데이트
+    const totalMembers = users.length;
+    const activeMembers = users.filter(u => u.status === 'active').length;
+    const suspendedMembers = users.filter(u => u.status === 'suspended').length;
+    
+    document.getElementById('total-members').textContent = totalMembers;
+    document.getElementById('active-members').textContent = activeMembers;
+    document.getElementById('suspended-members').textContent = suspendedMembers;
+    
+    filterMembers();
+}
+
+function filterMembers() {
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const searchQuery = document.getElementById('member-search').value.toLowerCase();
+    const statusFilter = document.getElementById('member-status-filter').value;
+    
+    let filteredUsers = users;
+    
+    // 검색 필터
+    if (searchQuery) {
+        filteredUsers = filteredUsers.filter(u => 
+            u.name.toLowerCase().includes(searchQuery) ||
+            u.email.toLowerCase().includes(searchQuery) ||
+            u.phone.includes(searchQuery)
+        );
+    }
+    
+    // 상태 필터
+    if (statusFilter) {
+        filteredUsers = filteredUsers.filter(u => u.status === statusFilter);
+    }
+    
+    renderMembersList(filteredUsers);
+}
+
+function renderMembersList(users) {
+    const tbody = document.getElementById('members-list');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">회원이 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone}</td>
+            <td class="text-xs">${user.wallet.substring(0, 10)}...</td>
+            <td>${new Date(user.createdAt).toLocaleDateString('ko-KR')}</td>
+            <td>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    ${user.status === 'active' ? '활성' : '정지'}
+                </span>
+            </td>
+            <td>
+                ${user.status === 'active' ? 
+                    `<button onclick="suspendMember('${user.id}')" class="btn-warning mr-2">
+                        <i class="fas fa-pause"></i> 정지
+                    </button>` :
+                    `<button onclick="activateMember('${user.id}')" class="btn-success mr-2">
+                        <i class="fas fa-play"></i> 활성
+                    </button>`
+                }
+                <button onclick="deleteMember('${user.id}')" class="btn-danger">
+                    <i class="fas fa-trash"></i> 삭제
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function suspendMember(userId) {
+    if (!confirm('이 회원을 정지하시겠습니까?')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex !== -1) {
+        users[userIndex].status = 'suspended';
+        localStorage.setItem('eventbet_users', JSON.stringify(users));
+        alert('회원이 정지되었습니다.');
+        loadMembers();
+    }
+}
+
+function activateMember(userId) {
+    if (!confirm('이 회원을 활성화하시겠습니까?')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex !== -1) {
+        users[userIndex].status = 'active';
+        localStorage.setItem('eventbet_users', JSON.stringify(users));
+        alert('회원이 활성화되었습니다.');
+        loadMembers();
+    }
+}
+
+function deleteMember(userId) {
+    if (!confirm('이 회원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const filteredUsers = users.filter(u => u.id !== userId);
+    localStorage.setItem('eventbet_users', JSON.stringify(filteredUsers));
+    alert('회원이 삭제되었습니다.');
+    loadMembers();
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    loadBanners();
+});
