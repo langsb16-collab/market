@@ -1,55 +1,345 @@
-// PredictChain - Frontend Application
+// EventBET - Static Frontend Application
+// Enhanced with 450 markets (50 per category, all within 1 month)
 
-let currentLang = 'en'
+console.log('EventBET: Script loaded')
+
+let currentLang = 'ko'
 let currentWallet = null
-let categories = []
-let events = []
-let translations = {}
 let isDarkMode = false
+let currentCategory = 'all'
+let displayedMarkets = 12
+const MARKETS_PER_PAGE = 12
+let currentSortBy = 'date' // 'date', 'volume', 'participants'
+
+console.log('EventBET: Variables initialized')
+
+// Get date within next 30 days
+const getRandomDateWithinMonth = () => {
+    const today = new Date()
+    const daysAhead = Math.floor(Math.random() * 30) + 1
+    const futureDate = new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000)
+    return futureDate.toISOString().split('T')[0]
+}
+
+// Translations (abbreviated)
+const translations = {
+    ko: {
+        title: 'EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼',
+        subtitle: 'Where Global Events Meet Your Predictions',
+        description: '전 세계 이슈와 당신의 예측이 만나는 곳',
+        explore: '마켓 탐색',
+        categories: '카테고리',
+        trending: '인기 마켓',
+        connectWallet: '지갑 연결',
+        placeBet: '베팅하기',
+        resolvesOn: '결과 발표',
+        volume: '거래량',
+        submitIssue: '이슈 등록',
+        searchPlaceholder: '마켓 검색...',
+        loadMore: '더 보기',
+        showingMarkets: '개 마켓 표시 중',
+        totalMarkets: '전체',
+        individual: '개',
+    },
+    en: {
+        title: 'EventBET - Blockchain Betting Platform',
+        subtitle: 'Where Global Events Meet Your Predictions',
+        description: 'Your predictions meet real-world events',
+        explore: 'Explore Markets',
+        categories: 'Categories',
+        trending: 'Trending Markets',
+        connectWallet: 'Connect Wallet',
+        placeBet: 'Place Bet',
+        resolvesOn: 'Resolves on',
+        volume: 'Volume',
+        submitIssue: 'Submit Issue',
+        searchPlaceholder: 'Search markets...',
+        loadMore: 'Load More',
+        showingMarkets: 'markets shown',
+        totalMarkets: 'Total',
+        individual: '',
+    },
+    zh: {
+        title: 'EventBET - 区块链博彩平台',
+        subtitle: 'Where Global Events Meet Your Predictions',
+        description: '您的预测与现实世界事件相遇',
+        explore: '探索市场',
+        categories: '分类',
+        trending: '热门市场',
+        connectWallet: '连接钱包',
+        placeBet: '下注',
+        resolvesOn: '结算日期',
+        volume: '交易量',
+        submitIssue: '提交问题',
+        searchPlaceholder: '搜索市场...',
+        loadMore: '加载更多',
+        showingMarkets: '个市场',
+        totalMarkets: '总计',
+        individual: '个',
+    },
+    ja: {
+        title: 'EventBET - ブロックチェーン賭博プラットフォーム',
+        subtitle: 'Where Global Events Meet Your Predictions',
+        description: 'あなたの予測が現実の出来事と出会う',
+        explore: 'マーケットを探す',
+        categories: 'カテゴリー',
+        trending: 'トレンド市場',
+        connectWallet: 'ウォレット接続',
+        placeBet: 'ベットする',
+        resolvesOn: '決済日',
+        volume: '取引量',
+        submitIssue: '問題を提出',
+        searchPlaceholder: 'マーケット検索...',
+        loadMore: 'もっと見る',
+        showingMarkets: '件のマーケット',
+        totalMarkets: '合計',
+        individual: '件',
+    }
+}
+
+// Categories
+const categories = [
+    { id: 1, slug: 'politics', name_ko: '정치', name_en: 'Politics', name_zh: '政治', name_ja: '政治', icon: '🏛️' },
+    { id: 2, slug: 'sports', name_ko: '스포츠', name_en: 'Sports', name_zh: '体育', name_ja: 'スポーツ', icon: '⚽' },
+    { id: 3, slug: 'technology', name_ko: '기술', name_en: 'Technology', name_zh: '科技', name_ja: 'テクノロジー', icon: '💻' },
+    { id: 4, slug: 'cryptocurrency', name_ko: '암호화폐', name_en: 'Crypto', name_zh: '加密货币', name_ja: '暗号通貨', icon: '₿' },
+    { id: 5, slug: 'entertainment', name_ko: '엔터테인먼트', name_en: 'Entertainment', name_zh: '娱乐', name_ja: 'エンターテイメント', icon: '🎬' },
+    { id: 6, slug: 'economy', name_ko: '경제', name_en: 'Economy', name_zh: '经济', name_ja: '経済', icon: '📈' },
+    { id: 7, slug: 'science', name_ko: '과학', name_en: 'Science', name_zh: '科学', name_ja: '科学', icon: '🔬' },
+    { id: 8, slug: 'climate', name_ko: '기후', name_en: 'Climate', name_zh: '气候', name_ja: '気候', icon: '🌍' }
+]
+
+// Event templates for each category
+const eventTemplates = {
+    politics: [
+        { ko: '한국 국회 법안 통과 여부', en: 'Korean Parliament Bill Passage', zh: '韩国国会法案通过', ja: '韓国国会法案通過' },
+        { ko: '미국 대통령 정책 발표', en: 'US President Policy Announcement', zh: '美国总统政策宣布', ja: '米大統領政策発表' },
+        { ko: '유럽 선거 결과 예측', en: 'European Election Results', zh: '欧洲选举结果', ja: '欧州選挙結果' },
+        { ko: '일본 내각 개각 여부', en: 'Japan Cabinet Reshuffle', zh: '日本内阁改组', ja: '日本内閣改造' },
+        { ko: '중국 정책 변화 발표', en: 'China Policy Change', zh: '中国政策变化', ja: '中国政策変更' },
+        { ko: '아시아 외교 회담 성사', en: 'Asian Diplomatic Meeting', zh: '亚洲外交会议', ja: 'アジア外交会議' },
+        { ko: '글로벌 정상회담 개최', en: 'Global Summit Meeting', zh: '全球峰会', ja: 'グローバルサミット' },
+        { ko: '국제 조약 체결 여부', en: 'International Treaty Signing', zh: '国际条约签署', ja: '国際条約締結' },
+        { ko: '신임 장관 임명 여부', en: 'New Minister Appointment', zh: '新部长任命', ja: '新大臣任命' },
+        { ko: '정치 개혁안 통과', en: 'Political Reform Passage', zh: '政治改革通过', ja: '政治改革通過' },
+    ],
+    sports: [
+        { ko: '프리미어리그 경기 결과', en: 'Premier League Match Result', zh: '英超比赛结果', ja: 'プレミアリーグ試合結果' },
+        { ko: 'NBA 플레이오프 진출', en: 'NBA Playoffs Qualification', zh: 'NBA季后赛资格', ja: 'NBAプレーオフ進出' },
+        { ko: '월드컵 예선 통과', en: 'World Cup Qualifier', zh: '世界杯预选赛', ja: 'W杯予選通過' },
+        { ko: '올림픽 메달 획득', en: 'Olympic Medal Win', zh: '奥运奖牌', ja: '五輪メダル獲得' },
+        { ko: '테니스 그랜드슬램 우승', en: 'Tennis Grand Slam Win', zh: '网球大满贯冠军', ja: 'テニスGS優勝' },
+        { ko: '야구 월드시리즈 진출', en: 'World Series Qualification', zh: '世界大赛资格', ja: 'WSシリーズ進出' },
+        { ko: '축구 챔피언스리그 승리', en: 'Champions League Win', zh: '欧冠胜利', ja: 'CL勝利' },
+        { ko: '골프 메이저 대회 우승', en: 'Golf Major Championship', zh: '高尔夫大赛冠军', ja: 'ゴルフメジャー優勝' },
+        { ko: 'UFC 타이틀 방어 성공', en: 'UFC Title Defense', zh: 'UFC卫冕成功', ja: 'UFCタイトル防衛' },
+        { ko: 'F1 그랑프리 우승', en: 'F1 Grand Prix Win', zh: 'F1大奖赛冠军', ja: 'F1GP優勝' },
+    ],
+    technology: [
+        { ko: 'iPhone 신모델 발표', en: 'New iPhone Launch', zh: 'iPhone新机发布', ja: 'iPhone新型発表' },
+        { ko: 'AI 기술 혁신 발표', en: 'AI Technology Breakthrough', zh: 'AI技术突破', ja: 'AI技術革新' },
+        { ko: '삼성 신제품 출시', en: 'Samsung New Product Launch', zh: '三星新产品发布', ja: 'サムスン新製品' },
+        { ko: '구글 서비스 업데이트', en: 'Google Service Update', zh: '谷歌服务更新', ja: 'Googleサービス更新' },
+        { ko: '테슬라 자율주행 승인', en: 'Tesla Autopilot Approval', zh: '特斯拉自动驾驶批准', ja: 'テスラ自動運転承認' },
+        { ko: '메타 VR 기기 출시', en: 'Meta VR Device Launch', zh: 'Meta VR设备发布', ja: 'Meta VR機器発売' },
+        { ko: '마이크로소프트 AI 통합', en: 'Microsoft AI Integration', zh: '微软AI整合', ja: 'マイクロソフトAI統合' },
+        { ko: '넷플릭스 신기능 추가', en: 'Netflix New Feature', zh: '奈飞新功能', ja: 'Netflix新機能' },
+        { ko: '아마존 배송 혁신', en: 'Amazon Delivery Innovation', zh: '亚马逊配送创新', ja: 'Amazon配送革新' },
+        { ko: '스페이스X 발사 성공', en: 'SpaceX Launch Success', zh: 'SpaceX发射成功', ja: 'SpaceX打上成功' },
+    ],
+    cryptocurrency: [
+        { ko: '비트코인 $70K 돌파', en: 'Bitcoin Reaches $70K', zh: '比特币突破7万美元', ja: 'ビットコイン7万ドル突破' },
+        { ko: '이더리움 업그레이드 완료', en: 'Ethereum Upgrade Complete', zh: '以太坊升级完成', ja: 'イーサリアムアップグレード' },
+        { ko: 'SEC ETF 승인 발표', en: 'SEC ETF Approval', zh: 'SEC ETF批准', ja: 'SEC ETF承認' },
+        { ko: '리플 소송 결과 발표', en: 'Ripple Lawsuit Result', zh: '瑞波诉讼结果', ja: 'Ripple訴訟結果' },
+        { ko: '바이낸스 신규 상장', en: 'Binance New Listing', zh: '币安新上市', ja: 'Binance新規上場' },
+        { ko: '솔라나 네트워크 업데이트', en: 'Solana Network Update', zh: 'Solana网络更新', ja: 'Solanaネットワーク更新' },
+        { ko: '카르다노 스마트컨트랙트', en: 'Cardano Smart Contract', zh: '卡尔达诺智能合约', ja: 'Cardanoスマコン' },
+        { ko: '폴카닷 파라체인 추가', en: 'Polkadot Parachain Addition', zh: '波卡平行链增加', ja: 'Polkadotパラチェーン追加' },
+        { ko: '체인링크 파트너십', en: 'Chainlink Partnership', zh: 'Chainlink合作', ja: 'Chainlinkパートナーシップ' },
+        { ko: '아발란체 DeFi 확장', en: 'Avalanche DeFi Expansion', zh: 'Avalanche DeFi扩展', ja: 'Avalanche DeFi拡大' },
+    ],
+    entertainment: [
+        { ko: '넷플릭스 드라마 시즌2', en: 'Netflix Drama Season 2', zh: '奈飞剧集第2季', ja: 'Netflixドラマシーズン2' },
+        { ko: 'BTS 컴백 앨범 발표', en: 'BTS Comeback Album', zh: 'BTS回归专辑', ja: 'BTSカムバックアルバム' },
+        { ko: '마블 신작 영화 개봉', en: 'New Marvel Movie Release', zh: '漫威新电影上映', ja: 'マーベル新作公開' },
+        { ko: '블랙핑크 월드투어', en: 'Blackpink World Tour', zh: '黑粉世界巡演', ja: 'ブラックピンクワールドツアー' },
+        { ko: '디즈니+ 오리지널 공개', en: 'Disney+ Original Release', zh: '迪士尼+原创发布', ja: 'ディズニー+オリジナル公開' },
+        { ko: '아카데미 시상식 결과', en: 'Academy Awards Result', zh: '奥斯卡颁奖结果', ja: 'アカデミー賞結果' },
+        { ko: '칸 영화제 수상작', en: 'Cannes Film Festival Winner', zh: '戛纳电影节获奖', ja: 'カンヌ映画祭受賞作' },
+        { ko: '그래미 어워드 후보', en: 'Grammy Awards Nominee', zh: '格莱美奖提名', ja: 'グラミー賞ノミネート' },
+        { ko: '빌보드 차트 1위', en: 'Billboard Chart #1', zh: '公告牌排行榜第1', ja: 'ビルボードチャート1位' },
+        { ko: '스포티파이 스트리밍 기록', en: 'Spotify Streaming Record', zh: 'Spotify流媒体记录', ja: 'Spotifyストリーミング記録' },
+    ],
+    economy: [
+        { ko: '한국은행 금리 인상', en: 'BOK Interest Rate Hike', zh: '韩国央行加息', ja: '韓銀利上げ' },
+        { ko: '미국 GDP 성장률 발표', en: 'US GDP Growth Rate', zh: '美国GDP增长率', ja: '米GDP成長率' },
+        { ko: '중국 경제 지표 개선', en: 'China Economic Indicators', zh: '中国经济指标改善', ja: '中国経済指標改善' },
+        { ko: '일본 엔화 환율 변동', en: 'Japanese Yen Exchange Rate', zh: '日元汇率变动', ja: '円為替レート変動' },
+        { ko: '유럽 인플레이션 하락', en: 'European Inflation Drop', zh: '欧洲通胀下降', ja: '欧州インフレ低下' },
+        { ko: '글로벌 주식시장 반등', en: 'Global Stock Market Rally', zh: '全球股市反弹', ja: 'グローバル株式反発' },
+        { ko: '원유 가격 급등', en: 'Oil Price Surge', zh: '原油价格飙升', ja: '原油価格急騰' },
+        { ko: '금 가격 사상 최고치', en: 'Gold Price Record High', zh: '黄金价格创新高', ja: '金価格最高値' },
+        { ko: '부동산 시장 회복', en: 'Real Estate Market Recovery', zh: '房地产市场复苏', ja: '不動産市場回復' },
+        { ko: '반도체 수출 증가', en: 'Semiconductor Export Increase', zh: '半导体出口增加', ja: '半導体輸出増加' },
+    ],
+    science: [
+        { ko: 'NASA 화성 탐사 성공', en: 'NASA Mars Exploration Success', zh: 'NASA火星探测成功', ja: 'NASA火星探査成功' },
+        { ko: '노벨상 수상자 발표', en: 'Nobel Prize Winner Announcement', zh: '诺贝尔奖获得者公布', ja: 'ノーベル賞受賞者発表' },
+        { ko: '암 치료 신약 승인', en: 'Cancer Drug Approval', zh: '癌症新药批准', ja: 'がん治療新薬承認' },
+        { ko: '양자컴퓨터 돌파구', en: 'Quantum Computer Breakthrough', zh: '量子计算机突破', ja: '量子コンピュータ突破' },
+        { ko: 'AI 의료 진단 성공', en: 'AI Medical Diagnosis Success', zh: 'AI医疗诊断成功', ja: 'AI医療診断成功' },
+        { ko: '우주 탐사선 발사', en: 'Space Probe Launch', zh: '太空探测器发射', ja: '宇宙探査機打上' },
+        { ko: '유전자 편집 기술 발전', en: 'Gene Editing Technology', zh: '基因编辑技术进展', ja: '遺伝子編集技術進展' },
+        { ko: '백신 임상시험 성공', en: 'Vaccine Clinical Trial Success', zh: '疫苗临床试验成功', ja: 'ワクチン臨床試験成功' },
+        { ko: '재생에너지 효율 향상', en: 'Renewable Energy Efficiency', zh: '可再生能源效率提升', ja: '再生エネ効率向上' },
+        { ko: '인공장기 이식 성공', en: 'Artificial Organ Transplant', zh: '人工器官移植成功', ja: '人工臓器移植成功' },
+    ],
+    climate: [
+        { ko: '파리기후협약 목표 달성', en: 'Paris Agreement Goal', zh: '巴黎气候协议目标', ja: 'パリ協定目標達成' },
+        { ko: '탄소중립 정책 발표', en: 'Carbon Neutral Policy', zh: '碳中和政策发布', ja: 'カーボンニュートラル政策' },
+        { ko: '재생에너지 투자 증가', en: 'Renewable Energy Investment', zh: '可再生能源投资增加', ja: '再生エネ投資増加' },
+        { ko: '전기차 보급 확대', en: 'EV Adoption Expansion', zh: '电动车普及扩大', ja: 'EV普及拡大' },
+        { ko: '플라스틱 규제 강화', en: 'Plastic Regulation Tightening', zh: '塑料监管加强', ja: 'プラスチック規制強化' },
+        { ko: '산림 복원 프로젝트', en: 'Forest Restoration Project', zh: '森林恢复项目', ja: '森林復元プロジェクト' },
+        { ko: '해양 보호 구역 확대', en: 'Marine Protected Area Expansion', zh: '海洋保护区扩大', ja: '海洋保護区拡大' },
+        { ko: '대기오염 감소 정책', en: 'Air Pollution Reduction Policy', zh: '空气污染减少政策', ja: '大気汚染削減政策' },
+        { ko: '지속가능 농업 확산', en: 'Sustainable Agriculture Spread', zh: '可持续农业推广', ja: '持続可能農業拡大' },
+        { ko: '그린뉴딜 법안 통과', en: 'Green New Deal Bill', zh: '绿色新政法案通过', ja: 'グリーンニューディール法案' },
+    ]
+}
+
+// Generate 450 events (50 per category)
+const generateEvents = () => {
+    console.log('EventBET: generateEvents() called')
+    const allEvents = []
+    let id = 1
+    
+    console.log('EventBET: Categories count:', categories.length)
+    categories.forEach(category => {
+        const templates = eventTemplates[category.slug]
+        
+        for (let i = 0; i < 50; i++) {
+            const template = templates[i % templates.length]
+            const variation = Math.floor(i / templates.length) + 1
+            const probYes = 0.3 + Math.random() * 0.4 // 30-70%
+            
+            const volume = Math.floor(Math.random() * 20000000) + 1000000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500) // 이용객 수
+            
+            allEvents.push({
+                id: id++,
+                category_id: category.id,
+                category_slug: category.slug,
+                title_ko: `${template.ko} #${variation}`,
+                title_en: `${template.en} #${variation}`,
+                title_zh: `${template.zh} #${variation}`,
+                title_ja: `${template.ja} #${variation}`,
+                description_ko: `${template.ko} #${variation}에 대한 예측 마켓입니다.`,
+                description_en: `Prediction market for ${template.en} #${variation}.`,
+                description_zh: `关于${template.zh} #${variation}的预测市场。`,
+                description_ja: `${template.ja} #${variation}についての予測市場です。`,
+                resolve_date: getRandomDateWithinMonth(),
+                total_volume: volume,
+                participants: participants,
+                outcomes: [
+                    { id: id * 2 - 1, name: '예', probability: probYes },
+                    { id: id * 2, name: '아니오', probability: 1 - probYes }
+                ]
+            })
+        }
+    })
+    
+    // Shuffle to mix categories
+    return allEvents.sort(() => Math.random() - 0.5)
+}
+
+console.log('EventBET: About to call generateEvents()')
+const events = generateEvents()
+
+console.log(`Generated ${events.length} events`)
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
-    // Load saved theme
+console.log('EventBET: Setting up DOMContentLoaded listener')
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('EventBET: DOMContentLoaded fired!')
     const savedTheme = localStorage.getItem('theme') || 'light'
     isDarkMode = savedTheme === 'dark'
     applyTheme()
     
-    // Load saved language
-    const savedLang = localStorage.getItem('preferred_language') || 'en'
+    const savedLang = localStorage.getItem('preferred_language') || 'ko'
     currentLang = savedLang
-    document.getElementById('langSelect').value = savedLang
+    const langSelector = document.getElementById('language-selector')
+    if (langSelector) langSelector.value = savedLang
     
-    // Load saved wallet
-    const savedWallet = localStorage.getItem('wallet_address')
-    if (savedWallet) {
-        currentWallet = savedWallet
-        updateWalletButton()
-    }
-    
-    // Load translations
-    await loadTranslations()
-    
-    // Load data
-    await loadCategories()
-    await loadEvents()
-    
-    // Setup event listeners
     setupEventListeners()
-    
-    // Load user bets if wallet connected
-    if (currentWallet) {
-        loadUserBets()
-    }
+    updateUITexts()
+    renderCategories()
+    renderMarkets()
 })
+
+// Setup event listeners
+function setupEventListeners() {
+    const langSelector = document.getElementById('language-selector')
+    if (langSelector) {
+        langSelector.addEventListener('change', (e) => {
+            currentLang = e.target.value
+            localStorage.setItem('preferred_language', currentLang)
+            updateUITexts()
+            renderMarkets()
+        })
+    }
+    
+    const themeToggle = document.getElementById('theme-toggle')
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme)
+    
+    const connectWallet = document.getElementById('connect-wallet')
+    if (connectWallet) {
+        connectWallet.addEventListener('click', () => {
+            if (!currentWallet) {
+                currentWallet = '0x' + Math.random().toString(16).substr(2, 40)
+                localStorage.setItem('wallet_address', currentWallet)
+                updateUITexts()
+                alert('지갑 연결 성공: ' + currentWallet)
+            } else {
+                currentWallet = null
+                localStorage.removeItem('wallet_address')
+                updateUITexts()
+            }
+        })
+    }
+    
+    const submitIssueBtn = document.getElementById('submit-issue-btn')
+    if (submitIssueBtn) submitIssueBtn.addEventListener('click', openSubmitIssueModal)
+    
+    const exploreButton = document.getElementById('explore-button')
+    if (exploreButton) {
+        exploreButton.addEventListener('click', () => {
+            document.getElementById('markets-container').scrollIntoView({ behavior: 'smooth' })
+        })
+    }
+    
+    const searchInput = document.getElementById('search-input')
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch)
+    }
+    
+    const loadMoreBtn = document.getElementById('load-more-btn')
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadMoreMarkets)
+    }
+}
 
 // Theme management
 function applyTheme() {
     if (isDarkMode) {
         document.body.classList.add('dark-mode')
-        document.getElementById('themeIcon').className = 'fas fa-sun'
+        const themeIcon = document.querySelector('#theme-toggle i')
+        if (themeIcon) themeIcon.className = 'fas fa-sun text-yellow-400'
     } else {
         document.body.classList.remove('dark-mode')
-        document.getElementById('themeIcon').className = 'fas fa-moon'
+        const themeIcon = document.querySelector('#theme-toggle i')
+        if (themeIcon) themeIcon.className = 'fas fa-moon text-gray-700'
     }
 }
 
@@ -59,881 +349,515 @@ function toggleTheme() {
     applyTheme()
 }
 
-// Load translations
-async function loadTranslations() {
-    try {
-        const response = await axios.get(`/api/translations/${currentLang}`)
-        translations = response.data
-        updateUITexts()
-    } catch (error) {
-        console.error('Error loading translations:', error)
-    }
-}
-
-// Update UI texts with translations
+// Update UI texts
 function updateUITexts() {
-    document.getElementById('walletBtnText').textContent = currentWallet 
-        ? `${currentWallet.substring(0, 6)}...${currentWallet.substring(38)}`
-        : translations.connectWallet
-    document.getElementById('heroTitle').textContent = translations.title
-    document.getElementById('heroSubtitle').textContent = translations.subtitle
-    document.getElementById('categoriesTitle').textContent = translations.categories
-    document.getElementById('marketsTitle').textContent = translations.trending
-    document.getElementById('myBetsTitle').textContent = translations.myBets
-    document.getElementById('betModalTitle').textContent = translations.placeBet
+    const t = translations[currentLang] || translations.ko
     
-    // Update Odds/Fee section visibility based on language
-    updateOddsFeeSection()
-}
-
-// Update Odds/Fee section based on current language
-function updateOddsFeeSection() {
-    // Hide all sections
-    const sections = ['oddsFeeSectionKO', 'oddsFeeSectionEN', 'oddsFeeSectionZH', 'oddsFeeSectionJA']
-    sections.forEach(id => {
-        const element = document.getElementById(id)
-        if (element) element.classList.add('hidden')
-    })
+    const appTitle = document.getElementById('app-title')
+    if (appTitle) appTitle.textContent = 'EventBET'
     
-    // Show current language section
-    let sectionId = 'oddsFeeSectionEN' // default
-    switch(currentLang) {
-        case 'ko':
-            sectionId = 'oddsFeeSectionKO'
-            break
-        case 'en':
-            sectionId = 'oddsFeeSectionEN'
-            break
-        case 'zh':
-            sectionId = 'oddsFeeSectionZH'
-            break
-        case 'ja':
-            sectionId = 'oddsFeeSectionJA'
-            break
+    const connectWalletText = document.getElementById('connect-wallet-text')
+    if (connectWalletText) {
+        connectWalletText.textContent = currentWallet 
+            ? `${currentWallet.substring(0, 6)}...${currentWallet.substring(38)}`
+            : t.connectWallet
     }
     
-    const currentSection = document.getElementById(sectionId)
-    if (currentSection) {
-        currentSection.classList.remove('hidden')
-    }
+    const submitIssueText = document.getElementById('submit-issue-text')
+    if (submitIssueText) submitIssueText.textContent = t.submitIssue
+    
+    const heroTitle = document.getElementById('hero-title')
+    if (heroTitle) heroTitle.textContent = t.title
+    
+    const heroSubtitle = document.getElementById('hero-subtitle')
+    if (heroSubtitle) heroSubtitle.textContent = t.subtitle
+    
+    const heroDescription = document.getElementById('hero-description')
+    if (heroDescription) heroDescription.textContent = t.description
+    
+    const exploreButton = document.querySelector('#explore-button span')
+    if (exploreButton) exploreButton.textContent = t.explore
+    
+    const categoriesTitle = document.getElementById('categories-title')
+    if (categoriesTitle) categoriesTitle.textContent = t.categories
+    
+    const trendingTitle = document.getElementById('trending-title')
+    if (trendingTitle) trendingTitle.textContent = t.trending
+    
+    const searchInput = document.getElementById('search-input')
+    if (searchInput) searchInput.placeholder = t.searchPlaceholder
+    
+    updateMarketCount()
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Theme toggle
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme)
-    
-    // Language selector
-    document.getElementById('langSelect').addEventListener('change', async (e) => {
-        currentLang = e.target.value
-        localStorage.setItem('preferred_language', currentLang)
-        await loadTranslations()
-        await loadCategories()
-        await loadEvents()
-        if (currentWallet) {
-            await loadUserBets()
-        }
-    })
-    
-    // Wallet connection
-    document.getElementById('connectWalletBtn').addEventListener('click', connectWallet)
-    document.getElementById('closeBetModal').addEventListener('click', closeBetModal)
-    
-    // Close modal on outside click
-    document.getElementById('betModal').addEventListener('click', (e) => {
-        if (e.target.id === 'betModal') {
-            closeBetModal()
-        }
-    })
-}
-
-// Connect wallet (simplified simulation)
-async function connectWallet() {
-    if (currentWallet) {
-        // Disconnect
-        const confirm = window.confirm(translations.en === currentLang 
-            ? 'Disconnect wallet?' 
-            : '지갑 연결을 해제하시겠습니까?')
-        if (confirm) {
-            currentWallet = null
-            localStorage.removeItem('wallet_address')
-            updateWalletButton()
-            document.getElementById('myBetsSection').classList.add('hidden')
-        }
-        return
-    }
-    
-    // Simulate wallet connection (in real app, use Web3/Ethers.js)
-    const wallet = prompt(
-        currentLang === 'en' ? 'Enter your wallet address:' :
-        currentLang === 'ko' ? '지갑 주소를 입력하세요:' :
-        currentLang === 'zh' ? '输入您的钱包地址:' :
-        '財布アドレスを入力してください:'
-    )
-    
-    if (wallet && wallet.startsWith('0x') && wallet.length === 42) {
-        currentWallet = wallet
-        localStorage.setItem('wallet_address', wallet)
-        updateWalletButton()
-        await loadUserBets()
-    } else if (wallet) {
-        alert(currentLang === 'en' ? 'Invalid wallet address' :
-              currentLang === 'ko' ? '잘못된 지갑 주소입니다' :
-              currentLang === 'zh' ? '钱包地址无效' :
-              '無効な財布アドレス')
+// Update market count
+function updateMarketCount() {
+    const t = translations[currentLang] || translations.ko
+    const marketCount = document.getElementById('market-count')
+    const filteredEvents = getFilteredEvents()
+    if (marketCount) {
+        marketCount.textContent = `${t.showingMarkets}: ${Math.min(displayedMarkets, filteredEvents.length)}${t.individual} / ${t.totalMarkets} ${filteredEvents.length}${t.individual}`
     }
 }
 
-// Update wallet button
-function updateWalletButton() {
-    const btn = document.getElementById('walletBtnText')
-    if (currentWallet) {
-        btn.textContent = `${currentWallet.substring(0, 6)}...${currentWallet.substring(38)}`
-        document.getElementById('myBetsSection').classList.remove('hidden')
-    } else {
-        btn.textContent = translations.connectWallet
-        document.getElementById('myBetsSection').classList.add('hidden')
+// Get filtered events
+function getFilteredEvents() {
+    let filtered = events
+    
+    if (currentCategory !== 'all') {
+        filtered = filtered.filter(e => e.category_slug === currentCategory)
     }
+    
+    const searchInput = document.getElementById('search-input')
+    if (searchInput && searchInput.value) {
+        const query = searchInput.value.toLowerCase()
+        filtered = filtered.filter(e => 
+            e.title_ko.toLowerCase().includes(query) ||
+            e.title_en.toLowerCase().includes(query) ||
+            e.title_zh.toLowerCase().includes(query) ||
+            e.title_ja.toLowerCase().includes(query)
+        )
+    }
+    
+    // Apply sorting
+    if (currentSortBy === 'date') {
+        // Sort by resolve_date (earliest first)
+        filtered.sort((a, b) => new Date(a.resolve_date) - new Date(b.resolve_date))
+    } else if (currentSortBy === 'volume') {
+        // Sort by total_volume (highest first)
+        filtered.sort((a, b) => b.total_volume - a.total_volume)
+    } else if (currentSortBy === 'participants') {
+        // Sort by participants (highest first) - 이용객 숫자
+        filtered.sort((a, b) => b.participants - a.participants)
+    }
+    
+    return filtered
 }
 
-// Load categories
-async function loadCategories() {
-    try {
-        const response = await axios.get(`/api/categories?lang=${currentLang}`)
-        categories = response.data.categories
-        renderCategories()
-    } catch (error) {
-        console.error('Error loading categories:', error)
+// Sort markets
+function sortMarkets(sortBy) {
+    currentSortBy = sortBy
+    displayedMarkets = MARKETS_PER_PAGE
+    
+    // Update button states
+    document.getElementById('sort-date')?.classList.remove('active')
+    document.getElementById('sort-volume')?.classList.remove('active')
+    document.getElementById('sort-participants')?.classList.remove('active')
+    
+    const activeBtn = document.getElementById('sort-' + sortBy)
+    if (activeBtn) {
+        activeBtn.classList.add('active')
     }
+    
+    renderMarkets()
+}
+
+// Handle search
+function handleSearch() {
+    displayedMarkets = MARKETS_PER_PAGE
+    renderMarkets()
+}
+
+// Load more markets
+function loadMoreMarkets() {
+    displayedMarkets += MARKETS_PER_PAGE
+    renderMarkets()
 }
 
 // Render categories
 function renderCategories() {
-    const container = document.getElementById('categoriesContainer')
-    container.innerHTML = `
-        <button onclick="filterByCategory(null)" 
-                class="btn-category active px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition">
-            All
-        </button>
-    ` + categories.map(cat => `
-        <button onclick="filterByCategory('${cat.slug}')" 
-                class="btn-category px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition">
-            ${cat.icon} ${cat.name}
-        </button>
-    `).join('')
-}
-
-// Load events
-async function loadEvents(category = null) {
-    try {
-        const url = category 
-            ? `/api/events?lang=${currentLang}&category=${category}`
-            : `/api/events?lang=${currentLang}`
-        const response = await axios.get(url)
-        events = response.data.events
-        
-        // Apply current sort after loading
-        sortMarkets(currentSort)
-    } catch (error) {
-        console.error('Error loading events:', error)
-    }
-}
-
-// Filter by category
-async function filterByCategory(category) {
-    await loadEvents(category)
-}
-
-// Render events
-function renderEvents() {
-    const container = document.getElementById('marketsContainer')
+    const container = document.getElementById('categories-container')
+    if (!container) return
     
-    if (events.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-12 text-secondary text-sm mobile-text">
-                ${currentLang === 'en' ? 'No active markets available' :
-                  currentLang === 'ko' ? '활성 마켓이 없습니다' :
-                  currentLang === 'zh' ? '没有可用的活跃市场' :
-                  'アクティブなマーケットはありません'}
-            </div>
-        `
-        return
+    const allCategory = {
+        id: 'all',
+        slug: 'all',
+        name_ko: '전체',
+        name_en: 'All',
+        name_zh: '全部',
+        name_ja: 'すべて',
+        icon: '📋'
     }
     
-    container.innerHTML = events.map(event => {
-        const endDate = new Date(event.end_date)
-        const now = new Date()
-        const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24))
-        
-        // Ensure outcomes exist, create default if empty
-        const hasOutcomes = event.outcomes && event.outcomes.length > 0
-        const defaultOutcome = hasOutcomes ? event.outcomes[0].id : null
-        
-        // Get real image for the event based on category and keywords
-        const getEventImage = (categorySlug, title) => {
-            // Use Picsum Photos for realistic images based on category
-            const imageIds = {
-                'politics': '1060', // Government buildings
-                'sports': '449', // Stadium/sports
-                'technology': '180', // Tech/abstract
-                'cryptocurrency': '1068', // Finance/money
-                'entertainment': '399', // Entertainment
-                'economy': '1067', // Business
-                'science': '1074', // Science/research
-                'climate': '1080' // Nature/environment
-            }
-            const imageId = imageIds[categorySlug] || '180'
-            return `https://picsum.photos/id/${imageId}/120/120`
-        }
-        
-        const eventImage = getEventImage(event.category_slug, event.title)
-        
+    const allCategories = [allCategory, ...categories]
+    
+    container.innerHTML = allCategories.map(category => {
+        const isActive = currentCategory === category.slug
+        const categoryCount = category.slug === 'all' ? events.length : events.filter(e => e.category_slug === category.slug).length
         return `
-            <div class="card rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-all"
-                 onclick="openBetModalByEventId(${event.id})">
-                <!-- Polymarket Style Layout -->
-                <div class="flex p-3 sm:p-4">
-                    <!-- Left: Square Image -->
-                    <div class="flex-shrink-0 mr-3">
-                        <img src="${eventImage}" 
-                             alt="${event.category_name}"
-                             class="w-12 h-12 sm:w-16 sm:h-16 rounded object-cover"
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E${event.category_icon}%3C/text%3E%3C/svg%3E'">
-                    </div>
-                    
-                    <!-- Right: Content -->
-                    <div class="flex-1 min-w-0">
-                        <!-- Category Badge and Volume -->
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                ${event.category_icon} ${event.category_name}
-                            </span>
-                            <span class="text-xs font-bold text-green-600 dark:text-green-400">
-                                $${formatNumber(event.total_volume)}
-                            </span>
-                        </div>
-                        
-                        <!-- Title -->
-                        <h4 class="text-sm font-bold mb-2 mobile-text leading-tight line-clamp-2">${event.title}</h4>
-                
-                        <!-- Outcomes with Beautiful YES/NO Style -->
-                        <div class="space-y-1.5">
-                            ${hasOutcomes ? event.outcomes.slice(0, 2).map((outcome, idx) => {
-                                const isYes = outcome.name.toLowerCase().includes('yes') || outcome.name === '예' || outcome.name === '是' || outcome.name === 'はい'
-                                const isNo = outcome.name.toLowerCase().includes('no') || outcome.name === '아니오' || outcome.name === '否' || outcome.name === 'いいえ'
-                                const bgColor = isYes ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 
-                                               isNo ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' : 
-                                               'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                                const textColor = isYes ? 'text-green-700 dark:text-green-300' : 
-                                                 isNo ? 'text-red-700 dark:text-red-300' : 
-                                                 'text-blue-700 dark:text-blue-300'
-                                const percentColor = isYes ? 'text-green-600 dark:text-green-400' : 
-                                                    isNo ? 'text-red-600 dark:text-red-400' : 
-                                                    'text-blue-600 dark:text-blue-400'
-                                return `
-                                <div class="relative overflow-hidden rounded-lg border ${bgColor} hover:shadow-md transition-all cursor-pointer"
-                                     onclick="event.stopPropagation(); openBetModalById(${event.id}, ${outcome.id})">
-                                    <!-- Background Progress Bar -->
-                                    <div class="absolute inset-0 ${isYes ? 'bg-green-200 dark:bg-green-700' : isNo ? 'bg-red-200 dark:bg-red-700' : 'bg-blue-200 dark:bg-blue-700'} opacity-20"
-                                         style="width: ${outcome.probability * 100}%; transition: width 0.3s ease;"></div>
-                                    
-                                    <!-- Content -->
-                                    <div class="relative z-10 flex items-center justify-between p-2">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="font-bold text-sm ${textColor}">${outcome.name}</span>
-                                        </div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-xl font-bold ${percentColor}">${(outcome.probability * 100).toFixed(1)}%</span>
-                                            ${outcome.total_bets > 0 ? `<span class="text-xs text-gray-500 dark:text-gray-400">$${formatNumber(outcome.total_bets)}</span>` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                            `}).join('') : `
-                                <div class="p-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-center">
-                                    <span class="text-xs text-white font-semibold mobile-text">
-                                        ${currentLang === 'ko' ? '📊 클릭하여 상세 정보 확인' :
-                                          currentLang === 'en' ? '📊 Click to view details' :
-                                          currentLang === 'zh' ? '📊 点击查看详情' :
-                                          '📊 詳細を表示するにはクリック'}
-                                    </span>
-                                </div>
-                            `}
-                            ${hasOutcomes && event.outcomes.length > 2 ? `
-                                <div class="text-center">
-                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                        +${event.outcomes.length - 2} ${currentLang === 'ko' ? '개 옵션 더보기' :
-                                                                         currentLang === 'en' ? 'more options' :
-                                                                         currentLang === 'zh' ? '更多选项' :
-                                                                         'その他のオプション'}
-                                    </span>
-                                </div>
-                            ` : ''}
-                        </div>
-                        
-                        <!-- Footer: Time and Date -->
-                        <div class="flex items-center justify-between text-xs mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
-                                <i class="far fa-clock"></i>
-                                <span>${daysLeft > 0 ? `${daysLeft}${currentLang === 'ko' ? '일 남음' : currentLang === 'zh' ? '天' : currentLang === 'ja' ? '日' : 'd left'}` : (currentLang === 'ko' ? '곧 마감' : currentLang === 'zh' ? '即将' : currentLang === 'ja' ? 'まもなく' : 'Soon')}</span>
-                            </div>
-                            <span class="text-gray-500 dark:text-gray-400">${endDate.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {month: 'short', day: 'numeric'})}</span>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
+             onclick="filterByCategory('${category.slug}')">
+            <div class="text-center">
+                <div class="text-xl sm:text-2xl mb-1">${category.icon}</div>
+                <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${getCategoryName(category)}</h4>
+                <span class="text-xs text-gray-500">${categoryCount}</span>
             </div>
+        </div>
         `
     }).join('')
 }
 
-// Open bet modal by event ID (creates default outcome if none exist)
-function openBetModalByEventId(eventId) {
-    try {
-        console.log('openBetModalByEventId called with eventId:', eventId)
-        console.log('Events array length:', events.length)
-        
-        const event = events.find(e => e.id === eventId)
-        if (!event) {
-            console.error('Event not found:', eventId)
-            console.error('Available event IDs:', events.map(e => e.id))
-            alert('Event not found. Please refresh the page.')
-            return
-        }
-        
-        console.log('Found event:', event.title)
-        
-        // If event has outcomes, use the first one
-        if (event.outcomes && event.outcomes.length > 0) {
-            console.log('Opening modal with first outcome:', event.outcomes[0].name)
-            openBetModal(event, event.outcomes[0])
-        } else {
-            // Create default "Yes" outcome for events without outcomes
-            console.log('Creating default outcome for event without outcomes')
-            const defaultOutcome = {
-                id: 0,
-                name: currentLang === 'ko' ? '예' :
-                      currentLang === 'en' ? 'Yes' :
-                      currentLang === 'zh' ? '是' :
-                      'はい',
-                probability: 0.5,
-                total_bets: 0
-            }
-            openBetModal(event, defaultOutcome)
-        }
-    } catch (error) {
-        console.error('Error in openBetModalByEventId:', error)
-        alert('Error opening market details: ' + error.message)
-    }
+// Filter by category
+function filterByCategory(categorySlug) {
+    currentCategory = categorySlug
+    displayedMarkets = MARKETS_PER_PAGE
+    renderCategories()
+    renderMarkets()
 }
 
-// Open bet modal by ID (finds event and outcome from events array)
-function openBetModalById(eventId, outcomeId) {
-    const event = events.find(e => e.id === eventId)
-    if (!event) {
-        console.error('Event not found:', eventId)
-        return
+// Get category name
+const getCategoryName = (category) => {
+    return category[`name_${currentLang}`] || category.name_en
+}
+
+// Get event title
+const getEventTitle = (event) => {
+    return event[`title_${currentLang}`] || event.title_en
+}
+
+// Get event description
+const getEventDescription = (event) => {
+    return event[`description_${currentLang}`] || event.description_en
+}
+
+// Get event image with category-specific variety
+const getEventImage = (categorySlug, eventId) => {
+    const imageIdsByCategory = {
+        'politics': [10, 15, 22, 30, 40, 82, 96, 106, 119, 152, 180, 201, 225, 250, 287, 302, 365, 403, 433, 480],
+        'sports': [62, 93, 144, 158, 169, 185, 213, 247, 272, 318, 349, 374, 401, 426, 456, 488, 512, 548, 572, 601],
+        'technology': [0, 1, 20, 36, 52, 77, 101, 123, 145, 173, 194, 219, 243, 268, 291, 320, 348, 381, 412, 447],
+        'cryptocurrency': [11, 28, 45, 67, 89, 111, 136, 161, 189, 212, 239, 263, 292, 316, 344, 371, 395, 423, 452, 481],
+        'entertainment': [16, 33, 54, 72, 94, 116, 141, 167, 195, 222, 246, 274, 300, 328, 355, 384, 410, 438, 465, 492],
+        'economy': [3, 25, 47, 69, 91, 113, 138, 163, 191, 217, 241, 266, 294, 322, 350, 379, 408, 434, 461, 490],
+        'science': [8, 18, 39, 60, 85, 109, 133, 157, 182, 208, 233, 257, 283, 309, 337, 363, 389, 419, 445, 475],
+        'climate': [12, 29, 50, 70, 95, 117, 142, 168, 196, 221, 248, 275, 303, 330, 358, 386, 413, 440, 468, 495]
     }
     
-    const outcome = event.outcomes.find(o => o.id === outcomeId)
-    if (!outcome) {
-        console.error('Outcome not found:', outcomeId)
+    const categoryImages = imageIdsByCategory[categorySlug] || imageIdsByCategory['technology']
+    const imageIndex = (eventId - 1) % categoryImages.length
+    const imageId = categoryImages[imageIndex]
+    
+    return `https://picsum.photos/id/${imageId}/120/120`
+}
+
+// Format number
+const formatNumber = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+}
+
+// Render markets
+function renderMarkets() {
+    console.log('EventBET: renderMarkets() called')
+    const container = document.getElementById('markets-container')
+    if (!container) {
+        console.error('EventBET: markets-container not found!')
         return
     }
+    console.log('EventBET: markets-container found, rendering...')
     
-    openBetModal(event, outcome)
+    const filteredEvents = getFilteredEvents()
+    const eventsToShow = filteredEvents.slice(0, displayedMarkets)
+    
+    const html = eventsToShow.map(event => {
+        const category = categories.find(c => c.id === event.category_id)
+        const eventImage = getEventImage(event.category_slug, event.id)
+        const hasOutcomes = event.outcomes && event.outcomes.length > 0
+        
+        let card = '<div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(' + event.id + ')">'
+        card += '<div class="flex p-2 sm:p-3">'
+        card += '<div class="flex-shrink-0 mr-2">'
+        card += '<img src="' + eventImage + '" alt="' + getCategoryName(category) + '" class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E' + category.icon + '%3C/text%3E%3C/svg%3E\'">'
+        card += '</div>'
+        card += '<div class="flex-1 min-w-0">'
+        card += '<div class="flex items-center justify-between mb-1">'
+        card += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">'
+        card += category.icon + ' ' + getCategoryName(category)
+        card += '</span>'
+        card += '<span class="text-xs font-bold text-green-600">$' + formatNumber(event.total_volume) + '</span>'
+        card += '</div>'
+        card += '<h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">' + getEventTitle(event) + '</h3>'
+        card += '<div class="flex items-center text-xs text-gray-500 mb-2">'
+        card += '<i class="far fa-calendar mr-1 text-xs"></i>'
+        card += '<span class="text-xs">' + translations[currentLang].resolvesOn + ': ' + event.resolve_date + '</span>'
+        card += '</div>'
+        
+        if (hasOutcomes) {
+            card += '<div class="grid grid-cols-2 gap-1.5">'
+            event.outcomes.slice(0, 2).forEach(outcome => {
+                const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
+                const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
+                const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
+                const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
+                const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
+                const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
+                
+                card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
+                card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
+                card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
+                card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
+                card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
+                card += '</div>'
+                card += '</div>'
+            })
+            card += '</div>'
+        }
+        
+        card += '</div></div></div>'
+        return card
+    }).join('')
+    
+    container.innerHTML = html
+    
+    // Show/hide load more button
+    const loadMoreBtn = document.getElementById('load-more-btn')
+    if (loadMoreBtn) {
+        if (displayedMarkets < filteredEvents.length) {
+            loadMoreBtn.classList.remove('hidden')
+        } else {
+            loadMoreBtn.classList.add('hidden')
+        }
+    }
+    
+    updateMarketCount()
 }
 
 // Open bet modal
-function openBetModal(event, outcome) {
-    try {
-        console.log('openBetModal called')
-        console.log('Event:', event)
-        console.log('Outcome:', outcome)
-        
-        const modal = document.getElementById('betModal')
-        const content = document.getElementById('betModalContent')
-        
-        if (!modal) {
-            console.error('Modal element not found!')
-            alert('Error: Modal element not found. Please refresh the page.')
-            return
-        }
-        
-        if (!content) {
-            console.error('Modal content element not found!')
-            alert('Error: Modal content element not found. Please refresh the page.')
-            return
-        }
-        
-        console.log('Modal elements found successfully')
-        
-        // Determine if wallet is connected
-        const isWalletConnected = !!currentWallet
-        console.log('Wallet connected:', isWalletConnected)
-    
-    // Get translations for connect wallet message
-    const connectWalletMsg = {
-        en: 'Connect Wallet to Place Bet',
-        ko: '베팅하려면 지갑을 연결하세요',
-        zh: '连接钱包以下注',
-        ja: 'ベットするにはウォレットを接続してください'
+function openBetModal(eventId) {
+    // Check if user is logged in
+    if (window.EventBETAuth && !window.EventBETAuth.isLoggedIn()) {
+        window.EventBETAuth.showAuthRequiredModal('마켓 상세 정보를 보려면 로그인이 필요합니다.')
+        return
     }
     
-    content.innerHTML = `
-        <div class="mb-4">
-            <div class="text-xs text-secondary mb-1 mobile-text">${event.category_name}</div>
-            <h4 class="text-base sm:text-lg font-bold mb-2 mobile-text">${event.title}</h4>
-            <div class="card p-3 rounded-lg">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold mobile-text">${outcome.name}</span>
-                    <span class="text-lg font-bold text-accent">${(outcome.probability * 100).toFixed(1)}%</span>
+    const event = events.find(e => e.id === eventId)
+    if (!event) return
+    
+    const category = categories.find(c => c.id === event.category_id)
+    const modal = document.getElementById('bet-modal')
+    const modalTitle = document.getElementById('modal-title')
+    const modalContent = document.getElementById('modal-content')
+    
+    if (!modal || !modalTitle || !modalContent) return
+    
+    modalTitle.textContent = getEventTitle(event)
+    
+    modalContent.innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    ${category.icon} ${getCategoryName(category)}
+                </span>
+            </div>
+            
+            <p class="text-sm sm:text-base text-gray-600">${getEventDescription(event)}</p>
+            
+            <div class="flex items-center text-sm text-gray-500">
+                <i class="far fa-calendar mr-2"></i>
+                <span>${translations[currentLang].resolvesOn}: ${event.resolve_date}</span>
+            </div>
+            
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-chart-line mr-2"></i>
+                <span>${translations[currentLang].volume}: $${formatNumber(event.total_volume)}</span>
+            </div>
+            
+            ${event.outcomes && event.outcomes.length > 0 ? `
+            <div class="border-t pt-4">
+                <h4 class="text-lg font-bold mb-3">${translations[currentLang].placeBet}</h4>
+                ${!currentWallet ? `
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
+                    <p class="text-sm text-yellow-700">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        베팅하려면 지갑을 연결하세요
+                    </p>
+                </div>
+                ` : ''}
+                <div class="grid grid-cols-1 gap-3">
+                    ${event.outcomes.map(outcome => {
+                        const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
+                        const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
+                        const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
+                        const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
+                        return `
+                        <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
+                                ${!currentWallet ? 'disabled' : ''}>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold ${textColor}">${outcome.name}</span>
+                                <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
+                            </div>
+                        </button>
+                        `
+                    }).join('')}
                 </div>
             </div>
+            ` : ''}
         </div>
-        
-        ${!isWalletConnected ? `
-            <div class="mb-4 p-4 bg-yellow-500 bg-opacity-20 border-2 border-yellow-500 rounded-lg text-center">
-                <i class="fas fa-wallet text-2xl text-yellow-500 mb-2"></i>
-                <p class="text-sm font-bold mobile-text">${connectWalletMsg[currentLang] || connectWalletMsg.en}</p>
-                <button type="button" onclick="closeModalAndConnectWallet()" 
-                        class="mt-3 px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold text-sm mobile-text transition">
-                    <i class="fas fa-plug mr-2"></i>
-                    ${translations.connectWallet}
-                </button>
-            </div>
-        ` : ''}
-        
-        <form id="betForm" onsubmit="submitBet(event, ${event.id}, ${outcome.id}, ${outcome.probability})">
-            <div class="mb-4">
-                <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.selectCrypto}</label>
-                <select id="cryptoType" required ${!isWalletConnected ? 'disabled' : ''}
-                        class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}">
-                    <option value="USDT">₮ USDT (Tether)</option>
-                </select>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-xs sm:text-sm font-semibold mb-2 mobile-text">${translations.amount}</label>
-                <input type="number" id="betAmount" required min="10" step="0.01" ${!isWalletConnected ? 'disabled' : ''}
-                       class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}"
-                       placeholder="Enter amount in USD">
-            </div>
-            
-            <div class="mb-6 p-3 card rounded-lg">
-                <div class="flex justify-between text-xs sm:text-sm mobile-text">
-                    <span class="text-secondary">Current Odds:</span>
-                    <span class="font-semibold">${(outcome.probability * 100).toFixed(1)}%</span>
-                </div>
-                <div class="flex justify-between text-xs sm:text-sm mobile-text mt-2">
-                    <span class="text-secondary">${translations.potentialPayout}:</span>
-                    <span class="font-bold text-accent" id="potentialPayout">-</span>
-                </div>
-            </div>
-            
-            <button type="submit" ${!isWalletConnected ? 'disabled' : ''}
-                    class="w-full btn-primary py-2 sm:py-3 rounded-lg font-bold text-sm sm:text-base mobile-text hover:shadow-xl transition ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}">
-                <i class="fas fa-check-circle mr-2"></i>
-                ${translations.placeBet}
-            </button>
-        </form>
     `
     
-    console.log('Setting modal content complete')
-    console.log('Removing hidden class from modal')
     modal.classList.remove('hidden')
-    console.log('Modal should now be visible')
-    
-    // Update potential payout on amount change (only if wallet connected)
-    if (isWalletConnected) {
-        const betAmountInput = document.getElementById('betAmount')
-        if (betAmountInput) {
-            betAmountInput.addEventListener('input', (e) => {
-                const amount = parseFloat(e.target.value) || 0
-                const payout = amount / outcome.probability
-                const payoutElement = document.getElementById('potentialPayout')
-                if (payoutElement) {
-                    payoutElement.textContent = amount > 0 ? `$${payout.toFixed(2)}` : '-'
-                }
-            })
-        }
-    }
-    
-    console.log('openBetModal completed successfully')
-    } catch (error) {
-        console.error('Error in openBetModal:', error)
-        console.error('Error stack:', error.stack)
-        alert('Error opening bet modal: ' + error.message)
-    }
-}
-
-// Close modal and open wallet connection
-function closeModalAndConnectWallet() {
-    closeBetModal()
-    setTimeout(() => {
-        connectWallet()
-    }, 300)
+    modal.classList.add('flex')
 }
 
 // Close bet modal
 function closeBetModal() {
-    document.getElementById('betModal').classList.add('hidden')
-}
-
-// Submit bet
-async function submitBet(e, eventId, outcomeId, probability) {
-    e.preventDefault()
-    
-    // Check wallet connection before submitting
-    if (!currentWallet) {
-        alert(currentLang === 'en' ? 'Please connect your wallet first' :
-              currentLang === 'ko' ? '먼저 지갑을 연결해주세요' :
-              currentLang === 'zh' ? '请先连接您的钱包' :
-              'まず財布を接続してください')
-        return
-    }
-    
-    const amount = parseFloat(document.getElementById('betAmount').value)
-    const cryptoType = document.getElementById('cryptoType').value
-    
-    // Only USDT is supported
-    const cryptoAmount = amount
-    
-    // Simulate transaction hash (in real app, use blockchain transaction)
-    const txHash = '0x' + Array.from({length: 64}, () => 
-        Math.floor(Math.random() * 16).toString(16)).join('')
-    
-    try {
-        const response = await axios.post('/api/bets', {
-            wallet_address: currentWallet,
-            event_id: eventId,
-            outcome_id: outcomeId,
-            amount: amount,
-            crypto_type: cryptoType,
-            crypto_amount: cryptoAmount,
-            transaction_hash: txHash
-        })
-        
-        if (response.data.success) {
-            alert(currentLang === 'en' ? `Bet placed successfully! Potential payout: $${response.data.potential_payout.toFixed(2)}` :
-                  currentLang === 'ko' ? `베팅 성공! 예상 수익: $${response.data.potential_payout.toFixed(2)}` :
-                  currentLang === 'zh' ? `投注成功！预期收益: $${response.data.potential_payout.toFixed(2)}` :
-                  `ベット成功！予想配当: $${response.data.potential_payout.toFixed(2)}`)
-            
-            closeBetModal()
-            await loadEvents()
-            await loadUserBets()
-        }
-    } catch (error) {
-        console.error('Error placing bet:', error)
-        alert(currentLang === 'en' ? 'Error placing bet. Please try again.' :
-              currentLang === 'ko' ? '베팅 중 오류가 발생했습니다.' :
-              currentLang === 'zh' ? '下注时出错' :
-              'ベット中にエラーが発生しました')
+    const modal = document.getElementById('bet-modal')
+    if (modal) {
+        modal.classList.add('hidden')
+        modal.classList.remove('flex')
     }
 }
-
-// Load user bets
-async function loadUserBets() {
-    if (!currentWallet) return
-    
-    try {
-        const response = await axios.get(`/api/bets/${currentWallet}?lang=${currentLang}`)
-        const bets = response.data.bets
-        renderUserBets(bets)
-    } catch (error) {
-        console.error('Error loading user bets:', error)
-    }
-}
-
-// Render user bets
-function renderUserBets(bets) {
-    const container = document.getElementById('myBetsContainer')
-    
-    if (bets.length === 0) {
-        container.innerHTML = `
-            <div class="card rounded-lg p-6 text-center text-secondary text-sm mobile-text">
-                ${currentLang === 'en' ? 'No bets yet. Start predicting!' :
-                  currentLang === 'ko' ? '아직 베팅이 없습니다. 예측을 시작하세요!' :
-                  currentLang === 'zh' ? '还没有投注。开始预测！' :
-                  'まだベットがありません。予測を始めましょう！'}
-            </div>
-        `
-        return
-    }
-    
-    container.innerHTML = bets.map(bet => {
-        const createdDate = new Date(bet.created_at).toLocaleDateString()
-        const statusColor = bet.status === 'confirmed' ? 'text-green-500' :
-                           bet.status === 'won' ? 'text-accent' :
-                           bet.status === 'lost' ? 'text-red-500' :
-                           'text-yellow-500'
-        
-        return `
-            <div class="card rounded-lg p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                    <div class="flex-1">
-                        <div class="text-xs text-secondary mb-1 mobile-text">${createdDate}</div>
-                        <h5 class="text-sm sm:text-base font-bold mb-1 mobile-text">${bet.event_title}</h5>
-                        <div class="text-xs sm:text-sm text-accent mobile-text">
-                            <i class="fas fa-arrow-right mr-1"></i>
-                            ${bet.outcome_name}
-                        </div>
-                    </div>
-                    <div class="text-left sm:text-right">
-                        <div class="text-base sm:text-lg font-bold">${bet.crypto_amount.toFixed(4)} ${bet.crypto_type}</div>
-                        <div class="text-xs text-secondary mobile-text">≈ $${bet.amount.toFixed(2)}</div>
-                        <div class="text-xs ${statusColor} font-semibold mt-1 mobile-text">${bet.status.toUpperCase()}</div>
-                    </div>
-                </div>
-                <div class="mt-3 pt-3 border-t" style="border-color: var(--border-color, #e0e0e0);">
-                    <div class="flex justify-between text-xs mobile-text">
-                        <span class="text-secondary">Odds at bet:</span>
-                        <span>${(bet.probability_at_bet * 100).toFixed(1)}%</span>
-                    </div>
-                    <div class="flex justify-between text-xs mobile-text mt-1">
-                        <span class="text-secondary">Current odds:</span>
-                        <span>${(bet.current_probability * 100).toFixed(1)}%</span>
-                    </div>
-                    <div class="flex justify-between text-xs mobile-text mt-1">
-                        <span class="text-secondary">${translations.potentialPayout}:</span>
-                        <span class="text-green-500 font-bold">$${bet.potential_payout.toFixed(2)}</span>
-                    </div>
-                </div>
-            </div>
-        `
-    }).join('')
-}
-
-// Format number with commas
-function formatNumber(num) {
-    return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
-
-// ========================================
-// ISSUE SUBMISSION FEATURE
-// ========================================
 
 // Open submit issue modal
 function openSubmitIssueModal() {
-    // Open modal regardless of wallet connection
-    document.getElementById('submitIssueModal').classList.remove('hidden')
+    const modal = document.getElementById('submit-issue-modal')
+    const modalContent = document.getElementById('submit-modal-content')
     
-    // If wallet is connected, pre-fill wallet address and enable form
-    if (currentWallet) {
-        document.querySelector('[name="wallet_address"]').value = currentWallet
-        enableSubmitIssueForm(true)
-    } else {
-        // Wallet not connected - show warning and disable form
-        enableSubmitIssueForm(false)
-    }
-}
-
-// Enable or disable submit issue form based on wallet connection
-function enableSubmitIssueForm(enabled) {
-    const form = document.getElementById('submitIssueForm')
-    const submitBtn = document.getElementById('submitIssueBtn2')
-    const walletWarning = document.getElementById('walletWarningSubmit')
+    if (!modal || !modalContent) return
     
-    if (!enabled) {
-        // Disable all form inputs
-        const inputs = form.querySelectorAll('input, textarea, select, button[type="submit"]')
-        inputs.forEach(input => {
-            if (input.type !== 'button' && input.id !== 'cancelSubmitBtn') {
-                input.disabled = true
-                input.classList.add('opacity-50', 'cursor-not-allowed')
-            }
+    modalContent.innerHTML = `
+        <form id="issue-form" class="space-y-4">
+            ${!currentWallet ? `
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                <p class="text-sm text-yellow-700">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    이슈를 제출하려면 지갑을 연결해주세요
+                </p>
+                <button type="button" onclick="document.getElementById('connect-wallet').click(); closeSubmitIssueModal();"
+                        class="mt-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm">
+                    <i class="fas fa-wallet mr-2"></i>
+                    지갑 연결
+                </button>
+            </div>
+            ` : ''}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">이슈 제목 (한국어) *</label>
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Issue Title (English) *</label>
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">问题标题 (中文) *</label>
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">問題タイトル (日本語) *</label>
+                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">설명 (선택사항)</label>
+                <textarea rows="3" ${!currentWallet ? 'disabled' : ''}
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">결과 옵션 *</label>
+                    <select required ${!currentWallet ? 'disabled' : ''}
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="yes-no">예/아니오 (Yes/No)</option>
+                        <option value="custom">커스텀 옵션</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">배팅 한도 (개수) *</label>
+                    <input type="number" min="1" max="1000" value="100" required ${!currentWallet ? 'disabled' : ''}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">암호화폐 선택 *</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="BTC" required ${!currentWallet ? 'disabled' : ''} class="mr-2">
+                        <i class="fab fa-bitcoin text-yellow-500 mr-1"></i> BTC
+                    </label>
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="ETH" ${!currentWallet ? 'disabled' : ''} class="mr-2">
+                        <i class="fab fa-ethereum text-blue-500 mr-1"></i> ETH
+                    </label>
+                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
+                        <input type="radio" name="crypto" value="USDT" ${!currentWallet ? 'disabled' : ''} class="mr-2">
+                        <i class="fas fa-dollar-sign text-green-500 mr-1"></i> USDT
+                    </label>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-lock mr-2 text-gray-600"></i>
+                    운영자 전용 정보
+                </h5>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">지갑 주소 *</label>
+                        <input type="text" value="${currentWallet || ''}" required readonly
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
+                            <input type="email" required ${!currentWallet ? 'disabled' : ''}
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">닉네임 *</label>
+                            <input type="text" required ${!currentWallet ? 'disabled' : ''}
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" ${!currentWallet ? 'disabled' : ''}
+                    class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}">
+                <i class="fas fa-paper-plane mr-2"></i>
+                이슈 제출
+            </button>
+        </form>
+    `
+    
+    const form = document.getElementById('issue-form')
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+            alert('이슈가 성공적으로 제출되었습니다!')
+            closeSubmitIssueModal()
         })
-        
-        // Show wallet connection warning
-        if (walletWarning) {
-            walletWarning.classList.remove('hidden')
-        }
-        
-        // Disable submit button
-        if (submitBtn) {
-            submitBtn.disabled = true
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed')
-        }
-    } else {
-        // Enable all form inputs
-        const inputs = form.querySelectorAll('input, textarea, select, button[type="submit"]')
-        inputs.forEach(input => {
-            input.disabled = false
-            input.classList.remove('opacity-50', 'cursor-not-allowed')
-        })
-        
-        // Hide wallet connection warning
-        if (walletWarning) {
-            walletWarning.classList.add('hidden')
-        }
-        
-        // Enable submit button
-        if (submitBtn) {
-            submitBtn.disabled = false
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed')
-        }
     }
+    
+    modal.classList.remove('hidden')
+    modal.classList.add('flex')
 }
 
 // Close submit issue modal
 function closeSubmitIssueModal() {
-    document.getElementById('submitIssueModal').classList.add('hidden')
-    document.getElementById('submitIssueForm').reset()
-    document.querySelector('[name="wallet_address"]').value = currentWallet || ''
-}
-
-// Crypto selection removed - Only USDT is supported
-
-// Submit issue form
-async function submitIssueForm(e) {
-    e.preventDefault()
-    
-    // Check wallet connection before submitting
-    if (!currentWallet) {
-        alert(currentLang === 'en' ? 'Please connect your wallet first to submit an issue' :
-              currentLang === 'ko' ? '이슈를 제출하려면 먼저 지갑을 연결해주세요' :
-              currentLang === 'zh' ? '请先连接您的钱包以提交问题' :
-              'まず財布を接続して問題を提出してください')
-        return
-    }
-    
-    const formData = new FormData(e.target)
-    const data = {
-        title_en: formData.get('title_en'),
-        title_ko: formData.get('title_ko'),
-        title_zh: formData.get('title_zh'),
-        title_ja: formData.get('title_ja'),
-        description_en: formData.get('description_en'),
-        description_ko: formData.get('description_ko'),
-        description_zh: formData.get('description_zh'),
-        description_ja: formData.get('description_ja'),
-        crypto_type: formData.get('crypto_type'),
-        bet_limit_min: parseFloat(formData.get('bet_limit_min')),
-        bet_limit_max: parseFloat(formData.get('bet_limit_max')),
-        wallet_address: formData.get('wallet_address'),
-        email: formData.get('email'),
-        nickname: formData.get('nickname'),
-        outcomes: [
-            { en: 'Yes', ko: '예', zh: '是', ja: 'はい' },
-            { en: 'No', ko: '아니오', zh: '否', ja: 'いいえ' }
-        ]
-    }
-    
-    try {
-        const response = await axios.post('/api/submissions', data)
-        
-        if (response.data.success) {
-            alert(currentLang === 'en' ? 'Submission received! It will be reviewed by admin.' :
-                  currentLang === 'ko' ? '제출되었습니다! 운영자 검토 후 게시됩니다.' :
-                  currentLang === 'zh' ? '已提交！管理员审核后发布。' :
-                  '提出されました！管理者のレビュー後に公開されます。')
-            closeSubmitIssueModal()
-        }
-    } catch (error) {
-        console.error('Submission error:', error)
-        alert(currentLang === 'en' ? 'Submission failed. Please try again.' :
-              currentLang === 'ko' ? '제출 실패. 다시 시도해주세요.' :
-              currentLang === 'zh' ? '提交失败。请重试。' :
-              '提出失敗。再試行してください。')
+    const modal = document.getElementById('submit-issue-modal')
+    if (modal) {
+        modal.classList.add('hidden')
+        modal.classList.remove('flex')
     }
 }
 
-// Setup issue submission event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Submit issue button
-    const submitIssueBtn = document.getElementById('submitIssueBtn')
-    if (submitIssueBtn) {
-        submitIssueBtn.addEventListener('click', openSubmitIssueModal)
+// Close modals when clicking outside
+document.addEventListener('click', (e) => {
+    const betModal = document.getElementById('bet-modal')
+    if (betModal && e.target === betModal) {
+        closeBetModal()
     }
     
-    // Close modal buttons
-    const closeSubmitModal = document.getElementById('closeSubmitModal')
-    if (closeSubmitModal) {
-        closeSubmitModal.addEventListener('click', closeSubmitIssueModal)
+    const submitModal = document.getElementById('submit-issue-modal')
+    if (submitModal && e.target === submitModal) {
+        closeSubmitIssueModal()
     }
-    
-    const cancelSubmitBtn = document.getElementById('cancelSubmitBtn')
-    if (cancelSubmitBtn) {
-        cancelSubmitBtn.addEventListener('click', closeSubmitIssueModal)
-    }
-    
-    // Close on outside click
-    const submitIssueModal = document.getElementById('submitIssueModal')
-    if (submitIssueModal) {
-        submitIssueModal.addEventListener('click', (e) => {
-            if (e.target.id === 'submitIssueModal') {
-                closeSubmitIssueModal()
-            }
-        })
-    }
-    
-    // Form submission
-    const submitIssueForm = document.getElementById('submitIssueForm')
-    if (submitIssueForm) {
-        submitIssueForm.addEventListener('submit', submitIssueForm)
-    }
-    
-    // Crypto selection removed - Only USDT is supported
 })
-
-// Close submit issue modal and open wallet connection
-function closeModalAndConnectWalletSubmit() {
-    closeSubmitIssueModal()
-    setTimeout(() => {
-        connectWallet()
-    }, 300)
-}
-
-// Sort markets
-let currentSort = 'date'
-
-function sortMarkets(sortType) {
-    currentSort = sortType
-    
-    // Update button states
-    document.querySelectorAll('[id^="sort-"]').forEach(btn => {
-        btn.classList.remove('active')
-    })
-    document.getElementById(`sort-${sortType}`).classList.add('active')
-    
-    // Sort events array
-    let sortedEvents = [...events]
-    
-    switch(sortType) {
-        case 'date':
-            // Sort by end_date (most recent deadline first)
-            sortedEvents.sort((a, b) => new Date(b.end_date) - new Date(a.end_date))
-            break
-        case 'volume':
-            // Sort by total_volume (highest first)
-            sortedEvents.sort((a, b) => (b.total_volume || 0) - (a.total_volume || 0))
-            break
-        case 'participants':
-            // Calculate total participants from outcomes' total_bets
-            sortedEvents.sort((a, b) => {
-                const aParticipants = a.outcomes ? a.outcomes.reduce((sum, o) => sum + (o.total_bets || 0), 0) : 0
-                const bParticipants = b.outcomes ? b.outcomes.reduce((sum, o) => sum + (o.total_bets || 0), 0) : 0
-                return bParticipants - aParticipants
-            })
-            break
-        default:
-            // Default: sort by date
-            sortedEvents.sort((a, b) => new Date(b.end_date) - new Date(a.end_date))
-            break
-    }
-    
-    events = sortedEvents
-    renderEvents()
-}
-
-// Make functions globally accessible
-window.filterByCategory = filterByCategory
-window.sortMarkets = sortMarkets
-window.openBetModal = openBetModal
-window.openBetModalById = openBetModalById
-window.openBetModalByEventId = openBetModalByEventId
-window.submitBet = submitBet
-window.openSubmitIssueModal = openSubmitIssueModal
-window.closeSubmitIssueModal = closeSubmitIssueModal
-window.closeModalAndConnectWallet = closeModalAndConnectWallet
-window.closeModalAndConnectWalletSubmit = closeModalAndConnectWalletSubmit
-window.enableSubmitIssueForm = enableSubmitIssueForm

@@ -93,6 +93,112 @@
             transform: translateY(-1px);
         }
         
+        /* Issue Submit Button - Green */
+        .btn-issue {
+            background: linear-gradient(180deg, #34C759 0%, #28A745 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-issue:hover {
+            background: linear-gradient(180deg, #28A745 0%, #218838 100%);
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Login Button - Blue (default primary) */
+        .btn-login {
+            background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-login:hover {
+            background: linear-gradient(180deg, #0051d5 0%, #003d99 100%);
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Register Button - Purple */
+        .btn-register {
+            background: linear-gradient(180deg, #AF52DE 0%, #8E44AD 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(175, 82, 222, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-register:hover {
+            background: linear-gradient(180deg, #8E44AD 0%, #732D91 100%);
+            box-shadow: 0 4px 16px rgba(175, 82, 222, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Notice Button - Orange */
+        .btn-notice {
+            background: linear-gradient(180deg, #FF9500 0%, #FF8000 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-notice:hover {
+            background: linear-gradient(180deg, #FF8000 0%, #E67300 100%);
+            box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Notice Modal */
+        .notice-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notice-modal.active {
+            display: flex;
+        }
+        
+        .notice-list-item {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .notice-list-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .notice-detail {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
         .btn-category {
             background-color: rgba(120, 120, 128, 0.12);
             color: #1d1d1f;
@@ -431,25 +537,42 @@
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Theme Toggle -->
-                    <button id="themeToggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
-                        <i class="fas fa-moon" id="themeIcon"></i>
+                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
+                        <i class="fas fa-moon" id="theme-icon"></i>
                     </button>
                     <!-- Language Selector -->
-                    <select id="langSelect" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
+                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
                         <option value="en">🇬🇧 EN</option>
                         <option value="ko">🇰🇷 KO</option>
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
-                    <!-- Submit Issue Button -->
-                    <button id="submitIssueBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <!-- Notice Button - Orange -->
+                    <button id="notice-btn" class="btn-notice text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-bullhorn mr-1 sm:mr-2"></i>
+                        <span id="notice-btn-text">공지</span>
+                    </button>
+                    <!-- Submit Issue Button - Green -->
+                    <button id="submit-issue-btn" class="btn-issue text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
-                        <span>이슈 등록</span>
+                        <span id="submit-issue-btn-text">이슈 등록</span>
                     </button>
-                    <button id="connectWalletBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-wallet mr-1 sm:mr-2"></i>
-                        <span id="walletBtnText">Connect Wallet</span>
+                    <!-- Login Button - Blue -->
+                    <button id="login-btn" class="btn-login text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
+                        <span id="login-btn-text">로그인</span>
                     </button>
+                    <!-- Register Button - Purple -->
+                    <button id="register-btn" class="btn-register text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
+                        <span id="register-btn-text">회원가입</span>
+                    </button>
+                    <div id="user-profile" class="hidden flex items-center space-x-2">
+                        <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
+                        <button id="logout-btn" class="btn-primary text-xs sm:text-sm px-2 py-1 rounded-lg font-semibold">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -458,11 +581,11 @@
     <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <!-- Hero Section -->
         <div class="text-center mb-4 sm:mb-8">
-            <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3" id="heroTitle">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
-            <p class="text-base sm:text-lg mb-2 mobile-text font-semibold" id="heroSubtitle">
+            <h2 class="text-sm sm:text-xl font-bold mb-2 sm:mb-3" id="hero-title">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
+            <p class="text-base sm:text-lg mb-2 mobile-text font-semibold" id="hero-subtitle">
                 Where Global Events Meet Your Predictions.
             </p>
-            <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroDescription">
+            <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="hero-description">
                 전 세계 이슈와 당신의 예측이 만나는 곳.
             </p>
             <div class="flex justify-center text-xs mobile-text">
@@ -475,8 +598,8 @@
 
         <!-- Categories Filter -->
         <div class="mb-4 sm:mb-6">
-            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categoriesTitle">Categories</h3>
-            <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text text-center" id="categories-title">카테고리</h3>
+            <div id="categories-container" class="flex justify-center flex-wrap gap-2 pb-2">
                 <!-- Categories will be loaded here -->
             </div>
         </div>
@@ -484,7 +607,7 @@
         <!-- Sort Filter -->
         <div class="mb-4 sm:mb-6">
             <div class="flex items-center justify-between flex-wrap gap-2">
-                <h3 class="text-lg sm:text-xl font-bold mobile-text" id="marketsTitle">
+                <h3 class="text-lg sm:text-xl font-bold mobile-text" id="trending-title">
                     <span data-ko="인기 마켓" data-en="Popular Markets" data-zh="热门市场" data-ja="人気市場">인기 마켓</span>
                 </h3>
                 <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
@@ -495,7 +618,7 @@
                         <i class="fas fa-chart-bar mr-1"></i><span data-ko="배팅규모" data-en="Volume" data-zh="交易量" data-ja="取引量">배팅규모</span>
                     </button>
                     <button onclick="sortMarkets('participants')" id="sort-participants" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                        <i class="fas fa-users mr-1"></i><span data-ko="참여인원" data-en="Participants" data-zh="参与人数" data-ja="参加者数">참여인원</span>
+                        <i class="fas fa-users mr-1"></i><span data-ko="이용객 숫자" data-en="Participants" data-zh="参与人数" data-ja="参加者数">이용객 숫자</span>
                     </button>
                 </div>
             </div>
@@ -503,8 +626,19 @@
 
         <!-- Markets Grid -->
         <div class="mb-6 sm:mb-8">
-            <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div id="markets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 <!-- Markets will be loaded here -->
+            </div>
+            
+            <!-- Load More Button -->
+            <div class="text-center mt-6">
+                <button id="load-more-btn" onclick="loadMoreMarkets()" class="btn-primary px-6 py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    <span data-ko="더 보기" data-en="Load More" data-zh="加载更多" data-ja="もっと見る">더 보기</span>
+                </button>
+                <p class="text-sm text-secondary mt-3">
+                    <span id="market-count"></span>
+                </p>
             </div>
         </div>
 
@@ -517,34 +651,34 @@
         </div>
 
     <!-- Bet Modal -->
-    <div id="betModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4">
+    <div id="bet-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4">
         <div class="modal-content rounded-lg p-4 sm:p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 class="text-lg sm:text-2xl font-bold mobile-text" id="betModalTitle">Place Bet</h3>
-                <button id="closeBetModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
+                <h3 class="text-lg sm:text-2xl font-bold mobile-text" id="modal-title">Place Bet</h3>
+                <button id="close-bet-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div id="betModalContent">
+            <div id="modal-content">
                 <!-- Bet form will be loaded here -->
             </div>
         </div>
     </div>
 
     <!-- Submit Issue Modal -->
-    <div id="submitIssueModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+    <div id="submit-issue-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
         <div class="modal-content rounded-lg p-4 sm:p-6 max-w-3xl w-full my-8">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg sm:text-2xl font-bold mobile-text">
                     <i class="fas fa-plus-circle mr-2 text-accent"></i>
                     이슈 등록하기
                 </h3>
-                <button id="closeSubmitModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
+                <button id="close-submit-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <form id="submitIssueForm" class="space-y-4">
+            <form id="issue-form" class="space-y-4">
                 <!-- Title Section -->
                 <div class="card p-4">
                     <h4 class="font-semibold mb-3 text-accent">
@@ -701,11 +835,11 @@
 
                 <!-- Submit Button -->
                 <div class="flex space-x-3">
-                    <button type="submit" id="submitIssueBtn2" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <button type="submit" id="submit-issue-btn-2" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
                         <i class="fas fa-paper-plane mr-2"></i>
                         제출하기
                     </button>
-                    <button type="button" id="cancelSubmitBtn" class="px-6 py-3 rounded-lg font-semibold text-sm hover:bg-opacity-20">
+                    <button type="button" id="cancel-submit-btn" class="px-6 py-3 rounded-lg font-semibold text-sm hover:bg-opacity-20">
                         취소
                     </button>
                 </div>
@@ -714,5 +848,178 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="/static/chatbot.js"></script>
+    <script src="/static/auth.js"></script>
     <script src="/static/app.js"></script>
 </body>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="modal-content rounded-lg p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">
+                    <i class="fas fa-sign-in-alt mr-2 text-accent"></i>
+                    로그인
+                </h3>
+                <button onclick="closeLoginModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <input type="email" id="login-email" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="your@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                    <input type="password" id="login-password" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    로그인
+                </button>
+                <p class="text-center text-sm text-secondary">
+                    계정이 없으신가요?
+                    <button type="button" onclick="closeLoginModal(); showRegisterModal()" class="text-accent hover:underline">
+                        회원가입
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="modal-content rounded-lg p-6 max-w-2xl w-full my-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">
+                    <i class="fas fa-user-plus mr-2 text-accent"></i>
+                    회원가입
+                </h3>
+                <button onclick="closeRegisterModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="handleRegister(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">이름 *</label>
+                        <input type="text" id="register-name" required 
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="홍길동">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">전화번호 *</label>
+                        <input type="tel" id="register-phone" required 
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="010-1234-5678">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">
+                        USDT 지갑주소 *
+                        <span class="text-xs text-secondary ml-2">(배당 받을 주소)</span>
+                    </label>
+                    <input type="text" id="register-wallet" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="0x...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <input type="email" id="register-email" required 
+                           class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                           placeholder="your@email.com">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                        <input type="password" id="register-password" required minlength="6"
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="최소 6자 이상">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">비밀번호 확인 *</label>
+                        <input type="password" id="register-confirm-password" required minlength="6"
+                               class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                               placeholder="비밀번호 재입력">
+                    </div>
+                </div>
+                <div class="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-500 mb-2">
+                        <i class="fas fa-star mr-2"></i>
+                        회원 전용 혜택
+                    </h4>
+                    <ul class="text-sm text-secondary space-y-1">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>모든 마켓 상세 정보 조회</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>베팅 및 이슈 등록 권한</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>신규 이벤트 알림 서비스</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>배당 내역 관리</li>
+                    </ul>
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    회원가입
+                </button>
+                <p class="text-center text-sm text-secondary">
+                    이미 계정이 있으신가요?
+                    <button type="button" onclick="closeRegisterModal(); showLoginModal()" class="text-accent hover:underline">
+                        로그인
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notice Modal -->
+    <div id="notice-modal" class="notice-modal">
+        <div class="modal-content max-w-3xl w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl sm:text-2xl font-bold">
+                    <i class="fas fa-bullhorn text-orange-500 mr-2"></i>
+                    <span id="notice-modal-title">공지사항</span>
+                </h3>
+                <button onclick="closeNoticeModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Notice List View -->
+            <div id="notice-list-view">
+                <div id="notice-list-container" class="space-y-2 max-h-96 overflow-y-auto">
+                    <!-- 공지 목록이 여기에 표시됩니다 -->
+                </div>
+                <p id="notice-empty" class="text-center text-secondary py-8 hidden">
+                    <i class="fas fa-info-circle text-4xl mb-3 block"></i>
+                    <span id="notice-empty-text">등록된 공지사항이 없습니다.</span>
+                </p>
+            </div>
+            
+            <!-- Notice Detail View -->
+            <div id="notice-detail-view" class="hidden">
+                <button onclick="backToNoticeList()" class="text-accent hover:underline mb-4 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    <span id="notice-back-text">목록으로</span>
+                </button>
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h4 id="notice-detail-title" class="text-xl font-bold mb-4"></h4>
+                    <p id="notice-detail-date" class="text-sm text-secondary mb-6"></p>
+                    <div id="notice-detail-content" class="notice-detail text-gray-700"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Container -->
+    <div id="popup-container"></div>
+
+    <script src="/static/auth.js"></script>
+    <script src="/static/app.js"></script>
+    <script src="/static/chatbot.js"></script>
+    <script src="/static/notices.js"></script>
+    <script src="/static/popup.js"></script>
+</body>
+</html>
