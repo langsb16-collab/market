@@ -167,13 +167,13 @@ class ChatBot {
 
     createChatbotUI() {
         const chatbotHTML = `
-            <!-- 챗봇 버튼 (2배 확대) -->
+            <!-- 챗봇 버튼 (2배 확대) - 진한 색상 -->
             <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group">
                 <div class="relative">
-                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-full p-8 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
+                    <div class="bg-gradient-to-r from-blue-800 to-purple-800 rounded-full p-8 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
                         <i class="fas fa-robot text-white text-6xl"></i>
                     </div>
-                    <div class="absolute -top-4 -right-4 bg-red-500 text-white text-sm font-bold rounded-full w-12 h-12 flex items-center justify-center animate-bounce">
+                    <div class="absolute -top-4 -right-4 bg-red-600 text-white text-sm font-bold rounded-full w-12 h-12 flex items-center justify-center animate-bounce">
                         AI
                     </div>
                 </div>
@@ -181,8 +181,8 @@ class ChatBot {
 
             <!-- 챗봇 창 -->
             <div id="chatbot-window" class="fixed bottom-32 right-6 w-96 bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 600px; max-height: 80vh;">
-                <!-- 헤더 -->
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
+                <!-- 헤더 - 진한 색상 -->
+                <div class="bg-gradient-to-r from-blue-800 to-purple-800 text-white p-4 rounded-t-2xl flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="bg-white rounded-full p-2">
                             <i class="fas fa-robot text-blue-600 text-xl"></i>
@@ -224,7 +224,7 @@ class ChatBot {
                 <div id="chat-input-area" class="p-4 bg-white border-t border-gray-200 rounded-b-2xl hidden">
                     <div class="flex space-x-2">
                         <input type="text" id="chat-input" placeholder="질문을 입력하세요..." class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-full focus:border-blue-500 focus:outline-none text-sm">
-                        <button id="send-message" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full px-6 py-2 hover:opacity-90 transition-opacity">
+                        <button id="send-message" class="bg-gradient-to-r from-blue-800 to-purple-800 text-white rounded-full px-6 py-2 hover:opacity-90 transition-opacity">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -331,21 +331,21 @@ class ChatBot {
             categoryDiv.className = 'mb-4';
             
             const categoryTitle = document.createElement('h5');
-            categoryTitle.className = 'text-xs font-bold text-blue-600 mb-2 flex items-center';
+            categoryTitle.className = 'text-xs font-bold text-blue-800 mb-2 flex items-center';
             categoryTitle.innerHTML = `<i class="fas fa-folder mr-2"></i>${category}`;
             categoryDiv.appendChild(categoryTitle);
 
             questions.forEach(q => {
                 const button = document.createElement('button');
-                button.className = 'w-full text-left px-4 py-3 mb-2 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-sm flex items-center space-x-3 group';
+                button.className = 'w-full text-left px-4 py-3 mb-2 bg-white border-2 border-gray-200 rounded-lg hover:border-blue-700 hover:bg-blue-50 transition-all text-sm flex items-center space-x-3 group';
                 button.innerHTML = `
-                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-700 to-purple-700 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                         <i class="${q.icon} text-xs"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="font-semibold text-gray-800 group-hover:text-blue-600">${q.question}</p>
+                        <p class="font-semibold text-gray-800 group-hover:text-blue-800">${q.question}</p>
                     </div>
-                    <i class="fas fa-chevron-right text-gray-400 group-hover:text-blue-600"></i>
+                    <i class="fas fa-chevron-right text-gray-400 group-hover:text-blue-800"></i>
                 `;
                 button.addEventListener('click', () => this.selectQuestion(q));
                 categoryDiv.appendChild(button);
@@ -375,7 +375,7 @@ class ChatBot {
         const bubble = document.createElement('div');
         bubble.className = `max-w-xs px-4 py-2 rounded-2xl ${
             type === 'user' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                ? 'bg-gradient-to-r from-blue-800 to-purple-800 text-white' 
                 : 'bg-white text-gray-800 shadow-md'
         }`;
         bubble.style.whiteSpace = 'pre-wrap';

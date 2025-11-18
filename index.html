@@ -93,6 +93,60 @@
             transform: translateY(-1px);
         }
         
+        /* Issue Submit Button - Green */
+        .btn-issue {
+            background: linear-gradient(180deg, #34C759 0%, #28A745 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-issue:hover {
+            background: linear-gradient(180deg, #28A745 0%, #218838 100%);
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Login Button - Blue (default primary) */
+        .btn-login {
+            background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-login:hover {
+            background: linear-gradient(180deg, #0051d5 0%, #003d99 100%);
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Register Button - Purple */
+        .btn-register {
+            background: linear-gradient(180deg, #AF52DE 0%, #8E44AD 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(175, 82, 222, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-register:hover {
+            background: linear-gradient(180deg, #8E44AD 0%, #732D91 100%);
+            box-shadow: 0 4px 16px rgba(175, 82, 222, 0.4);
+            transform: translateY(-1px);
+        }
+        
         .btn-category {
             background-color: rgba(120, 120, 128, 0.12);
             color: #1d1d1f;
@@ -441,18 +495,20 @@
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
-                    <!-- Submit Issue Button -->
-                    <button id="submit-issue-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <!-- Submit Issue Button - Green -->
+                    <button id="submit-issue-btn" class="btn-issue text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
                         <span>이슈 등록</span>
                     </button>
-                    <button id="login-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <!-- Login Button - Blue -->
+                    <button id="login-btn" class="btn-login text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
-                        <span>B85cAdf8C778</span>
+                        <span>로그인</span>
                     </button>
-                    <button id="register-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <!-- Register Button - Purple -->
+                    <button id="register-btn" class="btn-register text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
-                        <span>D68cC6d0Ac00C785</span>
+                        <span>회원가입</span>
                     </button>
                     <div id="user-profile" class="hidden flex items-center space-x-2">
                         <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
