@@ -340,9 +340,333 @@
                 
                 <!-- Other Pages (Placeholders) -->
                 <div id="page-users" class="page-content hidden">
+                    <!-- Banner Management Section -->
+                    <div class="table-container p-6 mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold">배너 관리</h3>
+                            <button onclick="openBannerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>새 배너 추가
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Banner Card 1 -->
+                            <div class="border-2 border-gray-200 rounded-lg p-4">
+                                <div class="aspect-video bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mb-3 flex items-center justify-center text-white">
+                                    <div class="text-center">
+                                        <i class="fas fa-image text-4xl mb-2"></i>
+                                        <p class="text-sm">메인 배너 1</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">메인 프로모션</p>
+                                        <p class="text-xs text-gray-500">활성화</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banner Card 2 -->
+                            <div class="border-2 border-gray-200 rounded-lg p-4">
+                                <div class="aspect-video bg-gradient-to-r from-green-500 to-teal-600 rounded-lg mb-3 flex items-center justify-center text-white">
+                                    <div class="text-center">
+                                        <i class="fas fa-gift text-4xl mb-2"></i>
+                                        <p class="text-sm">이벤트 배너</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">신규 가입 이벤트</p>
+                                        <p class="text-xs text-gray-500">활성화</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banner Card 3 -->
+                            <div class="border-2 border-gray-200 rounded-lg p-4">
+                                <div class="aspect-video bg-gradient-to-r from-orange-500 to-red-600 rounded-lg mb-3 flex items-center justify-center text-white">
+                                    <div class="text-center">
+                                        <i class="fas fa-fire text-4xl mb-2"></i>
+                                        <p class="text-sm">HOT 이슈</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-sm">인기 예측 시장</p>
+                                        <p class="text-xs text-gray-500">활성화</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Statistics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">총 사용자</p>
+                                    <p class="text-3xl font-bold text-blue-600">2,847</p>
+                                    <p class="text-xs text-green-600 mt-1">
+                                        <i class="fas fa-arrow-up mr-1"></i>+12.5%
+                                    </p>
+                                </div>
+                                <div class="bg-blue-100 rounded-full p-4">
+                                    <i class="fas fa-users text-blue-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">대기중 승인</p>
+                                    <p class="text-3xl font-bold text-yellow-600">45</p>
+                                    <p class="text-xs text-gray-600 mt-1">
+                                        <i class="fas fa-clock mr-1"></i>승인 대기
+                                    </p>
+                                </div>
+                                <div class="bg-yellow-100 rounded-full p-4">
+                                    <i class="fas fa-user-clock text-yellow-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">활성 사용자</p>
+                                    <p class="text-3xl font-bold text-green-600">1,234</p>
+                                    <p class="text-xs text-green-600 mt-1">
+                                        <i class="fas fa-arrow-up mr-1"></i>+8.3%
+                                    </p>
+                                </div>
+                                <div class="bg-green-100 rounded-full p-4">
+                                    <i class="fas fa-user-check text-green-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">차단 사용자</p>
+                                    <p class="text-3xl font-bold text-red-600">23</p>
+                                    <p class="text-xs text-red-600 mt-1">
+                                        <i class="fas fa-ban mr-1"></i>정지 상태
+                                    </p>
+                                </div>
+                                <div class="bg-red-100 rounded-full p-4">
+                                    <i class="fas fa-user-slash text-red-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Management Table -->
                     <div class="table-container p-6">
-                        <h3 class="text-2xl font-bold mb-4">사용자 관리</h3>
-                        <p class="text-gray-600">사용자 목록 및 관리 기능이 여기에 표시됩니다.</p>
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold">사용자 목록</h3>
+                            <div class="flex space-x-3">
+                                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-file-excel mr-2"></i>엑셀 다운로드
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">이름 검색</label>
+                                <input type="text" id="filter-name" placeholder="이름 입력..." class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">상태</label>
+                                <select id="filter-status" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                    <option value="all">전체</option>
+                                    <option value="pending">대기중</option>
+                                    <option value="approved">승인됨</option>
+                                    <option value="rejected">거부됨</option>
+                                    <option value="blocked">차단됨</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">시작 날짜</label>
+                                <input type="date" id="filter-start-date" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">종료 날짜</label>
+                                <input type="date" id="filter-end-date" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3 mb-6">
+                            <button onclick="applyFilters()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-search mr-2"></i>검색
+                            </button>
+                            <button onclick="resetFilters()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                                <i class="fas fa-redo mr-2"></i>초기화
+                            </button>
+                        </div>
+                        
+                        <!-- User Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th>번호</th>
+                                        <th>이름</th>
+                                        <th>이메일</th>
+                                        <th>가입일</th>
+                                        <th>상태</th>
+                                        <th>총 베팅액</th>
+                                        <th>승/패</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <tr>
+                                        <td>1</td>
+                                        <td>김철수</td>
+                                        <td>user1@example.com</td>
+                                        <td>2024-11-01</td>
+                                        <td><span class="badge badge-approved">승인됨</span></td>
+                                        <td>$5,280</td>
+                                        <td><span class="text-green-600 font-bold">15/8</span></td>
+                                        <td>
+                                            <button class="text-blue-600 hover:text-blue-800 mr-2" title="상세보기">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-yellow-600 hover:text-yellow-800 mr-2" title="수정">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800" title="차단">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>이영희</td>
+                                        <td>user2@example.com</td>
+                                        <td>2024-11-03</td>
+                                        <td><span class="badge badge-pending">대기중</span></td>
+                                        <td>$0</td>
+                                        <td><span class="text-gray-600">0/0</span></td>
+                                        <td>
+                                            <button class="text-green-600 hover:text-green-800 mr-2" title="승인">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800" title="거부">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>박민수</td>
+                                        <td>user3@example.com</td>
+                                        <td>2024-10-28</td>
+                                        <td><span class="badge badge-approved">승인됨</span></td>
+                                        <td>$12,450</td>
+                                        <td><span class="text-green-600 font-bold">28/12</span></td>
+                                        <td>
+                                            <button class="text-blue-600 hover:text-blue-800 mr-2" title="상세보기">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-yellow-600 hover:text-yellow-800 mr-2" title="수정">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800" title="차단">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>정수진</td>
+                                        <td>user4@example.com</td>
+                                        <td>2024-11-05</td>
+                                        <td><span class="badge badge-rejected">거부됨</span></td>
+                                        <td>$0</td>
+                                        <td><span class="text-gray-600">0/0</span></td>
+                                        <td>
+                                            <button class="text-green-600 hover:text-green-800 mr-2" title="재승인">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800" title="삭제">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>홍길동</td>
+                                        <td>user5@example.com</td>
+                                        <td>2024-10-15</td>
+                                        <td><span class="badge badge-approved">승인됨</span></td>
+                                        <td>$8,920</td>
+                                        <td><span class="text-red-600 font-bold">10/18</span></td>
+                                        <td>
+                                            <button class="text-blue-600 hover:text-blue-800 mr-2" title="상세보기">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-yellow-600 hover:text-yellow-800 mr-2" title="수정">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="text-red-600 hover:text-red-800" title="차단">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between mt-6">
+                            <div class="text-sm text-gray-600">
+                                전체 <span class="font-bold">2,847</span>명 중 <span class="font-bold">1-5</span>명 표시
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">1</button>
+                                <button class="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">2</button>
+                                <button class="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">3</button>
+                                <button class="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -368,6 +692,72 @@
                 </div>
             </div>
         </main>
+    </div>
+    
+    <!-- Add Banner Modal -->
+    <div id="add-banner-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold">새 배너 추가</h3>
+                    <button onclick="closeBannerModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="add-banner-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">배너 제목</label>
+                        <input type="text" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="배너 제목을 입력하세요" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">배너 이미지</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                            <input type="file" accept="image/*" class="hidden" id="banner-image-input">
+                            <label for="banner-image-input" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-3"></i>
+                                <p class="text-gray-600">클릭하여 이미지 업로드</p>
+                                <p class="text-sm text-gray-400 mt-2">JPG, PNG, GIF (최대 5MB)</p>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">배너 링크 (선택사항)</label>
+                        <input type="url" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="https://example.com">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">상태</label>
+                            <select class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="active">활성화</option>
+                                <option value="inactive">비활성화</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">표시 위치</label>
+                            <select class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="main">메인 페이지</option>
+                                <option value="top">상단 배너</option>
+                                <option value="sidebar">사이드바</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-check mr-2"></i>추가
+                        </button>
+                        <button type="button" onclick="closeBannerModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                            <i class="fas fa-times mr-2"></i>취소
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     
     <!-- Add Event Modal -->
@@ -498,6 +888,47 @@
             alert('이벤트가 성공적으로 등록되었습니다!')
             closeAddEventModal()
         })
+        
+        // Banner modal functions
+        function openBannerModal() {
+            document.getElementById('add-banner-modal').classList.remove('hidden')
+            document.getElementById('add-banner-modal').classList.add('flex')
+        }
+        
+        function closeBannerModal() {
+            document.getElementById('add-banner-modal').classList.add('hidden')
+            document.getElementById('add-banner-modal').classList.remove('flex')
+        }
+        
+        // Add banner form submission
+        document.getElementById('add-banner-form').addEventListener('submit', (e) => {
+            e.preventDefault()
+            alert('배너가 성공적으로 추가되었습니다!')
+            closeBannerModal()
+        })
+        
+        // User filter functions
+        function applyFilters() {
+            const name = document.getElementById('filter-name').value
+            const status = document.getElementById('filter-status').value
+            const startDate = document.getElementById('filter-start-date').value
+            const endDate = document.getElementById('filter-end-date').value
+            
+            console.log('Applying filters:', { name, status, startDate, endDate })
+            alert('필터가 적용되었습니다!')
+        }
+        
+        function resetFilters() {
+            document.getElementById('filter-name').value = ''
+            document.getElementById('filter-status').value = 'all'
+            document.getElementById('filter-start-date').value = ''
+            document.getElementById('filter-end-date').value = ''
+            
+            alert('필터가 초기화되었습니다!')
+        }
     </script>
+    
+    <!-- AI Chatbot Script -->
+    <script src="../static/chatbot.js"></script>
 </body>
 </html>
