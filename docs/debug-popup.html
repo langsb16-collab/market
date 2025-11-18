@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팝업 디버깅 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-info { background: #2196F3; color: white; }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔍 팝업 시스템 디버깅</h1>
+    
+    <div class="section">
+        <h2>1. localStorage 확인</h2>
+        <button class="btn-info" onclick="checkLocalStorage()">🔍 localStorage 확인</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑️ 모든 데이터 삭제</button>
+        <div id="storage-status" class="status info">대기 중...</div>
+        <pre id="storage-data">클릭하여 데이터 확인</pre>
+    </div>
+
+    <div class="section">
+        <h2>2. 테스트 팝업 생성</h2>
+        <button class="btn-primary" onclick="createTestPopup()">✅ 테스트 팝업 생성 (enabled: true)</button>
+        <button class="btn-primary" onclick="createMultiplePopups()">📋 여러 개 팝업 생성</button>
+        <div id="create-status" class="status info">대기 중...</div>
+    </div>
+
+    <div class="section">
+        <h2>3. 팝업 표시 테스트</h2>
+        <button class="btn-info" onclick="testPopupDisplay()">🚀 팝업 표시 테스트</button>
+        <button class="btn-danger" onclick="closeAllPopups()">❌ 모든 팝업 닫기</button>
+        <div id="display-status" class="status info">대기 중...</div>
+    </div>
+
+    <div class="section">
+        <h2>4. 콘솔 로그</h2>
+        <button class="btn-info" onclick="clearConsole()">🧹 로그 지우기</button>
+        <pre id="console-log">콘솔 로그가 여기에 표시됩니다...</pre>
+    </div>
+
+    <div class="section">
+        <h2>5. 빠른 링크</h2>
+        <button class="btn-info" onclick="goToMain()">🏠 메인 페이지</button>
+        <button class="btn-info" onclick="goToAdmin()">⚙️ 관리자 페이지</button>
+        <button class="btn-info" onclick="goToTest()">🧪 테스트 페이지</button>
+    </div>
+
+    <!-- Popup Container -->
+    <div id="popup-container"></div>
+
+    <script src="/static/popup.js"></script>
+    <script>
+        // 콘솔 로그 캡처
+        const consoleLog = document.getElementById('console-log');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleLog.textContent += '[LOG] ' + args.join(' ') + '\n';
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            consoleLog.textContent += '[ERROR] ' + args.join(' ') + '\n';
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        };
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+        }
+
+        function checkLocalStorage() {
+            const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+            const dataElement = document.getElementById('storage-data');
+            
+            if (popups.length === 0) {
+                updateStatus('storage-status', '저장된 팝업이 없습니다.', 'error');
+                dataElement.textContent = '[]';
+            } else {
+                const activeCount = popups.filter(p => p.enabled === true).length;
+                updateStatus('storage-status', `총 ${popups.length}개 팝업 (활성화: ${activeCount}개)`, 'success');
+                dataElement.textContent = JSON.stringify(popups, null, 2);
+            }
+
+            console.log('[Debug] localStorage checked:', popups.length, 'popups found');
+        }
+
+        function clearAllData() {
+            if (confirm('모든 팝업 데이터를 삭제하시겠습니까?')) {
+                localStorage.removeItem('eventbet_popups');
+                sessionStorage.clear();
+                updateStatus('storage-status', '모든 데이터가 삭제되었습니다.', 'success');
+                document.getElementById('storage-data').textContent = '[]';
+                console.log('[Debug] All data cleared');
+            }
+        }
+
+        function createTestPopup() {
+            const testPopup = {
+                id: Date.now().toString(),
+                title: '디버그 테스트 팝업',
+                type: 'image',
+                image: 'https://via.placeholder.com/600x400/4CAF50/ffffff?text=Debug+Test+Popup',
+                youtube: '',
+                enabled: true, // 명시적으로 true 설정
+                top: 5,
+                left: 5,
+                width: 500,
+                height: 300,
+                createdAt: new Date().toISOString()
+            };
+
+            const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+            popups.push(testPopup);
+            localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+
+            updateStatus('create-status', `팝업 생성 완료! (ID: ${testPopup.id}, enabled: true)`, 'success');
+            console.log('[Debug] Test popup created:', testPopup);
+            checkLocalStorage();
+        }
+
+        function createMultiplePopups() {
+            const popups = [];
+            for (let i = 1; i <= 3; i++) {
+                popups.push({
+                    id: (Date.now() + i).toString(),
+                    title: `테스트 팝업 ${i}`,
+                    type: 'image',
+                    image: `https://via.placeholder.com/600x400/4CAF50/ffffff?text=Popup+${i}`,
+                    youtube: '',
+                    enabled: i === 1, // 첫 번째만 활성화
+                    top: 5 + (i * 2),
+                    left: 5 + (i * 2),
+                    width: 500,
+                    height: 300,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+            updateStatus('create-status', `3개 팝업 생성 완료! (1개만 활성화)`, 'success');
+            console.log('[Debug] Multiple popups created:', popups.length);
+            checkLocalStorage();
+        }
+
+        function testPopupDisplay() {
+            updateStatus('display-status', '팝업 표시 시도 중...', 'info');
+            
+            const container = document.getElementById('popup-container');
+            container.innerHTML = '';
+            
+            if (typeof displayPopups === 'function') {
+                console.log('[Debug] Calling displayPopups()...');
+                displayPopups();
+                updateStatus('display-status', 'displayPopups() 함수 실행 완료. 콘솔 로그를 확인하세요.', 'success');
+            } else {
+                updateStatus('display-status', 'displayPopups() 함수를 찾을 수 없습니다!', 'error');
+                console.error('[Debug] displayPopups function not found!');
+            }
+        }
+
+        function closeAllPopups() {
+            const container = document.getElementById('popup-container');
+            container.innerHTML = '';
+            updateStatus('display-status', '모든 팝업이 닫혔습니다.', 'success');
+            console.log('[Debug] All popups closed');
+        }
+
+        function clearConsole() {
+            consoleLog.textContent = '콘솔 로그가 지워졌습니다.\n';
+        }
+
+        function goToMain() {
+            window.location.href = '/';
+        }
+
+        function goToAdmin() {
+            window.location.href = '/admin/';
+        }
+
+        function goToTest() {
+            window.location.href = '/test-popup.html';
+        }
+
+        // 페이지 로드 시 자동 확인
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[Debug] Debug page loaded');
+            checkLocalStorage();
+        });
+    </script>
+</body>
+</html>
