@@ -368,21 +368,33 @@
                 font-size: 0.75rem;
             }
             
-            /* Enhanced mobile button styles */
+            /* 모바일 헤더 최적화 */
+            .header {
+                padding-bottom: 0.5rem !important;
+            }
+            
+            /* 모바일 버튼 그리드 스타일 */
             .btn-notice, .btn-issue, .btn-login, .btn-register {
-                font-size: 0.9rem !important;
-                padding: 0.625rem 1rem !important;
-                min-width: 75px;
+                font-size: 0.875rem !important;
+                padding: 0.75rem 0.5rem !important;
                 font-weight: 700;
-                letter-spacing: -0.02em;
+                letter-spacing: -0.01em;
+                width: 100%;
+                min-height: 44px; /* iOS 터치 타겟 최소 크기 */
             }
             
             .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
                 font-size: 1rem !important;
+                margin-right: 0.375rem !important;
+            }
+            
+            /* 버튼 텍스트 줄바꿈 방지 */
+            .btn-notice span, .btn-issue span, .btn-login span, .btn-register span {
+                white-space: nowrap;
             }
             
             h1 {
-                font-size: 1.125rem !important;
+                font-size: 1rem !important;
             }
             
             h2 {
@@ -434,11 +446,22 @@
                 padding: 0.5rem !important;
             }
             
-            /* Category buttons mobile */
+            /* Category buttons mobile - 더 큰 터치 영역 */
             .btn-category {
-                font-size: 0.7rem !important;
-                padding: 0.375rem 0.625rem !important;
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.875rem !important;
                 white-space: nowrap;
+                min-height: 36px;
+            }
+            
+            /* 가로 스크롤 영역 최적화 */
+            .overflow-x-auto {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            
+            .overflow-x-auto::-webkit-scrollbar {
+                display: none;
             }
             
             /* Modal mobile */
@@ -449,19 +472,28 @@
                 overflow-y: auto;
             }
             
-            /* Hero section mobile */
-            #heroTitle {
-                font-size: 0.875rem !important;
-                padding: 0.5rem 0.75rem !important;
-                line-height: 1.4;
+            /* Hero section mobile - 더 컴팩트하게 */
+            .text-center.mb-4 {
+                margin-bottom: 1rem !important;
             }
             
-            #heroSubtitle {
+            h2 {
+                font-size: 0.875rem !important;
+                line-height: 1.3;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .text-base.mobile-text {
                 font-size: 0.75rem !important;
             }
             
-            #heroDescription {
+            .text-sm.mobile-text {
                 font-size: 0.7rem !important;
+            }
+            
+            /* USDT 아이콘 크기 조정 */
+            .text-accent.font-bold {
+                font-size: 1.125rem !important;
             }
             
             /* Crypto icons */
@@ -499,13 +531,24 @@
                 margin-bottom: 1.25rem !important;
             }
             
-            /* Odds/Fee structure mobile */
-            .card.p-4 {
+            /* Odds/Fee structure mobile - 더 컴팩트 */
+            .card.p-4, .card.p-6 {
                 padding: 0.75rem !important;
             }
             
-            .card.p-6 {
-                padding: 1rem !important;
+            .card {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            /* 카드 내 텍스트 크기 조정 */
+            .card h4 {
+                font-size: 0.875rem !important;
+                line-height: 1.3;
+                margin-bottom: 0.375rem !important;
+            }
+            
+            .card p, .card span {
+                font-size: 0.75rem !important;
             }
             
             /* Form spacing mobile */
@@ -525,20 +568,29 @@
         
         /* Extra small mobile optimization (iPhone SE, small Android) */
         @media (max-width: 375px) {
+            h1 {
+                font-size: 0.875rem !important;
+            }
+            
+            h2 {
+                font-size: 0.8rem !important;
+            }
+            
+            /* 버튼 그리드는 유지하되 텍스트만 작게 */
             .btn-notice, .btn-issue, .btn-login, .btn-register {
                 font-size: 0.8rem !important;
-                padding: 0.5rem 0.75rem !important;
-                min-width: 65px;
+                padding: 0.625rem 0.375rem !important;
             }
             
             .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
-                font-size: 0.9rem !important;
+                font-size: 0.875rem !important;
                 margin-right: 0.25rem !important;
             }
             
-            /* Reduce spacing between buttons on very small screens */
-            .space-x-2 > * + * {
-                margin-left: 0.25rem !important;
+            /* 카테고리 버튼 작게 */
+            .btn-category {
+                font-size: 0.75rem !important;
+                padding: 0.375rem 0.625rem !important;
             }
         }
         
@@ -567,56 +619,63 @@
 <body class="min-h-screen">
     <!-- Header -->
     <header class="header sticky top-0 z-50">
-        <div class="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
-            <div class="flex items-center justify-between">
+        <div class="container mx-auto px-3 sm:px-6 py-2 sm:py-4">
+            <!-- 첫 번째 줄: 로고 + 설정 -->
+            <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <i class="fas fa-chart-line text-accent text-xl sm:text-2xl"></i>
-                    <h1 class="text-lg sm:text-2xl font-bold mobile-text">EventBET</h1>
+                    <h1 class="text-base sm:text-2xl font-bold">EventBET</h1>
                 </div>
-                <div class="flex items-center space-x-2 sm:space-x-4">
+                <div class="flex items-center space-x-2">
                     <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
+                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm p-2" title="Toggle Dark Mode">
                         <i class="fas fa-moon" id="theme-icon"></i>
                     </button>
                     <!-- Language Selector -->
-                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
+                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
                         <option value="en">🇬🇧 EN</option>
                         <option value="ko">🇰🇷 KO</option>
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
-                    <!-- Notice Button - Orange -->
-                    <button id="notice-btn" class="btn-notice text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
-                        <i class="fas fa-bullhorn mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
-                        <span id="notice-btn-text">공지</span>
+                </div>
+            </div>
+            
+            <!-- 두 번째 줄: 액션 버튼들 (모바일 2x2 그리드) -->
+            <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:space-x-2">
+                <!-- Notice Button - Orange -->
+                <button id="notice-btn" class="btn-notice text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-bullhorn mr-1.5 text-base"></i>
+                    <span id="notice-btn-text">공지</span>
+                </button>
+                <!-- Submit Issue Button - Green -->
+                <button id="submit-issue-btn" class="btn-issue text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-1.5 text-base"></i>
+                    <span id="submit-issue-btn-text">이슈 등록</span>
+                </button>
+                <!-- Login Button - Blue -->
+                <button id="login-btn" class="btn-login text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-1.5 text-base"></i>
+                    <span id="login-btn-text">로그인</span>
+                </button>
+                <!-- Register Button - Purple -->
+                <button id="register-btn" class="btn-register text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-1.5 text-base"></i>
+                    <span id="register-btn-text">회원가입</span>
+                </button>
+                <!-- User Profile (로그인 시 표시) -->
+                <div id="user-profile" class="hidden col-span-2 sm:col-span-1 flex items-center justify-between bg-blue-50 px-4 py-2 rounded-lg">
+                    <span id="user-name" class="text-sm font-semibold"></span>
+                    <button id="logout-btn" class="btn-primary text-sm px-3 py-1 rounded-lg font-semibold ml-3">
+                        <i class="fas fa-sign-out-alt mr-1"></i>
+                        로그아웃
                     </button>
-                    <!-- Submit Issue Button - Green -->
-                    <button id="submit-issue-btn" class="btn-issue text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
-                        <i class="fas fa-plus-circle mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
-                        <span id="submit-issue-btn-text">이슈 등록</span>
-                    </button>
-                    <!-- Login Button - Blue -->
-                    <button id="login-btn" class="btn-login text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
-                        <i class="fas fa-sign-in-alt mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
-                        <span id="login-btn-text">로그인</span>
-                    </button>
-                    <!-- Register Button - Purple -->
-                    <button id="register-btn" class="btn-register text-sm sm:text-base px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold shadow-lg">
-                        <i class="fas fa-user-plus mr-1.5 sm:mr-2 text-base sm:text-lg"></i>
-                        <span id="register-btn-text">회원가입</span>
-                    </button>
-                    <div id="user-profile" class="hidden flex items-center space-x-2">
-                        <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
-                        <button id="logout-btn" class="btn-primary text-xs sm:text-sm px-2 py-1 rounded-lg font-semibold">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+    <div class="container mx-auto px-2 sm:px-6 py-3 sm:py-8">
         <!-- Hero Section -->
         <div class="text-center mb-4 sm:mb-8">
             <h2 class="text-sm sm:text-xl font-bold mb-2 sm:mb-3" id="hero-title">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
@@ -636,9 +695,11 @@
 
         <!-- Categories Filter -->
         <div class="mb-4 sm:mb-6">
-            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text text-center" id="categories-title">카테고리</h3>
-            <div id="categories-container" class="flex justify-center flex-wrap gap-2 pb-2">
-                <!-- Categories will be loaded here -->
+            <h3 class="text-sm sm:text-lg font-bold mb-2 sm:mb-3 text-left sm:text-center px-1" id="categories-title">카테고리</h3>
+            <div class="overflow-x-auto scrollbar-hide -mx-3 px-3">
+                <div id="categories-container" class="flex sm:justify-center gap-2 pb-2 min-w-max sm:min-w-0 sm:flex-wrap">
+                    <!-- Categories will be loaded here -->
+                </div>
             </div>
         </div>
 
