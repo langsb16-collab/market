@@ -431,24 +431,24 @@
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Theme Toggle -->
-                    <button id="themeToggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
-                        <i class="fas fa-moon" id="themeIcon"></i>
+                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
+                        <i class="fas fa-moon" id="theme-icon"></i>
                     </button>
                     <!-- Language Selector -->
-                    <select id="langSelect" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
+                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
                         <option value="en">🇬🇧 EN</option>
                         <option value="ko">🇰🇷 KO</option>
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
                     <!-- Submit Issue Button -->
-                    <button id="submitIssueBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <button id="submit-issue-btn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
                         <span>이슈 등록</span>
                     </button>
-                    <button id="connectWalletBtn" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                    <button id="connect-wallet" class="btn-primary text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-wallet mr-1 sm:mr-2"></i>
-                        <span id="walletBtnText">Connect Wallet</span>
+                        <span id="connect-wallet-text">Connect Wallet</span>
                     </button>
                 </div>
             </div>
@@ -458,11 +458,11 @@
     <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <!-- Hero Section -->
         <div class="text-center mb-4 sm:mb-8">
-            <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3" id="heroTitle">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
-            <p class="text-base sm:text-lg mb-2 mobile-text font-semibold" id="heroSubtitle">
+            <h2 class="text-xl sm:text-3xl font-bold mb-2 sm:mb-3" id="hero-title">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
+            <p class="text-base sm:text-lg mb-2 mobile-text font-semibold" id="hero-subtitle">
                 Where Global Events Meet Your Predictions.
             </p>
-            <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroDescription">
+            <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="hero-description">
                 전 세계 이슈와 당신의 예측이 만나는 곳.
             </p>
             <div class="flex justify-center text-xs mobile-text">
@@ -475,8 +475,8 @@
 
         <!-- Categories Filter -->
         <div class="mb-4 sm:mb-6">
-            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categoriesTitle">Categories</h3>
-            <div id="categoriesContainer" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
+            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text" id="categories-title">Categories</h3>
+            <div id="categories-container" class="flex overflow-x-auto space-x-2 pb-2 scrollbar-hide">
                 <!-- Categories will be loaded here -->
             </div>
         </div>
@@ -484,7 +484,7 @@
         <!-- Sort Filter -->
         <div class="mb-4 sm:mb-6">
             <div class="flex items-center justify-between flex-wrap gap-2">
-                <h3 class="text-lg sm:text-xl font-bold mobile-text" id="marketsTitle">
+                <h3 class="text-lg sm:text-xl font-bold mobile-text" id="trending-title">
                     <span data-ko="인기 마켓" data-en="Popular Markets" data-zh="热门市场" data-ja="人気市場">인기 마켓</span>
                 </h3>
                 <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
@@ -503,8 +503,19 @@
 
         <!-- Markets Grid -->
         <div class="mb-6 sm:mb-8">
-            <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div id="markets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 <!-- Markets will be loaded here -->
+            </div>
+            
+            <!-- Load More Button -->
+            <div class="text-center mt-6">
+                <button id="load-more-btn" onclick="loadMoreMarkets()" class="btn-primary px-6 py-3 rounded-lg font-semibold text-sm">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    <span data-ko="더 보기" data-en="Load More" data-zh="加载更多" data-ja="もっと見る">더 보기</span>
+                </button>
+                <p class="text-sm text-secondary mt-3">
+                    <span id="market-count"></span>
+                </p>
             </div>
         </div>
 
@@ -517,34 +528,34 @@
         </div>
 
     <!-- Bet Modal -->
-    <div id="betModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4">
+    <div id="bet-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4">
         <div class="modal-content rounded-lg p-4 sm:p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 class="text-lg sm:text-2xl font-bold mobile-text" id="betModalTitle">Place Bet</h3>
-                <button id="closeBetModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
+                <h3 class="text-lg sm:text-2xl font-bold mobile-text" id="modal-title">Place Bet</h3>
+                <button id="close-bet-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div id="betModalContent">
+            <div id="modal-content">
                 <!-- Bet form will be loaded here -->
             </div>
         </div>
     </div>
 
     <!-- Submit Issue Modal -->
-    <div id="submitIssueModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+    <div id="submit-issue-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
         <div class="modal-content rounded-lg p-4 sm:p-6 max-w-3xl w-full my-8">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg sm:text-2xl font-bold mobile-text">
                     <i class="fas fa-plus-circle mr-2 text-accent"></i>
                     이슈 등록하기
                 </h3>
-                <button id="closeSubmitModal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
+                <button id="close-submit-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <form id="submitIssueForm" class="space-y-4">
+            <form id="issue-form" class="space-y-4">
                 <!-- Title Section -->
                 <div class="card p-4">
                     <h4 class="font-semibold mb-3 text-accent">
@@ -701,11 +712,11 @@
 
                 <!-- Submit Button -->
                 <div class="flex space-x-3">
-                    <button type="submit" id="submitIssueBtn2" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
+                    <button type="submit" id="submit-issue-btn-2" class="flex-1 btn-primary py-3 rounded-lg font-semibold text-sm">
                         <i class="fas fa-paper-plane mr-2"></i>
                         제출하기
                     </button>
-                    <button type="button" id="cancelSubmitBtn" class="px-6 py-3 rounded-lg font-semibold text-sm hover:bg-opacity-20">
+                    <button type="button" id="cancel-submit-btn" class="px-6 py-3 rounded-lg font-semibold text-sm hover:bg-opacity-20">
                         취소
                     </button>
                 </div>
@@ -714,5 +725,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="/static/chatbot.js"></script>
     <script src="/static/app.js"></script>
 </body>
