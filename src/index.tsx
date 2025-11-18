@@ -311,9 +311,9 @@ app.post('/api/submissions', async (c) => {
     }
   }
   
-  // Validate crypto type
-  if (!['BTC', 'ETH', 'USDT'].includes(data.crypto_type)) {
-    return c.json({ error: 'Invalid crypto_type. Must be BTC, ETH, or USDT' }, 400)
+  // Validate crypto type - Only USDT is supported
+  if (data.crypto_type !== 'USDT') {
+    return c.json({ error: 'Invalid crypto_type. Only USDT is supported' }, 400)
   }
   
   // Validate bet limits
@@ -830,15 +830,10 @@ app.get('/', (c) => {
                 <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="heroDescription">
                     전 세계 이슈와 당신의 예측이 만나는 곳.
                 </p>
-                <div class="flex justify-center space-x-6 text-xs mobile-text">
+                <div class="flex justify-center text-xs mobile-text">
                     <div class="text-center">
-                        <div class="text-accent font-bold text-lg sm:text-xl">₿ BTC</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-accent font-bold text-lg sm:text-xl">Ξ ETH</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT</div>
+                        <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT (Tether)</div>
+                        <p class="text-xs text-secondary mt-1">유일하게 지원되는 암호화폐</p>
                     </div>
                 </div>
             </div>
@@ -1294,19 +1289,15 @@ app.get('/', (c) => {
                         </h4>
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium mb-2">암호화폐 선택 *</label>
-                                <div class="flex space-x-3">
-                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-blue-500 bg-blue-500 bg-opacity-20 hover:bg-opacity-30" data-crypto="BTC">
-                                        <i class="fab fa-bitcoin mr-1"></i> BTC
-                                    </button>
-                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-gray-500 hover:bg-opacity-20" data-crypto="ETH">
-                                        <i class="fab fa-ethereum mr-1"></i> ETH
-                                    </button>
-                                    <button type="button" class="crypto-select flex-1 px-4 py-2 rounded-lg border-2 border-gray-500 hover:bg-opacity-20" data-crypto="USDT">
-                                        <i class="fas fa-dollar-sign mr-1"></i> USDT
-                                    </button>
+                                <label class="block text-sm font-medium mb-2">암호화폐 *</label>
+                                <div class="px-4 py-3 rounded-lg border-2 border-green-500 bg-green-500 bg-opacity-20">
+                                    <div class="flex items-center justify-center">
+                                        <i class="fas fa-dollar-sign mr-2 text-green-500"></i>
+                                        <span class="font-bold text-green-500">USDT (Tether)</span>
+                                    </div>
+                                    <p class="text-xs text-center text-secondary mt-1">유일하게 지원되는 암호화폐</p>
                                 </div>
-                                <input type="hidden" name="crypto_type" value="BTC" required>
+                                <input type="hidden" name="crypto_type" value="USDT" required>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>

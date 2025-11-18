@@ -506,8 +506,6 @@ function openBetModal(event, outcome) {
                 <select id="cryptoType" required ${!isWalletConnected ? 'disabled' : ''}
                         class="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg focus:outline-none text-xs sm:text-sm mobile-text ${!isWalletConnected ? 'opacity-50 cursor-not-allowed' : ''}">
                     <option value="USDT">₮ USDT (Tether)</option>
-                    <option value="ETH">Ξ ETH (Ethereum)</option>
-                    <option value="BTC">₿ BTC (Bitcoin)</option>
                 </select>
             </div>
             
@@ -594,10 +592,8 @@ async function submitBet(e, eventId, outcomeId, probability) {
     const amount = parseFloat(document.getElementById('betAmount').value)
     const cryptoType = document.getElementById('cryptoType').value
     
-    // Simulate crypto amount conversion (in real app, use live exchange rates)
-    const cryptoAmount = cryptoType === 'USDT' ? amount :
-                        cryptoType === 'ETH' ? amount / 3000 :
-                        amount / 50000
+    // Only USDT is supported
+    const cryptoAmount = amount
     
     // Simulate transaction hash (in real app, use blockchain transaction)
     const txHash = '0x' + Array.from({length: 64}, () => 
@@ -783,27 +779,7 @@ function closeSubmitIssueModal() {
     document.querySelector('[name="wallet_address"]').value = currentWallet || ''
 }
 
-// Handle crypto selection
-function setupCryptoSelection() {
-    const cryptoButtons = document.querySelectorAll('.crypto-select')
-    cryptoButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active state from all buttons
-            cryptoButtons.forEach(b => {
-                b.classList.remove('border-blue-500', 'bg-blue-500', 'bg-opacity-20')
-                b.classList.add('border-gray-500')
-            })
-            
-            // Add active state to clicked button
-            this.classList.add('border-blue-500', 'bg-blue-500', 'bg-opacity-20')
-            this.classList.remove('border-gray-500')
-            
-            // Update hidden input
-            const crypto = this.dataset.crypto
-            document.querySelector('[name="crypto_type"]').value = crypto
-        })
-    })
-}
+// Crypto selection removed - Only USDT is supported
 
 // Submit issue form
 async function submitIssueForm(e) {
@@ -894,8 +870,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitIssueForm.addEventListener('submit', submitIssueForm)
     }
     
-    // Crypto selection
-    setupCryptoSelection()
+    // Crypto selection removed - Only USDT is supported
 })
 
 // Close submit issue modal and open wallet connection
