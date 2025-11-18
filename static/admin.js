@@ -267,12 +267,17 @@ function loadPopups() {
                         </span>
                     </div>
                     ${popup.type === 'image' ? 
-                        `<img src="${popup.image}" class="w-full max-h-48 object-cover rounded-lg">` :
-                        `<div class="bg-gray-100 p-4 rounded-lg">
+                        `<img src="${popup.image}" class="w-full max-h-48 object-cover rounded-lg mb-2">` :
+                        `<div class="bg-gray-100 p-4 rounded-lg mb-2">
                             <i class="fab fa-youtube text-red-600 text-2xl mr-2"></i>
                             <span class="text-sm text-gray-600">유튜브: ${popup.youtube}</span>
                         </div>`
                     }
+                    <div class="text-xs text-gray-600 mt-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>위치: 상단 ${popup.top || 10}cm, 좌측 ${popup.left || 10}cm
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>크기: ${popup.width || 600}px × ${popup.height || 400}px
+                    </div>
                 </div>
                 <div class="flex space-x-2 ml-4">
                     <button onclick="editPopup(${index})" class="btn-warning">
@@ -738,7 +743,7 @@ function filterIssues() {
 }
 
 // ========== 팝업 관리 (위치 조정 포함) ==========
-// openPopupModal 함수 수정
+// openPopupModal 함수 수정 (크기 조절 추가)
 const originalOpenPopupModal = window.openPopupModal;
 window.openPopupModal = function(index = null) {
     const modal = document.getElementById('popup-modal');
@@ -751,9 +756,11 @@ window.openPopupModal = function(index = null) {
         document.getElementById('popup-id').value = index;
         document.getElementById('popup-title').value = popup.title;
         document.getElementById('popup-type').value = popup.type;
-        document.getElementById('popup-enabled').checked = popup.enabled;
+        document.getElementById('popup-enabled').checked = popup.enabled !== false; // 명시적 체크
         document.getElementById('popup-top').value = popup.top || 10;
         document.getElementById('popup-left').value = popup.left || 10;
+        document.getElementById('popup-width').value = popup.width || 600;
+        document.getElementById('popup-height').value = popup.height || 400;
         
         if (popup.type === 'image') {
             document.getElementById('popup-image').value = popup.image;
@@ -770,11 +777,13 @@ window.openPopupModal = function(index = null) {
         document.getElementById('popup-enabled').checked = true;
         document.getElementById('popup-top').value = 10;
         document.getElementById('popup-left').value = 10;
+        document.getElementById('popup-width').value = 600;
+        document.getElementById('popup-height').value = 400;
         togglePopupInputs();
     }
 };
 
-// savePopup 함수에 위치 정보 추가
+// savePopup 함수에 위치 및 크기 정보 추가
 const originalSavePopup = window.savePopup;
 window.savePopup = function(event) {
     event.preventDefault();
@@ -782,6 +791,7 @@ window.savePopup = function(event) {
     const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
     const id = document.getElementById('popup-id').value;
     const type = document.getElementById('popup-type').value;
+    const enabledCheckbox = document.getElementById('popup-enabled');
     
     const popup = {
         id: id !== '' ? id : Date.now().toString(),
@@ -789,9 +799,11 @@ window.savePopup = function(event) {
         type: type,
         image: type === 'image' ? document.getElementById('popup-image').value : '',
         youtube: type === 'youtube' ? document.getElementById('popup-youtube').value : '',
-        enabled: document.getElementById('popup-enabled').checked,
+        enabled: enabledCheckbox.checked === true, // 명시적 불린 변환
         top: parseFloat(document.getElementById('popup-top').value) || 10,
         left: parseFloat(document.getElementById('popup-left').value) || 10,
+        width: parseInt(document.getElementById('popup-width').value) || 600,
+        height: parseInt(document.getElementById('popup-height').value) || 400,
         createdAt: id !== '' ? popups[id].createdAt : new Date().toISOString()
     };
     

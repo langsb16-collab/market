@@ -605,7 +605,7 @@
                         <span class="text-sm font-semibold">팝업 활성화</span>
                     </label>
                     
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-semibold mb-2">위에서 (cm)</label>
                             <input type="number" id="popup-top" placeholder="10" step="0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
@@ -615,7 +615,18 @@
                             <input type="number" id="popup-left" placeholder="10" step="0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">* 팝업 위치를 cm 단위로 조정할 수 있습니다 (1cm = 약 37.8px)</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">너비 (px)</label>
+                            <input type="number" id="popup-width" placeholder="600" step="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">높이 (px)</label>
+                            <input type="number" id="popup-height" placeholder="400" step="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">* 팝업 위치(cm)와 크기(px)를 조정할 수 있습니다</p>
                 </div>
                 
                 <div class="flex space-x-3">
