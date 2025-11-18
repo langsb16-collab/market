@@ -147,6 +147,58 @@
             transform: translateY(-1px);
         }
         
+        /* Notice Button - Orange */
+        .btn-notice {
+            background: linear-gradient(180deg, #FF9500 0%, #FF8000 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-notice:hover {
+            background: linear-gradient(180deg, #FF8000 0%, #E67300 100%);
+            box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        /* Notice Modal */
+        .notice-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .notice-modal.active {
+            display: flex;
+        }
+        
+        .notice-list-item {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .notice-list-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .notice-detail {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        
         .btn-category {
             background-color: rgba(120, 120, 128, 0.12);
             color: #1d1d1f;
@@ -495,20 +547,25 @@
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
+                    <!-- Notice Button - Orange -->
+                    <button id="notice-btn" class="btn-notice text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
+                        <i class="fas fa-bullhorn mr-1 sm:mr-2"></i>
+                        <span id="notice-btn-text">공지</span>
+                    </button>
                     <!-- Submit Issue Button - Green -->
                     <button id="submit-issue-btn" class="btn-issue text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
-                        <span>이슈 등록</span>
+                        <span id="submit-issue-btn-text">이슈 등록</span>
                     </button>
                     <!-- Login Button - Blue -->
                     <button id="login-btn" class="btn-login text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
-                        <span>로그인</span>
+                        <span id="login-btn-text">로그인</span>
                     </button>
                     <!-- Register Button - Purple -->
                     <button id="register-btn" class="btn-register text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
                         <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
-                        <span>회원가입</span>
+                        <span id="register-btn-text">회원가입</span>
                     </button>
                     <div id="user-profile" class="hidden flex items-center space-x-2">
                         <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
@@ -916,4 +973,49 @@
             </form>
         </div>
     </div>
+    
+    <!-- Notice Modal -->
+    <div id="notice-modal" class="notice-modal">
+        <div class="modal-content max-w-3xl w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl sm:text-2xl font-bold">
+                    <i class="fas fa-bullhorn text-orange-500 mr-2"></i>
+                    <span id="notice-modal-title">공지사항</span>
+                </h3>
+                <button onclick="closeNoticeModal()" class="text-secondary hover:text-accent text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Notice List View -->
+            <div id="notice-list-view">
+                <div id="notice-list-container" class="space-y-2 max-h-96 overflow-y-auto">
+                    <!-- 공지 목록이 여기에 표시됩니다 -->
+                </div>
+                <p id="notice-empty" class="text-center text-secondary py-8 hidden">
+                    <i class="fas fa-info-circle text-4xl mb-3 block"></i>
+                    <span id="notice-empty-text">등록된 공지사항이 없습니다.</span>
+                </p>
+            </div>
+            
+            <!-- Notice Detail View -->
+            <div id="notice-detail-view" class="hidden">
+                <button onclick="backToNoticeList()" class="text-accent hover:underline mb-4 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    <span id="notice-back-text">목록으로</span>
+                </button>
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h4 id="notice-detail-title" class="text-xl font-bold mb-4"></h4>
+                    <p id="notice-detail-date" class="text-sm text-secondary mb-6"></p>
+                    <div id="notice-detail-content" class="notice-detail text-gray-700"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="/static/auth.js"></script>
+    <script src="/static/app.js"></script>
+    <script src="/static/chatbot.js"></script>
+    <script src="/static/notices.js"></script>
+</body>
+</html>
