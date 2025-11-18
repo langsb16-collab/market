@@ -493,7 +493,340 @@ function deleteMember(userId) {
     loadMembers();
 }
 
+// ========== 결산 페이지 ==========
+function loadSettlement() {
+    loadFeeSettings();
+    loadIssues();
+    updateSettlementStats();
+}
+
+// 수수료 설정 로드
+function loadFeeSettings() {
+    const settings = JSON.parse(localStorage.getItem('eventbet_fee_settings') || '{"total": 7, "headquarters": 3, "distributor": 2.5, "subdistributor": 1.5}');
+    
+    document.getElementById('total-fee').value = settings.total;
+    document.getElementById('headquarters-fee').value = settings.headquarters;
+    document.getElementById('distributor-fee').value = settings.distributor;
+    document.getElementById('subdistributor-fee').value = settings.subdistributor;
+}
+
+// 수수료 설정 저장
+function saveFeeSettings() {
+    const settings = {
+        total: parseFloat(document.getElementById('total-fee').value),
+        headquarters: parseFloat(document.getElementById('headquarters-fee').value),
+        distributor: parseFloat(document.getElementById('distributor-fee').value),
+        subdistributor: parseFloat(document.getElementById('subdistributor-fee').value)
+    };
+    
+    const sum = settings.headquarters + settings.distributor + settings.subdistributor;
+    if (Math.abs(sum - settings.total) > 0.01) {
+        alert(`수수료 합계가 맞지 않습니다. 본사 + 총판 + 부총판 = ${sum.toFixed(1)}% (총 ${settings.total}% 필요)`);
+        return;
+    }
+    
+    localStorage.setItem('eventbet_fee_settings', JSON.stringify(settings));
+    alert('수수료 설정이 저장되었습니다.');
+    updateSettlementStats();
+}
+
+// 이슈 목록 로드
+function loadIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const filterStatus = document.getElementById('issue-status-filter')?.value || '';
+    
+    let filteredIssues = issues;
+    if (filterStatus) {
+        filteredIssues = issues.filter(issue => issue.status === filterStatus);
+    }
+    
+    const tbody = document.getElementById('issues-list');
+    
+    if (filteredIssues.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filteredIssues.map((issue, index) => {
+        const totalBet = (issue.yesBet || 0) + (issue.noBet || 0);
+        const expireDate = new Date(issue.expireDate).toLocaleDateString('ko-KR');
+        const isExpired = new Date(issue.expireDate) < new Date();
+        
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${issue.title}</td>
+                <td>${totalBet.toLocaleString()} USDT</td>
+                <td>${(issue.yesBet || 0).toLocaleString()} USDT</td>
+                <td>${(issue.noBet || 0).toLocaleString()} USDT</td>
+                <td class="${isExpired ? 'text-red-600' : ''}">${expireDate}</td>
+                <td>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${issue.status === 'settled' ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}">
+                        ${issue.status === 'settled' ? '종료됨' : '진행중'}
+                    </span>
+                </td>
+                <td>
+                    ${issue.status !== 'settled' ? `
+                        <button onclick="settleIssue('${issue.id}', 'yes')" class="btn-success mr-2">
+                            YES 승리
+                        </button>
+                        <button onclick="settleIssue('${issue.id}', 'no')" class="btn-danger">
+                            NO 승리
+                        </button>
+                    ` : `
+                        <span class="text-sm text-gray-600">결과: ${issue.result === 'yes' ? 'YES' : 'NO'}</span>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 개별 이슈 정산
+function settleIssue(issueId, result) {
+    if (!confirm(`이 이슈를 ${result.toUpperCase()} 승리로 정산하시겠습니까?`)) return;
+    
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issueIndex = issues.findIndex(i => i.id === issueId);
+    
+    if (issueIndex === -1) return;
+    
+    const issue = issues[issueIndex];
+    const totalBet = (issue.yesBet || 0) + (issue.noBet || 0);
+    const feeSettings = JSON.parse(localStorage.getItem('eventbet_fee_settings') || '{"total": 7, "headquarters": 3, "distributor": 2.5, "subdistributor": 1.5}');
+    
+    const feeAmount = totalBet * (feeSettings.total / 100);
+    const headquartersAmount = totalBet * (feeSettings.headquarters / 100);
+    const distributorAmount = totalBet * (feeSettings.distributor / 100);
+    const subdistributorAmount = totalBet * (feeSettings.subdistributor / 100);
+    
+    // 정산 내역 저장
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    settlements.push({
+        id: Date.now().toString(),
+        issueId: issue.id,
+        issueTitle: issue.title,
+        totalBet: totalBet,
+        result: result,
+        feeAmount: feeAmount,
+        headquarters: headquartersAmount,
+        distributor: distributorAmount,
+        subdistributor: subdistributorAmount,
+        settledAt: new Date().toISOString()
+    });
+    
+    localStorage.setItem('eventbet_settlements', JSON.stringify(settlements));
+    
+    // 이슈 상태 업데이트
+    issues[issueIndex].status = 'settled';
+    issues[issueIndex].result = result;
+    issues[issueIndex].settledAt = new Date().toISOString();
+    
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('정산이 완료되었습니다.');
+    loadIssues();
+    updateSettlementStats();
+}
+
+// 만기일자 일괄 종료
+function settleAllExpiredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const today = new Date();
+    const expiredIssues = issues.filter(issue => 
+        issue.status !== 'settled' && new Date(issue.expireDate) < today
+    );
+    
+    if (expiredIssues.length === 0) {
+        alert('만기된 이슈가 없습니다.');
+        return;
+    }
+    
+    if (!confirm(`${expiredIssues.length}개의 만기된 이슈를 정산하시겠습니까?\n(자동으로 더 많은 베팅액을 받은 쪽이 승리로 처리됩니다)`)) return;
+    
+    expiredIssues.forEach(issue => {
+        const result = (issue.yesBet || 0) >= (issue.noBet || 0) ? 'yes' : 'no';
+        settleIssue(issue.id, result);
+    });
+    
+    alert(`${expiredIssues.length}개의 이슈가 정산되었습니다.`);
+}
+
+// 정산 통계 업데이트
+function updateSettlementStats() {
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    
+    const totalSettled = settlements.reduce((sum, s) => sum + s.feeAmount, 0);
+    const totalHeadquarters = settlements.reduce((sum, s) => sum + s.headquarters, 0);
+    const totalDistributor = settlements.reduce((sum, s) => sum + s.distributor, 0);
+    const totalSubdistributor = settlements.reduce((sum, s) => sum + s.subdistributor, 0);
+    
+    document.getElementById('total-settled').textContent = totalSettled.toLocaleString();
+    document.getElementById('headquarters-amount').textContent = totalHeadquarters.toLocaleString();
+    document.getElementById('distributor-amount').textContent = totalDistributor.toLocaleString();
+    document.getElementById('subdistributor-amount').textContent = totalSubdistributor.toLocaleString();
+}
+
+// 날짜별 정산 조회
+function loadSettlementByDate() {
+    const startDate = document.getElementById('settlement-start-date').value;
+    const endDate = document.getElementById('settlement-end-date').value;
+    
+    if (!startDate || !endDate) {
+        alert('시작일과 종료일을 선택해주세요.');
+        return;
+    }
+    
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    const filteredSettlements = settlements.filter(s => {
+        const settledDate = new Date(s.settledAt);
+        return settledDate >= start && settledDate <= end;
+    });
+    
+    // 날짜별로 그룹화
+    const dailyData = {};
+    filteredSettlements.forEach(s => {
+        const date = new Date(s.settledAt).toLocaleDateString('ko-KR');
+        if (!dailyData[date]) {
+            dailyData[date] = {
+                count: 0,
+                totalBet: 0,
+                feeAmount: 0,
+                headquarters: 0,
+                distributor: 0,
+                subdistributor: 0
+            };
+        }
+        
+        dailyData[date].count++;
+        dailyData[date].totalBet += s.totalBet;
+        dailyData[date].feeAmount += s.feeAmount;
+        dailyData[date].headquarters += s.headquarters;
+        dailyData[date].distributor += s.distributor;
+        dailyData[date].subdistributor += s.subdistributor;
+    });
+    
+    const tbody = document.getElementById('daily-settlement-list');
+    
+    if (Object.keys(dailyData).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">해당 기간에 정산 내역이 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = Object.entries(dailyData)
+        .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+        .map(([date, data]) => `
+            <tr>
+                <td>${date}</td>
+                <td>${data.count}건</td>
+                <td>${data.totalBet.toLocaleString()} USDT</td>
+                <td>${data.feeAmount.toLocaleString()} USDT</td>
+                <td>${data.headquarters.toLocaleString()} USDT</td>
+                <td>${data.distributor.toLocaleString()} USDT</td>
+                <td>${data.subdistributor.toLocaleString()} USDT</td>
+            </tr>
+        `).join('');
+}
+
+// 이슈 필터링
+function filterIssues() {
+    loadIssues();
+}
+
+// ========== 팝업 관리 (위치 조정 포함) ==========
+// openPopupModal 함수 수정
+const originalOpenPopupModal = window.openPopupModal;
+window.openPopupModal = function(index = null) {
+    const modal = document.getElementById('popup-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        const popup = popups[index];
+        
+        document.getElementById('popup-id').value = index;
+        document.getElementById('popup-title').value = popup.title;
+        document.getElementById('popup-type').value = popup.type;
+        document.getElementById('popup-enabled').checked = popup.enabled;
+        document.getElementById('popup-top').value = popup.top || 10;
+        document.getElementById('popup-left').value = popup.left || 10;
+        
+        if (popup.type === 'image') {
+            document.getElementById('popup-image').value = popup.image;
+            togglePopupInputs();
+        } else {
+            document.getElementById('popup-youtube').value = popup.youtube;
+            togglePopupInputs();
+        }
+    } else {
+        document.getElementById('popup-id').value = '';
+        document.getElementById('popup-title').value = '';
+        document.getElementById('popup-image').value = '';
+        document.getElementById('popup-youtube').value = '';
+        document.getElementById('popup-enabled').checked = true;
+        document.getElementById('popup-top').value = 10;
+        document.getElementById('popup-left').value = 10;
+        togglePopupInputs();
+    }
+};
+
+// savePopup 함수에 위치 정보 추가
+const originalSavePopup = window.savePopup;
+window.savePopup = function(event) {
+    event.preventDefault();
+    
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const id = document.getElementById('popup-id').value;
+    const type = document.getElementById('popup-type').value;
+    
+    const popup = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('popup-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('popup-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('popup-youtube').value : '',
+        enabled: document.getElementById('popup-enabled').checked,
+        top: parseFloat(document.getElementById('popup-top').value) || 10,
+        left: parseFloat(document.getElementById('popup-left').value) || 10,
+        createdAt: id !== '' ? popups[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        popups[id] = popup;
+    } else {
+        popups.push(popup);
+    }
+    
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    closePopupModal();
+    loadPopups();
+    alert('팝업이 저장되었습니다.');
+};
+
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     loadBanners();
+    
+    // 섹션 전환 함수 업데이트
+    const originalShowSection = window.showSection;
+    window.showSection = function(section) {
+        // 모든 섹션 숨기기
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        
+        // 선택된 섹션 표시
+        document.getElementById(`${section}-section`).classList.add('active');
+        event.target.closest('.sidebar-item').classList.add('active');
+        
+        // 데이터 로드
+        if (section === 'banners') loadBanners();
+        if (section === 'notices') loadNotices();
+        if (section === 'popups') loadPopups();
+        if (section === 'members') loadMembers();
+        if (section === 'settlement') loadSettlement();
+    };
 });
