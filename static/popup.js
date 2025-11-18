@@ -274,16 +274,28 @@ function extractYoutubeId(url) {
 }
 
 // 페이지 로드 시 팝업 표시
-document.addEventListener('DOMContentLoaded', () => {
+function initPopupSystem() {
+    console.log('[Popup System] Initializing...');
+    
     // 1초 후에 팝업 표시 (페이지 로딩 완료 후)
     setTimeout(() => {
+        console.log('[Popup System] Starting popup display...');
         displayPopups();
     }, 1000);
-});
+}
+
+// DOMContentLoaded 또는 즉시 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPopupSystem);
+} else {
+    // DOM이 이미 로드된 경우 즉시 실행
+    initPopupSystem();
+}
 
 // 관리자가 팝업을 수정할 때마다 새로고침
 window.addEventListener('storage', (e) => {
     if (e.key === 'eventbet_popups') {
+        console.log('[Popup System] Storage changed, refreshing popups...');
         // 기존 팝업 모두 제거
         const container = document.getElementById('popup-container');
         if (container) {
@@ -293,3 +305,5 @@ window.addEventListener('storage', (e) => {
         displayPopups();
     }
 });
+
+console.log('[Popup System] popup.js loaded successfully');
