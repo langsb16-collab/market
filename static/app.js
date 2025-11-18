@@ -224,6 +224,9 @@ const generateEvents = () => {
             const variation = Math.floor(i / templates.length) + 1
             const probYes = 0.3 + Math.random() * 0.4 // 30-70%
             
+            const volume = Math.floor(Math.random() * 20000000) + 1000000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500) // 이용객 수
+            
             allEvents.push({
                 id: id++,
                 category_id: category.id,
@@ -237,7 +240,8 @@ const generateEvents = () => {
                 description_zh: `关于${template.zh} #${variation}的预测市场。`,
                 description_ja: `${template.ja} #${variation}についての予測市場です。`,
                 resolve_date: getRandomDateWithinMonth(),
-                total_volume: Math.floor(Math.random() * 20000000) + 1000000,
+                total_volume: volume,
+                participants: participants,
                 outcomes: [
                     { id: id * 2 - 1, name: '예', probability: probYes },
                     { id: id * 2, name: '아니오', probability: 1 - probYes }
@@ -423,8 +427,8 @@ function getFilteredEvents() {
         // Sort by total_volume (highest first)
         filtered.sort((a, b) => b.total_volume - a.total_volume)
     } else if (currentSortBy === 'participants') {
-        // Sort by estimated participants (based on volume / 10)
-        filtered.sort((a, b) => b.total_volume - a.total_volume)
+        // Sort by participants (highest first) - 이용객 숫자
+        filtered.sort((a, b) => b.participants - a.participants)
     }
     
     return filtered
