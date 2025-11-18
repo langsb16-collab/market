@@ -166,7 +166,7 @@ function loadNotices() {
             <td>${index + 1}</td>
             <td>
                 ${notice.title}
-                ${notice.image ? '<br><small class="text-gray-500"><i class="fas fa-image"></i> 이미지 포함</small>' : ''}
+                ${notice.youtube ? '<br><small class="text-red-500"><i class="fab fa-youtube"></i> 유튜브 영상 포함</small>' : ''}
             </td>
             <td class="max-w-xs truncate">${notice.content}</td>
             <td>${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
@@ -193,23 +193,20 @@ function openNoticeModal(index = null) {
         document.getElementById('notice-id').value = index;
         document.getElementById('notice-title').value = notice.title;
         document.getElementById('notice-content').value = notice.content;
-        document.getElementById('notice-image').value = notice.image || '';
+        document.getElementById('notice-youtube').value = notice.youtube || '';
         
-        // 이미지 미리보기 표시
-        const preview = document.getElementById('notice-preview');
-        if (notice.image) {
-            preview.src = notice.image;
-            preview.classList.remove('hidden');
+        // 유튜브 미리보기 표시
+        if (notice.youtube) {
+            previewNoticeYoutube();
         } else {
-            preview.classList.add('hidden');
+            document.getElementById('notice-youtube-preview').classList.add('hidden');
         }
     } else {
         document.getElementById('notice-id').value = '';
         document.getElementById('notice-title').value = '';
         document.getElementById('notice-content').value = '';
-        document.getElementById('notice-image').value = '';
-        document.getElementById('notice-image-file').value = '';
-        document.getElementById('notice-preview').classList.add('hidden');
+        document.getElementById('notice-youtube').value = '';
+        document.getElementById('notice-youtube-preview').classList.add('hidden');
     }
 }
 
@@ -233,7 +230,7 @@ function saveNotice(event) {
         id: id !== '' ? id : Date.now().toString(),
         title: document.getElementById('notice-title').value,
         content: document.getElementById('notice-content').value,
-        image: document.getElementById('notice-image').value || '',
+        youtube: document.getElementById('notice-youtube').value || '',
         createdAt: id !== '' ? notices[id].createdAt : new Date().toISOString()
     };
     
@@ -1015,5 +1012,33 @@ function previewPopupUrl() {
         document.getElementById('popup-image-file').value = '';
     } else {
         preview.classList.add('hidden');
+    }
+}
+
+// 유튜브 ID 추출 함수
+function extractYoutubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// 공지 유튜브 미리보기
+function previewNoticeYoutube() {
+    const url = document.getElementById('notice-youtube').value;
+    const previewContainer = document.getElementById('notice-youtube-preview');
+    const iframe = document.getElementById('notice-youtube-iframe');
+    
+    if (url) {
+        const videoId = extractYoutubeId(url);
+        if (videoId) {
+            iframe.src = `https://www.youtube.com/embed/${videoId}`;
+            previewContainer.classList.remove('hidden');
+        } else {
+            alert('올바른 유튜브 URL을 입력해주세요.');
+            previewContainer.classList.add('hidden');
+        }
+    } else {
+        previewContainer.classList.add('hidden');
+        iframe.src = '';
     }
 }

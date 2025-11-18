@@ -1,5 +1,12 @@
 // EventBET Notices System - 공지사항 시스템
 
+// 유튜브 ID 추출 함수
+function extractYoutubeIdForNotice(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
 // 다국어 번역
 const noticeTranslations = {
     ko: {
@@ -70,15 +77,27 @@ function showNoticeDetail(noticeIndex) {
     document.getElementById('notice-detail-title').textContent = notice.title;
     document.getElementById('notice-detail-date').textContent = new Date(notice.createdAt).toLocaleString();
     
-    // 이미지가 있는 경우 표시
+    // 유튜브 영상이 있는 경우 표시
     const contentElement = document.getElementById('notice-detail-content');
-    if (notice.image) {
-        contentElement.innerHTML = `
-            <img src="${notice.image}" alt="Notice Image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px;">
-            <p style="white-space: pre-wrap;">${notice.content}</p>
-        `;
+    if (notice.youtube) {
+        const videoId = extractYoutubeIdForNotice(notice.youtube);
+        if (videoId) {
+            contentElement.innerHTML = `
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-bottom: 15px; border-radius: 8px;">
+                    <iframe src="https://www.youtube.com/embed/${videoId}" 
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <p style="white-space: pre-wrap;">${notice.content}</p>
+            `;
+        } else {
+            contentElement.innerHTML = `<p style="white-space: pre-wrap;">${notice.content}</p>`;
+        }
     } else {
-        contentElement.textContent = notice.content;
+        contentElement.innerHTML = `<p style="white-space: pre-wrap;">${notice.content}</p>`;
     }
     
     document.getElementById('notice-list-view').classList.add('hidden');
