@@ -5,15 +5,26 @@ function displayPopups() {
     const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
     const container = document.getElementById('popup-container');
     
-    if (!container) return;
+    console.log('[Popup System] Total popups:', popups.length);
+    console.log('[Popup System] Popup data:', popups);
+    
+    if (!container) {
+        console.error('[Popup System] Popup container not found!');
+        return;
+    }
     
     // 활성화된 팝업만 필터링
     const activePopups = popups.filter(popup => popup.enabled === true);
     
+    console.log('[Popup System] Active popups:', activePopups.length);
+    
     if (activePopups.length === 0) {
+        console.log('[Popup System] No active popups to display');
         container.innerHTML = '';
         return;
     }
+    
+    console.log('[Popup System] Displaying', activePopups.length, 'popup(s)');
     
     // 각 팝업 표시
     activePopups.forEach((popup, index) => {
