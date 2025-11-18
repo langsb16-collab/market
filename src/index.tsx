@@ -392,50 +392,55 @@ app.get('/', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
-            /* Light Mode (Default) */
+            /* Apple-Inspired Design - Light Mode (Default) */
             body {
-                background-color: #ffffff;
-                color: #000000;
-                transition: background-color 0.3s ease, color 0.3s ease;
+                background: linear-gradient(180deg, #f5f7fa 0%, #ffffff 100%);
+                color: #1d1d1f;
+                transition: background 0.3s ease, color 0.3s ease;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             }
             
             body.dark-mode {
-                background-color: #000000;
-                color: #ffffff;
+                background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+                color: #f5f5f7;
             }
             
-            /* Header */
+            /* Apple-Style Header */
             .header {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #e0e0e0;
+                background: rgba(255, 255, 255, 0.72);
+                backdrop-filter: saturate(180%) blur(20px);
+                -webkit-backdrop-filter: saturate(180%) blur(20px);
+                border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
             }
             
             body.dark-mode .header {
-                background-color: #1a1a1a;
-                border-bottom: 1px solid #333333;
+                background: rgba(29, 29, 31, 0.72);
+                backdrop-filter: saturate(180%) blur(20px);
+                -webkit-backdrop-filter: saturate(180%) blur(20px);
+                border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
             }
             
-            /* Cards */
+            /* Apple-Style Cards */
             .card {
                 background: #ffffff;
-                border: 1px solid #e0e0e0;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                border: none;
+                border-radius: 18px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
             body.dark-mode .card {
-                background: #1a1a1a;
-                border: 1px solid #333333;
-                box-shadow: 0 2px 4px rgba(255,255,255,0.05);
+                background: #1d1d1f;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
             }
             
             .card:hover {
-                border-color: #3b82f6;
-                transform: translateY(-2px);
-                transition: all 0.3s ease;
+                transform: translateY(-4px) scale(1.01);
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
             }
             
             body.dark-mode .card:hover {
-                border-color: #60a5fa;
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
             }
             
             /* Line Clamp */
@@ -455,40 +460,51 @@ app.get('/', (c) => {
                 transform: scale(1.05);
             }
             
-            /* Buttons */
+            /* Apple-Style Buttons */
             .btn-primary {
-                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
                 color: #ffffff;
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+                transition: all 0.2s ease;
             }
             
             .btn-primary:hover {
-                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                background: linear-gradient(180deg, #0051d5 0%, #003d99 100%);
+                box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+                transform: translateY(-1px);
             }
             
             .btn-category {
-                background-color: #f3f4f6;
-                color: #000000;
-                border: 1px solid #e0e0e0;
+                background-color: rgba(120, 120, 128, 0.12);
+                color: #1d1d1f;
+                border: none;
+                border-radius: 20px;
+                font-weight: 500;
+                transition: all 0.2s ease;
             }
             
             body.dark-mode .btn-category {
-                background-color: #2a2a2a;
-                color: #ffffff;
-                border: 1px solid #404040;
+                background-color: rgba(120, 120, 128, 0.24);
+                color: #f5f5f7;
             }
             
             .btn-category:hover {
-                background-color: #e5e7eb;
+                background-color: rgba(120, 120, 128, 0.18);
+                transform: scale(1.02);
             }
             
             body.dark-mode .btn-category:hover {
-                background-color: #3a3a3a;
+                background-color: rgba(120, 120, 128, 0.32);
             }
             
             .btn-category.active {
-                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
                 color: #ffffff;
-                border-color: #3b82f6;
+                box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
             }
             
             /* Outcome bars */
@@ -544,15 +560,19 @@ app.get('/', (c) => {
                 outline: none;
             }
             
-            /* Modal */
+            /* Apple-Style Modal */
             .modal-content {
-                background-color: #ffffff;
-                border: 1px solid #e0e0e0;
+                background: #ffffff;
+                border: none;
+                border-radius: 20px;
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.08);
+                backdrop-filter: blur(40px);
+                -webkit-backdrop-filter: blur(40px);
             }
             
             body.dark-mode .modal-content {
-                background-color: #1a1a1a;
-                border: 1px solid #404040;
+                background: rgba(29, 29, 31, 0.95);
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
             }
             
             /* Theme toggle button */
@@ -862,8 +882,9 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Odds & Fee Structure Section (Multilingual) -->
-            <div class="mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionKO">
+            <!-- Odds & Fee Structure Sections Removed for Cleaner UX -->
+            <!-- Hidden: All odds and fee structure sections (KO, EN, ZH, JA) -->
+            <div class="hidden mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionKO">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
                     <i class="fas fa-calculator mr-2"></i>배당률(Odds)과 수수료(Fee) 구조
                 </h3>
@@ -941,8 +962,7 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Odds & Fee Structure Section (English) -->
-            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionEN">
+            <div class="hidden mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionEN">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
                     <i class="fas fa-calculator mr-2"></i>Odds and Fee Structure
                 </h3>
@@ -1020,8 +1040,7 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Odds & Fee Structure Section (Chinese) -->
-            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionZH">
+            <div class="hidden mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionZH">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
                     <i class="fas fa-calculator mr-2"></i>赔率(Odds)和手续费(Fee)结构
                 </h3>
@@ -1099,8 +1118,7 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Odds & Fee Structure Section (Japanese) -->
-            <div class="mb-6 sm:mb-8 card p-4 sm:p-6 hidden" id="oddsFeeSectionJA">
+            <div class="hidden mb-6 sm:mb-8 card p-4 sm:p-6" id="oddsFeeSectionJA">
                 <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-accent">
                     <i class="fas fa-calculator mr-2"></i>オッズ(Odds)と手数料(Fee)構造
                 </h3>
