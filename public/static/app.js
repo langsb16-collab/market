@@ -231,7 +231,9 @@ async function loadEvents(category = null) {
             : `/api/events?lang=${currentLang}`
         const response = await axios.get(url)
         events = response.data.events
-        renderEvents()
+        
+        // Apply current sort after loading
+        sortMarkets(currentSort)
     } catch (error) {
         console.error('Error loading events:', error)
     }
@@ -882,7 +884,7 @@ function closeModalAndConnectWalletSubmit() {
 }
 
 // Sort markets
-let currentSort = 'trending'
+let currentSort = 'date'
 
 function sortMarkets(sortType) {
     currentSort = sortType
@@ -897,18 +899,25 @@ function sortMarkets(sortType) {
     let sortedEvents = [...events]
     
     switch(sortType) {
+        case 'date':
+            // Sort by end_date (most recent deadline first)
+            sortedEvents.sort((a, b) => new Date(b.end_date) - new Date(a.end_date))
+            break
         case 'volume':
+            // Sort by total_volume (highest first)
             sortedEvents.sort((a, b) => (b.total_volume || 0) - (a.total_volume || 0))
             break
-        case 'date':
-            sortedEvents.sort((a, b) => new Date(b.resolve_date) - new Date(a.resolve_date))
+        case 'participants':
+            // Calculate total participants from outcomes' total_bets
+            sortedEvents.sort((a, b) => {
+                const aParticipants = a.outcomes ? a.outcomes.reduce((sum, o) => sum + (o.total_bets || 0), 0) : 0
+                const bParticipants = b.outcomes ? b.outcomes.reduce((sum, o) => sum + (o.total_bets || 0), 0) : 0
+                return bParticipants - aParticipants
+            })
             break
-        case 'created':
-            sortedEvents.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-            break
-        case 'trending':
         default:
-            // Keep original order (trending)
+            // Default: sort by date
+            sortedEvents.sort((a, b) => new Date(b.end_date) - new Date(a.end_date))
             break
     }
     

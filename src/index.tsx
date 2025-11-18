@@ -869,19 +869,18 @@ app.get('/', (c) => {
             <!-- Sort Filter -->
             <div class="mb-4 sm:mb-6">
                 <div class="flex items-center justify-between flex-wrap gap-2">
-                    <h3 class="text-lg sm:text-xl font-bold mobile-text" id="marketsTitle">Trending Markets</h3>
+                    <h3 class="text-lg sm:text-xl font-bold mobile-text" id="marketsTitle">
+                        <span data-ko="인기 마켓" data-en="Popular Markets" data-zh="热门市场" data-ja="人気市場">인기 마켓</span>
+                    </h3>
                     <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
-                        <button onclick="sortMarkets('trending')" id="sort-trending" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                            <i class="fas fa-fire mr-1"></i><span data-ko="인기순" data-en="Trending" data-zh="热门" data-ja="人気">인기순</span>
+                        <button onclick="sortMarkets('date')" id="sort-date" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-calendar mr-1"></i><span data-ko="날짜순서" data-en="Latest" data-zh="日期顺序" data-ja="日付順">날짜순서</span>
                         </button>
                         <button onclick="sortMarkets('volume')" id="sort-volume" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
                             <i class="fas fa-chart-bar mr-1"></i><span data-ko="배팅규모" data-en="Volume" data-zh="交易量" data-ja="取引量">배팅규모</span>
                         </button>
-                        <button onclick="sortMarkets('date')" id="sort-date" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                            <i class="fas fa-calendar mr-1"></i><span data-ko="최신순" data-en="Latest" data-zh="最新" data-ja="最新">최신순</span>
-                        </button>
-                        <button onclick="sortMarkets('created')" id="sort-created" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                            <i class="fas fa-plus-circle mr-1"></i><span data-ko="등록순" data-en="Created" data-zh="创建" data-ja="登録">등록순</span>
+                        <button onclick="sortMarkets('participants')" id="sort-participants" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-users mr-1"></i><span data-ko="참여인원" data-en="Participants" data-zh="参与人数" data-ja="参加者数">참여인원</span>
                         </button>
                     </div>
                 </div>
