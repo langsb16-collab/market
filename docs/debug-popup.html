@@ -55,6 +55,7 @@
     <div class="section">
         <h2>1. localStorage 확인</h2>
         <button class="btn-info" onclick="checkLocalStorage()">🔍 localStorage 확인</button>
+        <button class="btn-danger" onclick="clearSessionStorage()">🧹 sessionStorage 초기화 (오늘 하루 보지 않기 해제)</button>
         <button class="btn-danger" onclick="clearAllData()">🗑️ 모든 데이터 삭제</button>
         <div id="storage-status" class="status info">대기 중...</div>
         <pre id="storage-data">클릭하여 데이터 확인</pre>
@@ -129,6 +130,26 @@
             }
 
             console.log('[Debug] localStorage checked:', popups.length, 'popups found');
+        }
+
+        function clearSessionStorage() {
+            // sessionStorage에서 팝업 관련 항목만 삭제
+            let clearedCount = 0;
+            for (let i = sessionStorage.length - 1; i >= 0; i--) {
+                const key = sessionStorage.key(i);
+                if (key && key.includes('popup-') && key.includes('-closed-today')) {
+                    sessionStorage.removeItem(key);
+                    clearedCount++;
+                }
+            }
+            
+            if (clearedCount > 0) {
+                updateStatus('storage-status', `sessionStorage 초기화 완료! (${clearedCount}개 항목 삭제)`, 'success');
+                console.log('[Debug] sessionStorage cleared:', clearedCount, 'items');
+            } else {
+                updateStatus('storage-status', 'sessionStorage에 삭제할 항목이 없습니다.', 'info');
+                console.log('[Debug] sessionStorage was already empty');
+            }
         }
 
         function clearAllData() {

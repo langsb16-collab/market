@@ -277,6 +277,21 @@ function extractYoutubeId(url) {
 function initPopupSystem() {
     console.log('[Popup System] Initializing...');
     
+    // URL 파라미터로 sessionStorage 초기화 (예: ?reset_popup=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset_popup') === '1') {
+        console.log('[Popup System] Resetting sessionStorage...');
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const key = sessionStorage.key(i);
+            if (key && key.includes('popup-') && key.includes('-closed-today')) {
+                sessionStorage.removeItem(key);
+            }
+        }
+        console.log('[Popup System] sessionStorage reset complete');
+        // URL에서 파라미터 제거
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     // 1초 후에 팝업 표시 (페이지 로딩 완료 후)
     setTimeout(() => {
         console.log('[Popup System] Starting popup display...');
