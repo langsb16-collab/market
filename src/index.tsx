@@ -866,9 +866,29 @@ app.get('/', (c) => {
                 </div>
             </div>
 
+            <!-- Sort Filter -->
+            <div class="mb-4 sm:mb-6">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <h3 class="text-lg sm:text-xl font-bold mobile-text" id="marketsTitle">Trending Markets</h3>
+                    <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+                        <button onclick="sortMarkets('trending')" id="sort-trending" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-fire mr-1"></i><span data-ko="인기순" data-en="Trending" data-zh="热门" data-ja="人気">인기순</span>
+                        </button>
+                        <button onclick="sortMarkets('volume')" id="sort-volume" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-chart-bar mr-1"></i><span data-ko="배팅규모" data-en="Volume" data-zh="交易量" data-ja="取引量">배팅규모</span>
+                        </button>
+                        <button onclick="sortMarkets('date')" id="sort-date" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-calendar mr-1"></i><span data-ko="최신순" data-en="Latest" data-zh="最新" data-ja="最新">최신순</span>
+                        </button>
+                        <button onclick="sortMarkets('created')" id="sort-created" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                            <i class="fas fa-plus-circle mr-1"></i><span data-ko="등록순" data-en="Created" data-zh="创建" data-ja="登録">등록순</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Markets Grid -->
             <div class="mb-6 sm:mb-8">
-                <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 mobile-text" id="marketsTitle">Trending Markets</h3>
                 <div id="marketsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <!-- Markets will be loaded here -->
                 </div>

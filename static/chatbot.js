@@ -167,20 +167,20 @@ class ChatBot {
 
     createChatbotUI() {
         const chatbotHTML = `
-            <!-- 챗봇 버튼 -->
+            <!-- 챗봇 버튼 (2배 확대) -->
             <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group">
                 <div class="relative">
-                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-full p-4 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
-                        <i class="fas fa-robot text-white text-3xl"></i>
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-full p-8 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
+                        <i class="fas fa-robot text-white text-6xl"></i>
                     </div>
-                    <div class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-bounce">
+                    <div class="absolute -top-4 -right-4 bg-red-500 text-white text-sm font-bold rounded-full w-12 h-12 flex items-center justify-center animate-bounce">
                         AI
                     </div>
                 </div>
             </div>
 
             <!-- 챗봇 창 -->
-            <div id="chatbot-window" class="fixed bottom-24 right-6 w-96 bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 600px; max-height: 80vh;">
+            <div id="chatbot-window" class="fixed bottom-32 right-6 w-96 bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 600px; max-height: 80vh;">
                 <!-- 헤더 -->
                 <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl flex items-center justify-between">
                     <div class="flex items-center space-x-3">

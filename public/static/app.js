@@ -881,8 +881,44 @@ function closeModalAndConnectWalletSubmit() {
     }, 300)
 }
 
+// Sort markets
+let currentSort = 'trending'
+
+function sortMarkets(sortType) {
+    currentSort = sortType
+    
+    // Update button states
+    document.querySelectorAll('[id^="sort-"]').forEach(btn => {
+        btn.classList.remove('active')
+    })
+    document.getElementById(`sort-${sortType}`).classList.add('active')
+    
+    // Sort events array
+    let sortedEvents = [...events]
+    
+    switch(sortType) {
+        case 'volume':
+            sortedEvents.sort((a, b) => (b.total_volume || 0) - (a.total_volume || 0))
+            break
+        case 'date':
+            sortedEvents.sort((a, b) => new Date(b.resolve_date) - new Date(a.resolve_date))
+            break
+        case 'created':
+            sortedEvents.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+            break
+        case 'trending':
+        default:
+            // Keep original order (trending)
+            break
+    }
+    
+    events = sortedEvents
+    renderEvents()
+}
+
 // Make functions globally accessible
 window.filterByCategory = filterByCategory
+window.sortMarkets = sortMarkets
 window.openBetModal = openBetModal
 window.openBetModalById = openBetModalById
 window.openBetModalByEventId = openBetModalByEventId
