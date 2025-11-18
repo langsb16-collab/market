@@ -69,7 +69,17 @@ function showNoticeDetail(noticeIndex) {
     
     document.getElementById('notice-detail-title').textContent = notice.title;
     document.getElementById('notice-detail-date').textContent = new Date(notice.createdAt).toLocaleString();
-    document.getElementById('notice-detail-content').textContent = notice.content;
+    
+    // 이미지가 있는 경우 표시
+    const contentElement = document.getElementById('notice-detail-content');
+    if (notice.image) {
+        contentElement.innerHTML = `
+            <img src="${notice.image}" alt="Notice Image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px;">
+            <p style="white-space: pre-wrap;">${notice.content}</p>
+        `;
+    } else {
+        contentElement.textContent = notice.content;
+    }
     
     document.getElementById('notice-list-view').classList.add('hidden');
     document.getElementById('notice-detail-view').classList.remove('hidden');

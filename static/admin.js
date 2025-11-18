@@ -164,7 +164,10 @@ function loadNotices() {
     tbody.innerHTML = notices.map((notice, index) => `
         <tr>
             <td>${index + 1}</td>
-            <td>${notice.title}</td>
+            <td>
+                ${notice.title}
+                ${notice.image ? '<br><small class="text-gray-500"><i class="fas fa-image"></i> 이미지 포함</small>' : ''}
+            </td>
             <td class="max-w-xs truncate">${notice.content}</td>
             <td>${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
             <td>
@@ -190,10 +193,23 @@ function openNoticeModal(index = null) {
         document.getElementById('notice-id').value = index;
         document.getElementById('notice-title').value = notice.title;
         document.getElementById('notice-content').value = notice.content;
+        document.getElementById('notice-image').value = notice.image || '';
+        
+        // 이미지 미리보기 표시
+        const preview = document.getElementById('notice-preview');
+        if (notice.image) {
+            preview.src = notice.image;
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
+        }
     } else {
         document.getElementById('notice-id').value = '';
         document.getElementById('notice-title').value = '';
         document.getElementById('notice-content').value = '';
+        document.getElementById('notice-image').value = '';
+        document.getElementById('notice-image-file').value = '';
+        document.getElementById('notice-preview').classList.add('hidden');
     }
 }
 
@@ -217,6 +233,7 @@ function saveNotice(event) {
         id: id !== '' ? id : Date.now().toString(),
         title: document.getElementById('notice-title').value,
         content: document.getElementById('notice-content').value,
+        image: document.getElementById('notice-image').value || '',
         createdAt: id !== '' ? notices[id].createdAt : new Date().toISOString()
     };
     
@@ -842,3 +859,161 @@ document.addEventListener('DOMContentLoaded', () => {
         if (section === 'settlement') loadSettlement();
     };
 });
+
+// ========== 이미지 업로드 핸들러 ==========
+
+// 배너 이미지 파일 업로드
+function handleBannerImageUpload() {
+    const fileInput = document.getElementById('banner-image-file');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('banner-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('banner-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 배너 URL 미리보기
+function previewBannerUrl() {
+    const url = document.getElementById('banner-image').value;
+    const preview = document.getElementById('banner-preview');
+    
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('banner-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+// 공지 이미지 파일 업로드
+function handleNoticeImageUpload() {
+    const fileInput = document.getElementById('notice-image-file');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('notice-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('notice-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 공지 URL 미리보기
+function previewNoticeUrl() {
+    const url = document.getElementById('notice-image').value;
+    const preview = document.getElementById('notice-preview');
+    
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('notice-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+// 팝업 이미지 파일 업로드
+function handlePopupImageUpload() {
+    const fileInput = document.getElementById('popup-image-file');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('popup-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('popup-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 팝업 URL 미리보기
+function previewPopupUrl() {
+    const url = document.getElementById('popup-image').value;
+    const preview = document.getElementById('popup-preview');
+    
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('popup-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
