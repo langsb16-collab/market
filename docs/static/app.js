@@ -870,3 +870,79 @@ document.addEventListener('click', (e) => {
         closeSubmitIssueModal()
     }
 })
+
+// Copy wallet address to clipboard
+window.copyWalletAddress = function() {
+    // Try to get address from hero section first, then from modal
+    const heroAddress = document.getElementById('wallet-address')
+    const modalAddress = document.getElementById('wallet-address-modal')
+    const walletAddress = (heroAddress ? heroAddress.textContent : modalAddress.textContent).trim()
+    
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(walletAddress).then(() => {
+            showCopyNotification('success')
+        }).catch(err => {
+            console.error('Failed to copy:', err)
+            fallbackCopy(walletAddress)
+        })
+    } else {
+        fallbackCopy(walletAddress)
+    }
+}
+
+// Fallback copy method for older browsers
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-999999px'
+    document.body.appendChild(textArea)
+    textArea.select()
+    
+    try {
+        document.execCommand('copy')
+        showCopyNotification('success')
+    } catch (err) {
+        console.error('Fallback copy failed:', err)
+        showCopyNotification('error')
+    }
+    
+    document.body.removeChild(textArea)
+}
+
+// Show copy notification
+function showCopyNotification(type) {
+    const message = type === 'success' 
+        ? '✅ 지갑 주소가 복사되었습니다!' 
+        : '❌ 복사에 실패했습니다. 수동으로 복사해주세요.'
+    
+    // Create notification element
+    const notification = document.createElement('div')
+    notification.className = `fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-2xl font-semibold text-white transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`
+    notification.innerHTML = `
+        <div class="flex items-center gap-2">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `
+    
+    document.body.appendChild(notification)
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1'
+        notification.style.transform = 'translate(-50%, 0)'
+    }, 100)
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0'
+        notification.style.transform = 'translate(-50%, -20px)'
+        setTimeout(() => {
+            document.body.removeChild(notification)
+        }, 300)
+    }, 3000)
+}
