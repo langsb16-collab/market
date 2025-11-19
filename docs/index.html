@@ -153,7 +153,7 @@
             transform: translateY(-1px);
         }
         
-        /* Notice Button - Orange */
+        /* Notice Button - Orange (모바일 최적화) */
         .btn-notice {
             display: flex !important;
             visibility: visible !important;
@@ -166,6 +166,8 @@
             letter-spacing: -0.01em;
             box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
             transition: all 0.2s ease;
+            min-width: 40px; /* 모바일 최소 너비 */
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
         }
         
         .btn-notice:hover {
@@ -623,13 +625,18 @@
     <!-- Header -->
     <header class="header sticky top-0 z-50">
         <div class="container mx-auto px-3 sm:px-6 py-2 sm:py-4">
-            <!-- 첫 번째 줄: 로고 + 설정 -->
+            <!-- 첫 번째 줄: 로고 + 공지 버튼 + 설정 -->
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <i class="fas fa-chart-line text-accent text-xl sm:text-2xl"></i>
                     <h1 class="text-base sm:text-2xl font-bold">EventBET</h1>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <!-- Notice Button - Orange (모바일 우선) -->
+                    <button id="notice-btn" class="btn-notice text-xs sm:text-base px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                        <i class="fas fa-bullhorn mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                        <span id="notice-btn-text" class="hidden sm:inline">공지</span>
+                    </button>
                     <!-- Theme Toggle -->
                     <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm p-2" title="Toggle Dark Mode">
                         <i class="fas fa-moon" id="theme-icon"></i>
@@ -644,30 +651,25 @@
                 </div>
             </div>
             
-            <!-- 두 번째 줄: 액션 버튼들 (모바일 2x2 그리드) -->
-            <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:space-x-2">
-                <!-- Notice Button - Orange -->
-                <button id="notice-btn" class="btn-notice text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
-                    <i class="fas fa-bullhorn mr-1.5 text-base"></i>
-                    <span id="notice-btn-text">공지</span>
-                </button>
+            <!-- 두 번째 줄: 나머지 액션 버튼들 (모바일 3열 그리드) -->
+            <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:space-x-2">
                 <!-- Submit Issue Button - Green -->
-                <button id="submit-issue-btn" class="btn-issue text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
-                    <i class="fas fa-plus-circle mr-1.5 text-base"></i>
-                    <span id="submit-issue-btn-text">이슈 등록</span>
+                <button id="submit-issue-btn" class="btn-issue text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="submit-issue-btn-text" class="text-xs sm:text-base">이슈 등록</span>
                 </button>
                 <!-- Login Button - Blue -->
-                <button id="login-btn" class="btn-login text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
-                    <i class="fas fa-sign-in-alt mr-1.5 text-base"></i>
-                    <span id="login-btn-text">로그인</span>
+                <button id="login-btn" class="btn-login text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="login-btn-text" class="text-xs sm:text-base">로그인</span>
                 </button>
                 <!-- Register Button - Purple -->
-                <button id="register-btn" class="btn-register text-sm sm:text-base px-3 py-2.5 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
-                    <i class="fas fa-user-plus mr-1.5 text-base"></i>
-                    <span id="register-btn-text">회원가입</span>
+                <button id="register-btn" class="btn-register text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="register-btn-text" class="text-xs sm:text-base">회원가입</span>
                 </button>
                 <!-- User Profile (로그인 시 표시) -->
-                <div id="user-profile" class="hidden col-span-2 sm:col-span-1 flex items-center justify-between bg-blue-50 px-4 py-2 rounded-lg">
+                <div id="user-profile" class="hidden col-span-3 sm:col-span-1 flex items-center justify-between bg-blue-50 px-4 py-2 rounded-lg">
                     <span id="user-name" class="text-sm font-semibold"></span>
                     <button id="logout-btn" class="btn-primary text-sm px-3 py-1 rounded-lg font-semibold ml-3">
                         <i class="fas fa-sign-out-alt mr-1"></i>
@@ -1177,10 +1179,10 @@
     <!-- Popup Container -->
     <div id="popup-container"></div>
 
-    <script src="/static/auth.js?v=20250119999"></script>
-    <script src="/static/app.js?v=20250119999"></script>
-    <script src="/static/chatbot.js?v=20250119999"></script>
-    <script src="/static/notices.js?v=20250119999"></script>
-    <script src="/static/popup.js?v=20250119999"></script>
+    <script src="/static/auth.js?v=20250120001"></script>
+    <script src="/static/app.js?v=20250120001"></script>
+    <script src="/static/chatbot.js?v=20250120001"></script>
+    <script src="/static/notices.js?v=20250120001"></script>
+    <script src="/static/popup.js?v=20250120001"></script>
 </body>
 </html>
