@@ -307,34 +307,15 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">배너 관리</h2>
-                    <div class="flex gap-2">
-                        <button onclick="syncBannersToGist()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200">
-                            <i class="fas fa-sync mr-2"></i>Gist 동기화
-                        </button>
-                        <button onclick="openBannerModal()" class="btn-success">
-                            <i class="fas fa-plus mr-2"></i>배너 추가
-                        </button>
-                    </div>
+                    <button onclick="openBannerModal()" class="btn-success">
+                        <i class="fas fa-plus mr-2"></i>배너 추가
+                    </button>
                 </div>
                 
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                     <p class="text-sm text-yellow-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        최대 3개의 배너를 등록할 수 있습니다. 이미지 업로드 또는 유튜브 링크를 사용할 수 있습니다.
-                    </p>
-                </div>
-                
-                <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
-                    <p class="text-sm text-green-800 mb-2">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i>
-                        <strong>PC/모바일 데이터 동기화:</strong> 배너, 공지, 팝업 등록/수정/삭제 시 자동으로 Gist에 동기화됩니다.
-                    </p>
-                    <p class="text-sm text-green-800">
-                        <i class="fas fa-mobile-alt mr-2"></i>
-                        PC에서 등록한 내용이 모바일에서도 동일하게 표시됩니다.
-                        <button onclick="syncAllToGist()" class="ml-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold">
-                            <i class="fas fa-sync mr-1"></i>전체 동기화
-                        </button>
+                        최대 3개의 배너를 등록할 수 있습니다. PC에서 이미지 업로드가 가능합니다.
                     </p>
                 </div>
                 
@@ -349,25 +330,15 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">공지 관리</h2>
-                    <div class="flex gap-2">
-                        <button onclick="syncNoticesToGist()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200">
-                            <i class="fas fa-sync mr-2"></i>Gist 동기화
-                        </button>
-                        <button onclick="openNoticeModal()" class="btn-success">
-                            <i class="fas fa-plus mr-2"></i>공지 등록
-                        </button>
-                    </div>
+                    <button onclick="openNoticeModal()" class="btn-success">
+                        <i class="fas fa-plus mr-2"></i>공지 등록
+                    </button>
                 </div>
                 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-                    <p class="text-sm text-blue-800 mb-2">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        최대 30개의 공지를 등록할 수 있습니다.
-                    </p>
                     <p class="text-sm text-blue-800">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i>
-                        <strong>중요:</strong> 공지 등록/수정/삭제 후 자동으로 Gist에 동기화됩니다. PC와 모바일이 동일한 공지를 공유합니다.
-                        <a href="https://github.com/langsb16-collab/market#github-gist-%EC%84%A4%EC%A0%95-%EA%B3%B5%EC%A7%80%EC%82%AC%ED%95%AD-%EB%8F%99%EA%B8%B0%ED%99%94" target="_blank" class="underline font-semibold">Gist 설정 방법 →</a>
+                        <i class="fas fa-info-circle mr-2"></i>
+                        최대 30개의 공지를 등록할 수 있습니다. PC에서 이미지 업로드가 가능합니다.
                     </p>
                 </div>
                 
@@ -393,20 +364,15 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">팝업 관리</h2>
-                    <div class="flex gap-2">
-                        <button onclick="syncPopupsToGist()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200">
-                            <i class="fas fa-sync mr-2"></i>Gist 동기화
-                        </button>
-                        <button onclick="openPopupModal()" class="btn-success">
-                            <i class="fas fa-plus mr-2"></i>팝업 추가
-                        </button>
-                    </div>
+                    <button onclick="openPopupModal()" class="btn-success">
+                        <i class="fas fa-plus mr-2"></i>팝업 추가
+                    </button>
                 </div>
                 
                 <div class="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6">
                     <p class="text-sm text-purple-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        이미지 업로드 또는 유튜브 링크를 사용하여 팝업을 생성할 수 있습니다.
+                        PC에서 이미지 업로드를 통해 팝업을 생성할 수 있습니다. 위치(cm)와 날짜를 지정할 수 있습니다.
                     </p>
                 </div>
                 
@@ -605,29 +571,9 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">콘텐츠 타입</label>
-                    <select id="banner-type" onchange="toggleBannerInputs()" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                        <option value="image">이미지 업로드</option>
-                        <option value="youtube">유튜브 링크</option>
-                    </select>
-                </div>
-                
-                <div id="banner-image-input" class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">이미지 URL</label>
-                    <input type="url" id="banner-image" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewBannerUrl()">
-                    
-                    <div class="text-center text-gray-500 my-3">또는</div>
-                    
                     <label class="block text-sm font-semibold mb-2">PC에서 이미지 업로드</label>
-                    <input type="file" id="banner-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleBannerImageUpload()">
-                    
-                    <img id="banner-preview" class="preview-image hidden">
-                </div>
-                
-                <div id="banner-youtube-input" class="mb-4 hidden">
-                    <label class="block text-sm font-semibold mb-2">유튜브 링크</label>
-                    <input type="url" id="banner-youtube" placeholder="https://www.youtube.com/watch?v=...">
-                    <iframe id="banner-youtube-preview" class="youtube-preview hidden" frameborder="0" allowfullscreen></iframe>
+                    <input type="file" id="banner-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleBannerImageUpload(event)">
+                    <img id="banner-preview" class="preview-image hidden mt-2">
                 </div>
                 
                 <div class="mb-4">
@@ -667,18 +613,9 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">유튜브 URL (선택)</label>
-                    <input type="url" id="notice-youtube" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewNoticeYoutube()">
-                    <small class="text-gray-500 mt-2 block">
-                        <i class="fab fa-youtube text-red-600"></i> 유튜브 영상 URL을 입력하세요 (예: https://www.youtube.com/watch?v=VIDEO_ID)
-                    </small>
-                    
-                    <!-- 유튜브 미리보기 -->
-                    <div id="notice-youtube-preview" class="hidden mt-4">
-                        <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                            <iframe id="notice-youtube-iframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        </div>
-                    </div>
+                    <label class="block text-sm font-semibold mb-2">이미지 업로드 (선택)</label>
+                    <input type="file" id="notice-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleNoticeImageUpload(event)">
+                    <img id="notice-image-preview" class="preview-image hidden mt-2">
                 </div>
                 
                 <div class="flex space-x-3">
@@ -708,36 +645,27 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">콘텐츠 타입</label>
-                    <select id="popup-type" onchange="togglePopupInputs()" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                        <option value="image">이미지 업로드</option>
-                        <option value="youtube">유튜브 링크</option>
-                    </select>
-                </div>
-                
-                <div id="popup-image-input" class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">이미지 URL</label>
-                    <input type="url" id="popup-image" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewPopupUrl()">
-                    
-                    <div class="text-center text-gray-500 my-3">또는</div>
-                    
                     <label class="block text-sm font-semibold mb-2">PC에서 이미지 업로드</label>
-                    <input type="file" id="popup-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handlePopupImageUpload()">
-                    
-                    <img id="popup-preview" class="preview-image hidden">
-                </div>
-                
-                <div id="popup-youtube-input" class="mb-4 hidden">
-                    <label class="block text-sm font-semibold mb-2">유튜브 링크</label>
-                    <input type="url" id="popup-youtube" placeholder="https://www.youtube.com/watch?v=...">
-                    <iframe id="popup-youtube-preview" class="youtube-preview hidden" frameborder="0" allowfullscreen></iframe>
+                    <input type="file" id="popup-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handlePopupImageUpload(event)">
+                    <img id="popup-preview" class="preview-image hidden mt-2">
                 </div>
                 
                 <div class="mb-4 bg-gray-50 rounded-lg p-4">
-                    <label class="flex items-center mb-4 cursor-pointer">
-                        <input type="checkbox" id="popup-enabled" class="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mr-3">
-                        <span class="text-base font-bold text-gray-800">팝업 활성화</span>
-                    </label>
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <h4 class="text-sm font-bold text-gray-700 mb-3">
+                            <i class="fas fa-calendar mr-2 text-purple-500"></i>팝업 표시 기간
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">시작일</label>
+                                <input type="date" id="popup-start-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">종료일</label>
+                                <input type="date" id="popup-end-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="bg-white rounded-lg p-4 mb-4">
                         <h4 class="text-sm font-bold text-gray-700 mb-3">
@@ -789,8 +717,7 @@
     </div>
     <!-- End of admin-main-content -->
     
-    <script src="/static/gist-sync.js?v=20251119133212_8fe0abcf"></script>
-    <script src="/static/admin.js?v=20251119133212_8fe0abcf"></script>
+    <script src="/static/admin.js?v=simple"></script>
     <script>
         // 관리자 로그인 처리
         function handleAdminLogin(event) {
