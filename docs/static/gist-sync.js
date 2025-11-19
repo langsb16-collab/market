@@ -5,7 +5,9 @@
 // 보안상 토큰을 직접 코드에 넣지 않고 브라우저에서 입력받습니다
 const GIST_CONFIG = {
     GIST_ID: '1c5fc81907b3069183cd64afa04abfbb',
-    ACCESS_TOKEN: localStorage.getItem('gist_token') || 'YOUR_TOKEN_HERE',
+    get ACCESS_TOKEN() {
+        return localStorage.getItem('gist_token') || 'YOUR_TOKEN_HERE';
+    },
     FILES: {
         NOTICES: 'eventbet_notices.json',
         BANNERS: 'eventbet_banners.json',
