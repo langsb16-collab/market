@@ -637,6 +637,8 @@ class ChatBot {
             chatWindow.classList.remove('hidden');
             chatWindow.classList.add('flex');
             chatButton.style.display = 'none';
+            // 챗봇 열 때마다 현재 언어로 업데이트
+            this.updateLanguage();
             this.showMenuView();
         } else {
             chatWindow.classList.add('hidden');
@@ -654,6 +656,16 @@ class ChatBot {
         document.getElementById('chat-input-area').classList.add('hidden');
         document.getElementById('menu-footer').classList.remove('hidden');
         document.getElementById('back-to-menu').classList.add('hidden');
+
+        // 현재 언어로 UI 업데이트
+        const currentLang = window.currentLang || 'ko';
+        const t = chatbotTranslations[currentLang];
+        
+        // FAQ 제목 업데이트
+        const faqTitleEl = document.getElementById('faq-title');
+        const faqSubtitleEl = document.getElementById('faq-subtitle');
+        if (faqTitleEl) faqTitleEl.textContent = t.faqTitle;
+        if (faqSubtitleEl) faqSubtitleEl.textContent = t.faqSubtitle;
 
         // 질문 목록 생성
         this.renderQuestions();
@@ -860,10 +872,15 @@ let chatbotInstance = null;
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        chatbotInstance = new ChatBot();
-        window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
+        // app.js의 언어 설정이 완료될 때까지 약간 대기
+        setTimeout(() => {
+            chatbotInstance = new ChatBot();
+            window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
+        }, 100);
     });
 } else {
-    chatbotInstance = new ChatBot();
-    window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
+    setTimeout(() => {
+        chatbotInstance = new ChatBot();
+        window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
+    }, 100);
 }
