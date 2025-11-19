@@ -512,29 +512,63 @@ const questionList = [
 
 class ChatBot {
     constructor() {
-        console.log('ChatBot constructor called');
+        console.log('[CHATBOT] ChatBot constructor called');
         this.isOpen = false;
         this.messages = [];
         this.currentView = 'menu'; // 'menu' or 'chat'
-        this.init();
+        
+        // DOM이 준비되었는지 확인
+        if (document.readyState === 'loading') {
+            console.log('[CHATBOT] DOM is still loading, waiting for DOMContentLoaded...');
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('[CHATBOT] DOMContentLoaded fired in constructor');
+                this.init();
+            });
+        } else {
+            console.log('[CHATBOT] DOM is ready, initializing immediately');
+            this.init();
+        }
     }
 
     init() {
-        console.log('ChatBot init() called');
-        this.createChatbotUI();
-        this.addEventListeners();
-        this.showMenuView();
-        console.log('ChatBot initialization complete');
+        console.log('[CHATBOT] init() called');
+        console.log('[CHATBOT] document.body:', !!document.body);
+        console.log('[CHATBOT] document.readyState:', document.readyState);
+        
+        try {
+            this.createChatbotUI();
+            this.addEventListeners();
+            this.showMenuView();
+            console.log('[CHATBOT] ✅ Initialization complete');
+        } catch (error) {
+            console.error('[CHATBOT] ❌ Initialization failed:', error);
+            console.error('[CHATBOT] Error stack:', error.stack);
+        }
     }
 
     createChatbotUI() {
-        console.log('createChatbotUI() called, currentLang:', window.currentLang);
-        const t = chatbotTranslations[window.currentLang || 'ko'];
-        console.log('Using translations:', t.botTitle);
+        console.log('[CHATBOT] createChatbotUI() called');
+        console.log('[CHATBOT] Current language:', window.currentLang);
+        
+        // 기존 챗봇 요소가 있으면 제거
+        const existingButton = document.getElementById('chatbot-button');
+        const existingWindow = document.getElementById('chatbot-window');
+        if (existingButton) {
+            console.log('[CHATBOT] Removing existing chatbot button');
+            existingButton.remove();
+        }
+        if (existingWindow) {
+            console.log('[CHATBOT] Removing existing chatbot window');
+            existingWindow.remove();
+        }
+        
+        const currentLang = window.currentLang || 'ko';
+        const t = chatbotTranslations[currentLang];
+        console.log('[CHATBOT] Using translations for:', currentLang, '- Title:', t.botTitle);
         
         const chatbotHTML = `
             <!-- 챗봇 버튼 (2배 확대) - 진한 색상 -->
-            <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group">
+            <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group" style="display: block !important;">
                 <div class="relative">
                     <div class="bg-gradient-to-r from-blue-800 to-purple-800 rounded-full p-8 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
                         <i class="fas fa-robot text-white text-6xl"></i>
@@ -606,13 +640,34 @@ class ChatBot {
             </div>
         `;
 
-        console.log('Inserting chatbot HTML into body');
+        console.log('[CHATBOT] Inserting chatbot HTML into body');
+        console.log('[CHATBOT] document.body exists:', !!document.body);
+        
+        if (!document.body) {
+            console.error('[CHATBOT] ❌ document.body is null! Cannot insert chatbot.');
+            return;
+        }
+        
         document.body.insertAdjacentHTML('beforeend', chatbotHTML);
-        console.log('Chatbot HTML inserted');
+        console.log('[CHATBOT] ✅ Chatbot HTML inserted');
         
         // 버튼이 실제로 DOM에 추가되었는지 확인
-        const button = document.getElementById('chatbot-button');
-        console.log('Chatbot button element:', button);
+        setTimeout(() => {
+            const button = document.getElementById('chatbot-button');
+            const window_el = document.getElementById('chatbot-window');
+            console.log('[CHATBOT] Verification - Button exists:', !!button);
+            console.log('[CHATBOT] Verification - Window exists:', !!window_el);
+            
+            if (button) {
+                const styles = window.getComputedStyle(button);
+                console.log('[CHATBOT] Button display:', styles.display);
+                console.log('[CHATBOT] Button visibility:', styles.visibility);
+                console.log('[CHATBOT] Button position:', styles.position);
+                console.log('[CHATBOT] Button z-index:', styles.zIndex);
+            } else {
+                console.error('[CHATBOT] ❌ Button element not found after insertion!');
+            }
+        }, 100);
     }
 
     addEventListeners() {
@@ -885,32 +940,70 @@ let chatbotInstance = null;
 function initializeChatbot() {
     if (!chatbotInstance) {
         try {
-            console.log('Initializing chatbot...');
+            console.log('[CHATBOT] Initializing chatbot...');
+            console.log('[CHATBOT] Document ready state:', document.readyState);
+            console.log('[CHATBOT] window.currentLang:', window.currentLang);
+            
+            // window.currentLang이 없으면 기본값 설정
+            if (!window.currentLang) {
+                console.log('[CHATBOT] Setting default language to ko');
+                window.currentLang = 'ko';
+            }
+            
             chatbotInstance = new ChatBot();
             window.chatbotInstance = chatbotInstance;
-            console.log('Chatbot initialized successfully');
+            console.log('[CHATBOT] Chatbot initialized successfully');
+            
+            // 챗봇 버튼이 실제로 DOM에 있는지 확인
+            const button = document.getElementById('chatbot-button');
+            if (button) {
+                console.log('[CHATBOT] ✅ Chatbot button found in DOM');
+                console.log('[CHATBOT] Button styles:', window.getComputedStyle(button).display);
+            } else {
+                console.error('[CHATBOT] ❌ Chatbot button NOT found in DOM!');
+            }
         } catch (error) {
-            console.error('Chatbot initialization error:', error);
+            console.error('[CHATBOT] ❌ Initialization error:', error);
+            console.error('[CHATBOT] Error stack:', error.stack);
         }
+    } else {
+        console.log('[CHATBOT] Chatbot already initialized');
     }
 }
 
-// 여러 방법으로 초기화 시도
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(initializeChatbot, 200);
-    });
-} else {
-    // 이미 로드된 경우 즉시 초기화
-    setTimeout(initializeChatbot, 200);
-}
+// 강제 초기화 함수 (전역 노출)
+window.forceChatbotInit = function() {
+    console.log('[CHATBOT] Force initialization requested');
+    chatbotInstance = null;
+    initializeChatbot();
+};
 
-// 추가 안전장치: window load 이벤트에서도 확인
+// 즉시 초기화 시도 (스크립트 로드 직후)
+console.log('[CHATBOT] Script loaded, attempting immediate initialization...');
+initializeChatbot();
+
+// DOMContentLoaded 이벤트에서도 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[CHATBOT] DOMContentLoaded event fired');
+    if (!chatbotInstance) {
+        console.log('[CHATBOT] Reinitializing on DOMContentLoaded...');
+        initializeChatbot();
+    }
+});
+
+// window load 이벤트에서도 확인 (최종 안전장치)
 window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (!chatbotInstance) {
-            console.log('Reinitializing chatbot on window load...');
+    console.log('[CHATBOT] Window load event fired');
+    if (!chatbotInstance) {
+        console.log('[CHATBOT] Reinitializing on window load...');
+        initializeChatbot();
+    } else {
+        console.log('[CHATBOT] Verifying chatbot button...');
+        const button = document.getElementById('chatbot-button');
+        if (!button) {
+            console.error('[CHATBOT] ❌ Button missing! Forcing reinitialization...');
+            chatbotInstance = null;
             initializeChatbot();
         }
-    }, 300);
+    }
 });
