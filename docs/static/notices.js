@@ -66,7 +66,7 @@ async function loadNotices() {
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">${notice.content}</p>
                         </div>
-                        <span class="text-xs text-gray-500 ml-4">${new Date(notice.createdAt).toLocaleDateString('ko-KR', {month: 'short', day: 'numeric'})}</span>
+                        <span class="text-xs text-gray-500 ml-4">${new Date(notice.createdAt).toLocaleDateString('ko-KR', {year: 'numeric', month: 'short', day: 'numeric'})}</span>
                     </div>
                 </div>
             `;
