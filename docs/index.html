@@ -1026,7 +1026,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">
                     <i class="fas fa-sign-in-alt mr-2 text-accent"></i>
-                    로그인
+                    <span id="login-modal-title">로그인</span>
                 </h3>
                 <button onclick="closeLoginModal()" class="text-secondary hover:text-accent text-2xl">
                     <i class="fas fa-times"></i>
@@ -1034,25 +1034,25 @@
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="login-email-label">이메일</span> *</label>
                     <input type="email" id="login-email" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
                            placeholder="your@email.com">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="login-password-label">비밀번호</span> *</label>
                     <input type="password" id="login-password" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                           placeholder="비밀번호를 입력하세요">
+                           id="login-password-input">
                 </div>
                 <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
                     <i class="fas fa-sign-in-alt mr-2"></i>
-                    로그인
+                    <span id="login-submit-btn">로그인</span>
                 </button>
                 <p class="text-center text-sm text-secondary">
-                    계정이 없으신가요?
+                    <span id="login-no-account">계정이 없으신가요?</span>
                     <button type="button" onclick="closeLoginModal(); showRegisterModal()" class="text-accent hover:underline">
-                        회원가입
+                        <span id="login-to-register">회원가입</span>
                     </button>
                 </p>
             </form>
@@ -1065,7 +1065,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">
                     <i class="fas fa-user-plus mr-2 text-accent"></i>
-                    회원가입
+                    <span id="register-modal-title">회원가입</span>
                 </h3>
                 <button onclick="closeRegisterModal()" class="text-secondary hover:text-accent text-2xl">
                     <i class="fas fa-times"></i>
@@ -1074,67 +1074,67 @@
             <form onsubmit="handleRegister(event)" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">이름 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-name-label">이름</span> *</label>
                         <input type="text" id="register-name" required 
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="홍길동">
+                               id="register-name-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">전화번호 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-phone-label">전화번호</span> *</label>
                         <input type="tel" id="register-phone" required 
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="010-1234-5678">
+                               id="register-phone-input">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">
-                        USDT 지갑주소 *
-                        <span class="text-xs text-secondary ml-2">(배당 받을 주소)</span>
+                        <span id="register-wallet-label">USDT 지갑주소</span> *
+                        <span class="text-xs text-secondary ml-2"><span id="register-wallet-hint">(배당 받을 주소)</span></span>
                     </label>
                     <input type="text" id="register-wallet" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                           placeholder="0x...">
+                           id="register-wallet-input">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="register-email-label">이메일</span> *</label>
                     <input type="email" id="register-email" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
                            placeholder="your@email.com">
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-password-label">비밀번호</span> *</label>
                         <input type="password" id="register-password" required minlength="6"
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="최소 6자 이상">
+                               id="register-password-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">비밀번호 확인 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-confirm-password-label">비밀번호 확인</span> *</label>
                         <input type="password" id="register-confirm-password" required minlength="6"
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="비밀번호 재입력">
+                               id="register-confirm-password-input">
                     </div>
                 </div>
                 <div class="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-4">
                     <h4 class="font-semibold text-blue-500 mb-2">
                         <i class="fas fa-star mr-2"></i>
-                        회원 전용 혜택
+                        <span id="register-benefits-title">회원 전용 혜택</span>
                     </h4>
                     <ul class="text-sm text-secondary space-y-1">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>모든 마켓 상세 정보 조회</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>베팅 및 이슈 등록 권한</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>신규 이벤트 알림 서비스</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>배당 내역 관리</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-1">모든 마켓 상세 정보 조회</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-2">베팅 및 이슈 등록 권한</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-3">신규 이벤트 알림 서비스</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-4">배당 내역 관리</span></li>
                     </ul>
                 </div>
                 <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
                     <i class="fas fa-user-plus mr-2"></i>
-                    회원가입
+                    <span id="register-submit-btn">회원가입</span>
                 </button>
                 <p class="text-center text-sm text-secondary">
-                    이미 계정이 있으신가요?
+                    <span id="register-has-account">이미 계정이 있으신가요?</span>
                     <button type="button" onclick="closeRegisterModal(); showLoginModal()" class="text-accent hover:underline">
-                        로그인
+                        <span id="register-to-login">로그인</span>
                     </button>
                 </p>
             </form>
