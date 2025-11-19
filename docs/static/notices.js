@@ -111,11 +111,20 @@ function backToNoticeList() {
 
 // 공지 목록 로드
 function loadNotices() {
+    console.log('[NOTICE] loadNotices() called');
     const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    console.log('[NOTICE] Found notices:', notices.length);
+    
     const container = document.getElementById('notice-list-container');
     const emptyMsg = document.getElementById('notice-empty');
     
+    if (!container) {
+        console.error('[NOTICE] notice-list-container not found!');
+        return;
+    }
+    
     if (notices.length === 0) {
+        console.log('[NOTICE] No notices to display');
         container.innerHTML = '';
         emptyMsg.classList.remove('hidden');
         return;
@@ -131,21 +140,25 @@ function loadNotices() {
         const date = new Date(notice.createdAt);
         const dateStr = date.toLocaleDateString();
         
+        console.log(`[NOTICE] Rendering notice #${reverseIndex}:`, notice.title);
+        
         return `
-            <div class="notice-list-item bg-white border border-gray-200 rounded-lg" onclick="showNoticeDetail(${reverseIndex})">
+            <div class="notice-list-item bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4" onclick="showNoticeDetail(${reverseIndex})" style="cursor: pointer; margin-bottom: 8px;">
                 <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-900 mb-1">${notice.title}</h4>
-                        <p class="text-sm text-gray-600 truncate">${notice.content.substring(0, 100)}...</p>
-                        <p class="text-xs text-gray-400 mt-2">
+                    <div class="flex-1" style="min-width: 0;">
+                        <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1" style="font-size: 16px; line-height: 1.5;">${notice.title}</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 truncate" style="font-size: 14px; line-height: 1.5;">${notice.content.substring(0, 100)}...</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2" style="font-size: 12px;">
                             <i class="far fa-calendar mr-1"></i>${dateStr}
                         </p>
                     </div>
-                    <i class="fas fa-chevron-right text-gray-400 ml-4"></i>
+                    <i class="fas fa-chevron-right text-gray-400 ml-4" style="font-size: 14px;"></i>
                 </div>
             </div>
         `;
     }).join('');
+    
+    console.log('[NOTICE] Notices rendered successfully');
 }
 
 // 버튼 번역 업데이트
