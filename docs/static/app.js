@@ -4,6 +4,7 @@
 console.log('EventBET: Script loaded')
 
 let currentLang = 'ko'
+window.currentLang = currentLang // 챗봇에서 접근 가능하도록 전역 노출
 let currentWallet = null
 let isDarkMode = false
 let currentCategory = 'all'
@@ -269,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const savedLang = localStorage.getItem('preferred_language') || 'ko'
     currentLang = savedLang
+    window.currentLang = currentLang // 전역 변수도 업데이트
     const langSelector = document.getElementById('language-selector')
     if (langSelector) langSelector.value = savedLang
     
@@ -284,10 +286,16 @@ function setupEventListeners() {
     if (langSelector) {
         langSelector.addEventListener('change', (e) => {
             currentLang = e.target.value
+            window.currentLang = currentLang // 전역 변수도 업데이트
             localStorage.setItem('preferred_language', currentLang)
             updateUITexts()
             renderCategories()
             renderMarkets()
+            
+            // 챗봇 언어 업데이트
+            if (window.chatbotInstance && typeof window.chatbotInstance.updateLanguage === 'function') {
+                window.chatbotInstance.updateLanguage()
+            }
         })
     }
     
