@@ -85,6 +85,10 @@ async function loadNotices() {
 // 공지 상세보기
 async function showNoticeDetail(index) {
     try {
+        const currentLang = window.currentLang || 'ko';
+        const translations = window.translations || {};
+        const t = translations[currentLang] || translations.ko || {};
+        
         const response = await fetch('/data/notices.json?_=' + Date.now());
         const notices = await response.json();
         const notice = notices[index];
@@ -115,18 +119,23 @@ async function showNoticeDetail(index) {
         const detailView = document.getElementById('notice-detail-view');
         const listView = document.getElementById('notice-list-view');
         
+        // 날짜 포맷 (언어별)
+        const dateLocale = currentLang === 'ko' ? 'ko-KR' : 
+                          currentLang === 'zh' ? 'zh-CN' : 
+                          currentLang === 'ja' ? 'ja-JP' : 'en-US';
+        
         if (detailView && listView) {
             detailView.innerHTML = `
                 <button onclick="backToNoticeList()" class="text-blue-600 hover:underline mb-4 flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i>
-                    목록으로
+                    <span id="notice-back-text">${t.noticeBackToList || '목록으로'}</span>
                 </button>
                 <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
                     <h2 class="text-2xl font-bold mb-4">${notice.title}</h2>
                     ${notice.imageUrl ? `<img src="${notice.imageUrl}" class="w-full h-64 object-cover rounded-lg mb-4">` : ''}
                     ${youtubeEmbed}
                     <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">${notice.content}</p>
-                    <p class="text-sm text-gray-500">${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</p>
+                    <p class="text-sm text-gray-500">${new Date(notice.createdAt).toLocaleDateString(dateLocale)}</p>
                 </div>
             `;
             
@@ -149,8 +158,28 @@ function backToNoticeList() {
     }
 }
 
+// 공지 모달 텍스트 업데이트 (다국어)
+function updateNoticeModalTexts() {
+    const currentLang = window.currentLang || 'ko';
+    const translations = window.translations || {};
+    const t = translations[currentLang] || translations.ko || {};
+    
+    // 공지사항 제목
+    const noticeModalTitle = document.getElementById('notice-modal-title');
+    if (noticeModalTitle) noticeModalTitle.textContent = t.noticeModalTitle || '공지사항';
+    
+    // 빈 공지 메시지
+    const noticeEmptyText = document.getElementById('notice-empty-text');
+    if (noticeEmptyText) noticeEmptyText.textContent = t.noticeEmpty || '등록된 공지사항이 없습니다.';
+    
+    // 목록으로 버튼
+    const noticeBackText = document.getElementById('notice-back-text');
+    if (noticeBackText) noticeBackText.textContent = t.noticeBackToList || '목록으로';
+}
+
 // 공지 모달 열기
 function openNoticeModal() {
+    updateNoticeModalTexts(); // 다국어 텍스트 업데이트
     const modal = document.getElementById('notice-modal');
     if (modal) {
         modal.classList.add('active');

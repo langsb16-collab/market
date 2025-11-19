@@ -85,6 +85,10 @@ const translations = {
         registerSuccess: '회원가입이 완료되었습니다! 로그인해주세요.',
         logoutConfirm: '로그아웃 하시겠습니까?',
         logoutSuccess: '로그아웃 되었습니다.',
+        // 공지사항 모달
+        noticeModalTitle: '공지사항',
+        noticeEmpty: '등록된 공지사항이 없습니다.',
+        noticeBackToList: '목록으로',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -147,6 +151,10 @@ const translations = {
         registerSuccess: 'Registration complete! Please login.',
         logoutConfirm: 'Are you sure you want to logout?',
         logoutSuccess: 'Logged out successfully.',
+        // Notice modal
+        noticeModalTitle: 'Notices',
+        noticeEmpty: 'No notices available.',
+        noticeBackToList: 'Back to List',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -209,6 +217,10 @@ const translations = {
         registerSuccess: '注册完成！请登录。',
         logoutConfirm: '确定要退出登录吗？',
         logoutSuccess: '退出成功。',
+        // 公告模态框
+        noticeModalTitle: '公告',
+        noticeEmpty: '暂无公告。',
+        noticeBackToList: '返回列表',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -271,6 +283,10 @@ const translations = {
         registerSuccess: '会員登録完了！ログインしてください。',
         logoutConfirm: 'ログアウトしますか？',
         logoutSuccess: 'ログアウトしました。',
+        // お知らせモーダル
+        noticeModalTitle: 'お知らせ',
+        noticeEmpty: 'お知らせはありません。',
+        noticeBackToList: 'リストに戻る',
     }
 }
 
@@ -595,6 +611,16 @@ function updateUITexts() {
     // Update submit issue button text
     const submitIssueBtnText = document.getElementById('submit-issue-btn-text')
     if (submitIssueBtnText) submitIssueBtnText.textContent = t.submitIssueButton
+    
+    // Update notice modal texts
+    const noticeModalTitle = document.getElementById('notice-modal-title')
+    if (noticeModalTitle) noticeModalTitle.textContent = t.noticeModalTitle
+    
+    const noticeEmptyText = document.getElementById('notice-empty-text')
+    if (noticeEmptyText) noticeEmptyText.textContent = t.noticeEmpty
+    
+    const noticeBackText = document.getElementById('notice-back-text')
+    if (noticeBackText) noticeBackText.textContent = t.noticeBackToList
     
     // Update all elements with data-ko, data-en, data-zh, data-ja attributes
     document.querySelectorAll('[data-ko]').forEach(element => {
