@@ -286,6 +286,7 @@ function setupEventListeners() {
             currentLang = e.target.value
             localStorage.setItem('preferred_language', currentLang)
             updateUITexts()
+            renderCategories()
             renderMarkets()
         })
     }
@@ -386,6 +387,14 @@ function updateUITexts() {
     
     const searchInput = document.getElementById('search-input')
     if (searchInput) searchInput.placeholder = t.searchPlaceholder
+    
+    // Update all elements with data-ko, data-en, data-zh, data-ja attributes
+    document.querySelectorAll('[data-ko]').forEach(element => {
+        const langKey = `data-${currentLang}`
+        if (element.hasAttribute(langKey)) {
+            element.textContent = element.getAttribute(langKey)
+        }
+    })
     
     updateMarketCount()
 }
