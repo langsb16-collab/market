@@ -303,15 +303,34 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">배너 관리</h2>
-                    <button onclick="openBannerModal()" class="btn-success">
-                        <i class="fas fa-plus mr-2"></i>배너 추가
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="syncBannersToGist()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200">
+                            <i class="fas fa-sync mr-2"></i>Gist 동기화
+                        </button>
+                        <button onclick="openBannerModal()" class="btn-success">
+                            <i class="fas fa-plus mr-2"></i>배너 추가
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                     <p class="text-sm text-yellow-800">
                         <i class="fas fa-info-circle mr-2"></i>
                         최대 3개의 배너를 등록할 수 있습니다. 이미지 업로드 또는 유튜브 링크를 사용할 수 있습니다.
+                    </p>
+                </div>
+                
+                <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                    <p class="text-sm text-green-800 mb-2">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>
+                        <strong>PC/모바일 데이터 동기화:</strong> 배너, 공지, 팝업 등록/수정/삭제 시 자동으로 Gist에 동기화됩니다.
+                    </p>
+                    <p class="text-sm text-green-800">
+                        <i class="fas fa-mobile-alt mr-2"></i>
+                        PC에서 등록한 내용이 모바일에서도 동일하게 표시됩니다.
+                        <button onclick="syncAllToGist()" class="ml-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold">
+                            <i class="fas fa-sync mr-1"></i>전체 동기화
+                        </button>
                     </p>
                 </div>
                 
@@ -370,9 +389,14 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">팝업 관리</h2>
-                    <button onclick="openPopupModal()" class="btn-success">
-                        <i class="fas fa-plus mr-2"></i>팝업 추가
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="syncPopupsToGist()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200">
+                            <i class="fas fa-sync mr-2"></i>Gist 동기화
+                        </button>
+                        <button onclick="openPopupModal()" class="btn-success">
+                            <i class="fas fa-plus mr-2"></i>팝업 추가
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6">
@@ -761,7 +785,8 @@
     </div>
     <!-- End of admin-main-content -->
     
-    <script src="/static/admin.js?v=20250118"></script>
+    <script src="/static/gist-sync.js?v=20250120003"></script>
+    <script src="/static/admin.js?v=20250120003"></script>
     <script>
         // 관리자 로그인 처리
         function handleAdminLogin(event) {

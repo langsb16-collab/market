@@ -1,46 +1,92 @@
 // EventBET Admin Panel JavaScript
+// 통합 Gist 동기화 시스템 사용
 
-// GitHub Gist 설정 (notices.js와 동일)
-const GIST_CONFIG = {
-    GIST_ID: 'YOUR_GIST_ID_HERE',
-    FILE_NAME: 'eventbet_notices.json',
-    ACCESS_TOKEN: 'YOUR_TOKEN_HERE'
-};
-
-// Gist에 공지사항 업로드
-async function syncNoticesToGist() {
-    if (GIST_CONFIG.GIST_ID === 'YOUR_GIST_ID_HERE') {
-        alert('⚠️ Gist 설정이 필요합니다!\n\nREADME.md의 "GitHub Gist 설정" 섹션을 참고하여 GIST_ID와 ACCESS_TOKEN을 설정해주세요.');
-        return;
+// Gist 동기화 함수 (gist-sync.js 사용)
+async function syncToGist(dataType) {
+    // gist-sync.js가 로드될 때까지 대기
+    if (!window.GistSync) {
+        console.error('[ADMIN] GistSync not loaded');
+        alert('⚠️ Gist 동기화 시스템이 로드되지 않았습니다.');
+        return false;
+    }
+    
+    const config = window.GistSync.GIST_CONFIG;
+    
+    if (config.GIST_ID === 'YOUR_GIST_ID_HERE') {
+        alert('⚠️ Gist 설정이 필요합니다!\n\nGIST_SETUP_GUIDE.md를 참고하여 설정해주세요.');
+        return false;
     }
     
     try {
-        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        let result;
+        let typeName;
         
-        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.GIST_ID}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${GIST_CONFIG.ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                files: {
-                    [GIST_CONFIG.FILE_NAME]: {
-                        content: JSON.stringify(notices, null, 2)
-                    }
-                }
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Gist 업로드 실패: ${response.status}`);
+        switch(dataType) {
+            case 'notices':
+                result = await window.GistSync.uploadToGist(config.FILES.NOTICES, 'eventbet_notices');
+                typeName = '공지사항';
+                break;
+            case 'banners':
+                result = await window.GistSync.uploadToGist(config.FILES.BANNERS, 'eventbet_banners');
+                typeName = '배너';
+                break;
+            case 'popups':
+                result = await window.GistSync.uploadToGist(config.FILES.POPUPS, 'eventbet_popups');
+                typeName = '팝업';
+                break;
+            case 'all':
+                result = await window.GistSync.syncAllData();
+                typeName = '전체 데이터';
+                break;
+            default:
+                throw new Error('Unknown data type');
         }
         
-        alert(`✅ 공지사항이 Gist에 동기화되었습니다!\n\n총 ${notices.length}개의 공지사항이 업로드되었습니다.\n이제 모바일에서도 공지를 볼 수 있습니다.`);
-        console.log('[ADMIN] Notices synced to Gist:', notices.length);
+        if (result) {
+            console.log(`[ADMIN] ${typeName} synced to Gist`);
+            return true;
+        } else {
+            throw new Error('동기화 실패');
+        }
     } catch (error) {
-        console.error('[ADMIN] Gist sync error:', error);
-        alert(`❌ Gist 동기화 실패\n\n${error.message}\n\nREADME.md의 설정을 확인해주세요.`);
+        console.error(`[ADMIN] Gist sync error:`, error);
+        alert(`❌ Gist 동기화 실패\n\n${error.message}`);
+        return false;
+    }
+}
+
+// 개별 동기화 함수들
+async function syncNoticesToGist() {
+    const result = await syncToGist('notices');
+    if (result) {
+        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        alert(`✅ 공지사항이 Gist에 동기화되었습니다!\n\n총 ${notices.length}개의 공지사항이 업로드되었습니다.`);
+    }
+}
+
+async function syncBannersToGist() {
+    const result = await syncToGist('banners');
+    if (result) {
+        const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+        alert(`✅ 배너가 Gist에 동기화되었습니다!\n\n총 ${banners.length}개의 배너가 업로드되었습니다.`);
+    }
+}
+
+async function syncPopupsToGist() {
+    const result = await syncToGist('popups');
+    if (result) {
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        alert(`✅ 팝업이 Gist에 동기화되었습니다!\n\n총 ${popups.length}개의 팝업이 업로드되었습니다.`);
+    }
+}
+
+async function syncAllToGist() {
+    const result = await syncToGist('all');
+    if (result) {
+        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        alert(`✅ 모든 데이터가 Gist에 동기화되었습니다!\n\n공지: ${notices.length}개\n배너: ${banners.length}개\n팝업: ${popups.length}개`);
     }
 }
 
@@ -178,6 +224,10 @@ function saveBanner(event) {
     localStorage.setItem('eventbet_banners', JSON.stringify(banners));
     closeBannerModal();
     loadBanners();
+    
+    // Gist 자동 동기화
+    syncBannersToGist();
+    
     alert('배너가 저장되었습니다.');
 }
 
@@ -192,6 +242,10 @@ function deleteBanner(index) {
     banners.splice(index, 1);
     localStorage.setItem('eventbet_banners', JSON.stringify(banners));
     loadBanners();
+    
+    // Gist 자동 동기화
+    syncBannersToGist();
+    
     alert('배너가 삭제되었습니다.');
 }
 
@@ -432,6 +486,10 @@ function savePopup(event) {
     localStorage.setItem('eventbet_popups', JSON.stringify(popups));
     closePopupModal();
     loadPopups();
+    
+    // Gist 자동 동기화
+    syncPopupsToGist();
+    
     alert('팝업이 저장되었습니다.');
 }
 
@@ -446,6 +504,10 @@ function deletePopup(index) {
     popups.splice(index, 1);
     localStorage.setItem('eventbet_popups', JSON.stringify(popups));
     loadPopups();
+    
+    // Gist 자동 동기화
+    syncPopupsToGist();
+    
     alert('팝업이 삭제되었습니다.');
 }
 

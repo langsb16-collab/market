@@ -1,8 +1,19 @@
 // EventBET Popup System - 팝업 시스템
+// GitHub Gist에서 팝업 데이터 동기화
 
 // 팝업 표시 함수
-function displayPopups() {
-    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+async function displayPopups() {
+    // Gist에서 최신 데이터 가져오기
+    let popups = [];
+    if (window.GistSync) {
+        popups = await window.GistSync.fetchFromGist(
+            window.GistSync.GIST_CONFIG.FILES.POPUPS,
+            'eventbet_popups'
+        );
+    } else {
+        popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    }
+    
     const container = document.getElementById('popup-container');
     
     console.log('[Popup System] Total popups:', popups.length);
