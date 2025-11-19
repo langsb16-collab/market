@@ -34,8 +34,8 @@
 - **Font Awesome** - 아이콘
 
 ### 데이터 저장
-- **GitHub Gist** - 공지사항 중앙 데이터 저장소 (PC/모바일 동기화)
-- **LocalStorage** - 배너, 팝업 등 기타 데이터 저장
+- **GitHub Repository JSON** - 공지사항, 배너, 팝업 중앙 데이터 저장소 (PC/모바일 자동 동기화)
+- **GitHub API** - 관리자 페이지에서 데이터 업데이트
 - Base64 인코딩으로 이미지 저장
 
 ### 배포
@@ -133,6 +133,23 @@ git push origin main
 ```
 
 ## 관리자 페이지 사용법
+
+### 0. GitHub 설정 (최초 1회)
+1. 관리자 페이지 접속: https://cashiq.my/admin/
+2. 좌측 사이드바 "GitHub 설정" 클릭
+3. GitHub Token 생성:
+   - https://github.com/settings/tokens/new 접속
+   - Note: "EventBET Admin" 입력
+   - Expiration: "No expiration" 선택
+   - Scopes: **"repo" 전체 체크** ✅
+   - "Generate token" 클릭
+   - 생성된 토큰 복사
+4. 설정 입력:
+   - GitHub Personal Access Token: 생성한 토큰 붙여넣기
+   - Repository Owner: `langsb16-collab`
+   - Repository Name: `market`
+5. "GitHub 설정 저장" 클릭
+6. ✅ 완료! 이제 공지/배너/팝업 관리 가능
 
 ### 1. 배너 관리
 1. 관리자 페이지 접속: https://cashiq.my/admin/
