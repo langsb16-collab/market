@@ -41,6 +41,7 @@ const translations = {
         showingMarkets: '개 마켓 표시 중',
         totalMarkets: '전체',
         individual: '개',
+        onlyCrypto: '유일하게 지원되는 암호화폐',
         // 로그인 모달 메시지
         loginRequired: '로그인이 필요합니다',
         loginRequiredDesc: '마켓 상세 정보를 보려면 로그인이 필요합니다.',
@@ -66,6 +67,7 @@ const translations = {
         showingMarkets: 'markets shown',
         totalMarkets: 'Total',
         individual: '',
+        onlyCrypto: 'Only Supported Cryptocurrency',
         // Login modal messages
         loginRequired: 'Login Required',
         loginRequiredDesc: 'You need to login to view market details.',
@@ -91,6 +93,7 @@ const translations = {
         showingMarkets: '个市场',
         totalMarkets: '总计',
         individual: '个',
+        onlyCrypto: '唯一支持的加密货币',
         // 登录模态框消息
         loginRequired: '需要登录',
         loginRequiredDesc: '您需要登录才能查看市场详情。',
@@ -116,6 +119,7 @@ const translations = {
         showingMarkets: '件のマーケット',
         totalMarkets: '合計',
         individual: '件',
+        onlyCrypto: '唯一サポートされている暗号通貨',
         // ログインモーダルメッセージ
         loginRequired: 'ログインが必要です',
         loginRequiredDesc: 'マーケットの詳細を表示するにはログインが必要です。',
@@ -426,6 +430,19 @@ function updateUITexts() {
     
     const searchInput = document.getElementById('search-input')
     if (searchInput) searchInput.placeholder = t.searchPlaceholder
+    
+    // Update login and register button texts
+    const loginBtnText = document.getElementById('login-btn-text')
+    if (loginBtnText) loginBtnText.textContent = t.loginButton
+    
+    const registerBtnText = document.getElementById('register-btn-text')
+    if (registerBtnText) registerBtnText.textContent = t.signupButton
+    
+    // Update "Only supported cryptocurrency" texts
+    const cryptoTexts = document.querySelectorAll('.crypto-support-text')
+    cryptoTexts.forEach(el => {
+        el.textContent = t.onlyCrypto
+    })
     
     // Update all elements with data-ko, data-en, data-zh, data-ja attributes
     document.querySelectorAll('[data-ko]').forEach(element => {
