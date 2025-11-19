@@ -1,176 +1,64 @@
-// EventBET Admin Panel - Simple localStorage Based System
-// PC와 모바일 간 데이터 공유는 GitHub Pages 배포로 자동 동기화
+// EventBET Admin Panel - GitHub JSON Based System
+// PC와 모바일 간 자동 동기화 (GitHub Repository 기반)
 
 // ============================================
-// 📌 배너 관리 (최대 3개)
+// 📌 공지 관리 (최대 30개) - GitHub JSON 기반
 // ============================================
 
-function loadBanners() {
-    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
-    const container = document.getElementById('banners-list');
-    
-    if (banners.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 배너가 없습니다.</p>';
-        return;
-    }
-    
-    container.innerHTML = banners.map((banner, index) => `
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex justify-between items-start mb-3">
-                <h3 class="font-bold text-lg">${banner.title}</h3>
-                <div class="flex gap-2">
-                    <button onclick="editBanner(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                        <i class="fas fa-edit"></i> 수정
-                    </button>
-                    <button onclick="deleteBanner(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
-                </div>
-            </div>
-            ${banner.imageUrl ? `<img src="${banner.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-2">` : ''}
-            ${banner.link ? `<p class="text-sm text-gray-600"><i class="fas fa-link"></i> ${banner.link}</p>` : ''}
-        </div>
-    `).join('');
-}
-
-function openBannerModal(index = null) {
-    const modal = document.getElementById('banner-modal');
-    modal.classList.add('active');
-    
-    if (index !== null) {
-        const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
-        const banner = banners[index];
-        document.getElementById('banner-id').value = index;
-        document.getElementById('banner-title').value = banner.title;
-        document.getElementById('banner-link').value = banner.link || '';
-        if (banner.imageUrl) {
-            document.getElementById('banner-preview').src = banner.imageUrl;
-            document.getElementById('banner-preview').classList.remove('hidden');
-        }
-    } else {
-        document.getElementById('banner-id').value = '';
-        document.getElementById('banner-title').value = '';
-        document.getElementById('banner-link').value = '';
-        document.getElementById('banner-preview').classList.add('hidden');
-    }
-}
-
-function closeBannerModal() {
-    document.getElementById('banner-modal').classList.remove('active');
-}
-
-function handleBannerImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    if (file.size > 5 * 1024 * 1024) {
-        alert('⚠️ 이미지 크기는 5MB 이하여야 합니다.');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('banner-preview');
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
-}
-
-function saveBanner(event) {
-    event.preventDefault();
-    
-    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
-    const index = document.getElementById('banner-id').value;
-    const title = document.getElementById('banner-title').value;
-    const link = document.getElementById('banner-link').value;
-    const preview = document.getElementById('banner-preview');
-    const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-    
-    if (!imageUrl) {
-        alert('⚠️ 이미지를 업로드해주세요.');
-        return;
-    }
-    
-    const bannerData = { title, link, imageUrl, createdAt: new Date().toISOString() };
-    
-    if (index === '') {
-        // 새 배너 추가
-        if (banners.length >= 3) {
-            alert('⚠️ 최대 3개의 배너만 등록할 수 있습니다.');
+async function loadNotices() {
+    try {
+        const response = await fetch('/data/notices.json?_=' + Date.now());
+        const notices = await response.json();
+        const tbody = document.getElementById('notices-list');
+        
+        if (notices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">등록된 공지가 없습니다.</td></tr>';
             return;
         }
-        banners.push(bannerData);
-    } else {
-        // 기존 배너 수정
-        banners[parseInt(index)] = bannerData;
+        
+        tbody.innerHTML = notices.map((notice, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="font-semibold">${notice.title}</td>
+                <td class="text-sm text-gray-600">${notice.content.substring(0, 50)}...</td>
+                <td class="text-sm">${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
+                <td>
+                    <button onclick="editNotice(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm mr-1">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteNotice(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load notices:', error);
+        const tbody = document.getElementById('notices-list');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">⚠️ 공지 로드 실패</td></tr>';
     }
-    
-    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
-    closeBannerModal();
-    loadBanners();
-    alert('✅ 배너가 저장되었습니다.');
 }
 
-function deleteBanner(index) {
-    if (!confirm('정말 이 배너를 삭제하시겠습니까?')) return;
-    
-    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
-    banners.splice(index, 1);
-    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
-    loadBanners();
-    alert('✅ 배너가 삭제되었습니다.');
-}
-
-function editBanner(index) {
-    openBannerModal(index);
-}
-
-// ============================================
-// 📌 공지 관리 (최대 30개)
-// ============================================
-
-function loadNotices() {
-    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
-    const tbody = document.getElementById('notices-list');
-    
-    if (notices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">등록된 공지가 없습니다.</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = notices.map((notice, index) => `
-        <tr>
-            <td>${index + 1}</td>
-            <td class="font-semibold">${notice.title}</td>
-            <td class="text-sm text-gray-600">${notice.content.substring(0, 50)}...</td>
-            <td class="text-sm">${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
-            <td>
-                <button onclick="editNotice(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm mr-1">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteNotice(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function openNoticeModal(index = null) {
+async function openNoticeModal(index = null) {
     const modal = document.getElementById('notice-modal');
     modal.classList.add('active');
     
     if (index !== null) {
-        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
-        const notice = notices[index];
-        document.getElementById('notice-id').value = index;
-        document.getElementById('notice-title').value = notice.title;
-        document.getElementById('notice-content').value = notice.content;
-        document.getElementById('notice-youtube').value = notice.youtubeUrl || '';
-        if (notice.imageUrl) {
-            document.getElementById('notice-image-preview').src = notice.imageUrl;
-            document.getElementById('notice-image-preview').classList.remove('hidden');
+        try {
+            const response = await fetch('/data/notices.json?_=' + Date.now());
+            const notices = await response.json();
+            const notice = notices[index];
+            document.getElementById('notice-id').value = index;
+            document.getElementById('notice-title').value = notice.title;
+            document.getElementById('notice-content').value = notice.content;
+            document.getElementById('notice-youtube').value = notice.youtubeUrl || '';
+            if (notice.imageUrl) {
+                document.getElementById('notice-image-preview').src = notice.imageUrl;
+                document.getElementById('notice-image-preview').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Failed to load notice:', error);
+            alert('⚠️ 공지 로드 실패: ' + error.message);
         }
     } else {
         document.getElementById('notice-id').value = '';
@@ -203,51 +91,89 @@ function handleNoticeImageUpload(event) {
     reader.readAsDataURL(file);
 }
 
-function saveNotice(event) {
+async function saveNotice(event) {
     event.preventDefault();
     
-    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
-    const index = document.getElementById('notice-id').value;
-    const title = document.getElementById('notice-title').value;
-    const content = document.getElementById('notice-content').value;
-    const youtubeUrl = document.getElementById('notice-youtube').value;
-    const preview = document.getElementById('notice-image-preview');
-    const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-    
-    const noticeData = {
-        title,
-        content,
-        imageUrl,
-        youtubeUrl,
-        createdAt: new Date().toISOString()
-    };
-    
-    if (index === '') {
-        // 새 공지 추가
-        if (notices.length >= 30) {
-            alert('⚠️ 최대 30개의 공지만 등록할 수 있습니다.');
-            return;
-        }
-        notices.unshift(noticeData); // 최신 공지를 맨 위에
-    } else {
-        // 기존 공지 수정
-        notices[parseInt(index)] = noticeData;
+    // GitHub API 설정 확인
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
+        return;
     }
     
-    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
-    closeNoticeModal();
-    loadNotices();
-    alert('✅ 공지가 저장되었습니다.');
+    try {
+        // 현재 공지 목록 가져오기
+        const response = await fetch('/data/notices.json?_=' + Date.now());
+        const notices = await response.json();
+        
+        const index = document.getElementById('notice-id').value;
+        const title = document.getElementById('notice-title').value;
+        const content = document.getElementById('notice-content').value;
+        const youtubeUrl = document.getElementById('notice-youtube').value;
+        const preview = document.getElementById('notice-image-preview');
+        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
+        
+        const noticeData = {
+            title,
+            content,
+            imageUrl,
+            youtubeUrl,
+            createdAt: new Date().toISOString()
+        };
+        
+        if (index === '') {
+            // 새 공지 추가
+            if (notices.length >= 30) {
+                alert('⚠️ 최대 30개의 공지만 등록할 수 있습니다.');
+                return;
+            }
+            notices.unshift(noticeData); // 최신 공지를 맨 위에
+        } else {
+            // 기존 공지 수정
+            notices[parseInt(index)] = noticeData;
+        }
+        
+        // GitHub에 저장
+        await window.githubAPI.updateFile(
+            'docs/data/notices.json',
+            notices,
+            index === '' ? '새 공지 추가' : '공지 수정'
+        );
+        
+        closeNoticeModal();
+        loadNotices();
+        alert('✅ 공지가 저장되었습니다. (GitHub Pages 반영까지 1-2분 소요)');
+    } catch (error) {
+        console.error('Failed to save notice:', error);
+        alert('⚠️ 공지 저장 실패: ' + error.message);
+    }
 }
 
-function deleteNotice(index) {
+async function deleteNotice(index) {
     if (!confirm('정말 이 공지를 삭제하시겠습니까?')) return;
     
-    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
-    notices.splice(index, 1);
-    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
-    loadNotices();
-    alert('✅ 공지가 삭제되었습니다.');
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/data/notices.json?_=' + Date.now());
+        const notices = await response.json();
+        
+        notices.splice(index, 1);
+        
+        await window.githubAPI.updateFile(
+            'docs/data/notices.json',
+            notices,
+            '공지 삭제'
+        );
+        
+        loadNotices();
+        alert('✅ 공지가 삭제되었습니다.');
+    } catch (error) {
+        console.error('Failed to delete notice:', error);
+        alert('⚠️ 공지 삭제 실패: ' + error.message);
+    }
 }
 
 function editNotice(index) {
@@ -255,61 +181,239 @@ function editNotice(index) {
 }
 
 // ============================================
-// 📌 팝업 관리
+// 📌 배너 관리 (최대 3개) - GitHub JSON 기반
 // ============================================
 
-function loadPopups() {
-    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
-    const container = document.getElementById('popups-list');
+async function loadBanners() {
+    try {
+        const response = await fetch('/data/banners.json?_=' + Date.now());
+        const banners = await response.json();
+        const container = document.getElementById('banners-list');
+        
+        if (banners.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 배너가 없습니다.</p>';
+            return;
+        }
+        
+        container.innerHTML = banners.map((banner, index) => `
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-lg">${banner.title}</h3>
+                    <div class="flex gap-2">
+                        <button onclick="editBanner(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-edit"></i> 수정
+                        </button>
+                        <button onclick="deleteBanner(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+                ${banner.imageUrl ? `<img src="${banner.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-2">` : ''}
+                ${banner.link ? `<p class="text-sm text-gray-600"><i class="fas fa-link"></i> ${banner.link}</p>` : ''}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load banners:', error);
+    }
+}
+
+async function openBannerModal(index = null) {
+    const modal = document.getElementById('banner-modal');
+    modal.classList.add('active');
     
-    if (popups.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 팝업이 없습니다.</p>';
+    if (index !== null) {
+        try {
+            const response = await fetch('/data/banners.json?_=' + Date.now());
+            const banners = await response.json();
+            const banner = banners[index];
+            document.getElementById('banner-id').value = index;
+            document.getElementById('banner-title').value = banner.title;
+            document.getElementById('banner-link').value = banner.link || '';
+            if (banner.imageUrl) {
+                document.getElementById('banner-preview').src = banner.imageUrl;
+                document.getElementById('banner-preview').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Failed to load banner:', error);
+        }
+    } else {
+        document.getElementById('banner-id').value = '';
+        document.getElementById('banner-title').value = '';
+        document.getElementById('banner-link').value = '';
+        document.getElementById('banner-preview').classList.add('hidden');
+    }
+}
+
+function closeBannerModal() {
+    document.getElementById('banner-modal').classList.remove('active');
+}
+
+function handleBannerImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('⚠️ 이미지 크기는 5MB 이하여야 합니다.');
         return;
     }
     
-    container.innerHTML = popups.map((popup, index) => `
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex justify-between items-start mb-3">
-                <div>
-                    <h3 class="font-bold text-lg">${popup.title}</h3>
-                    <p class="text-sm text-gray-600">
-                        위치: 위(${popup.top}cm), 왼쪽(${popup.left}cm)<br>
-                        크기: ${popup.width}x${popup.height}px<br>
-                        ${popup.startDate && popup.endDate ? `기간: ${popup.startDate} ~ ${popup.endDate}` : ''}
-                    </p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="editPopup(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                        <i class="fas fa-edit"></i> 수정
-                    </button>
-                    <button onclick="deletePopup(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
-                </div>
-            </div>
-            ${popup.imageUrl ? `<img src="${popup.imageUrl}" class="w-full h-48 object-cover rounded-lg">` : ''}
-        </div>
-    `).join('');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('banner-preview');
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
 }
 
-function openPopupModal(index = null) {
+async function saveBanner(event) {
+    event.preventDefault();
+    
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/data/banners.json?_=' + Date.now());
+        const banners = await response.json();
+        
+        const index = document.getElementById('banner-id').value;
+        const title = document.getElementById('banner-title').value;
+        const link = document.getElementById('banner-link').value;
+        const preview = document.getElementById('banner-preview');
+        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
+        
+        if (!imageUrl) {
+            alert('⚠️ 이미지를 업로드해주세요.');
+            return;
+        }
+        
+        const bannerData = { title, link, imageUrl, createdAt: new Date().toISOString() };
+        
+        if (index === '') {
+            if (banners.length >= 3) {
+                alert('⚠️ 최대 3개의 배너만 등록할 수 있습니다.');
+                return;
+            }
+            banners.push(bannerData);
+        } else {
+            banners[parseInt(index)] = bannerData;
+        }
+        
+        await window.githubAPI.updateFile(
+            'docs/data/banners.json',
+            banners,
+            index === '' ? '새 배너 추가' : '배너 수정'
+        );
+        
+        closeBannerModal();
+        loadBanners();
+        alert('✅ 배너가 저장되었습니다.');
+    } catch (error) {
+        console.error('Failed to save banner:', error);
+        alert('⚠️ 배너 저장 실패: ' + error.message);
+    }
+}
+
+async function deleteBanner(index) {
+    if (!confirm('정말 이 배너를 삭제하시겠습니까?')) return;
+    
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/data/banners.json?_=' + Date.now());
+        const banners = await response.json();
+        
+        banners.splice(index, 1);
+        
+        await window.githubAPI.updateFile(
+            'docs/data/banners.json',
+            banners,
+            '배너 삭제'
+        );
+        
+        loadBanners();
+        alert('✅ 배너가 삭제되었습니다.');
+    } catch (error) {
+        console.error('Failed to delete banner:', error);
+        alert('⚠️ 배너 삭제 실패: ' + error.message);
+    }
+}
+
+function editBanner(index) {
+    openBannerModal(index);
+}
+
+// ============================================
+// 📌 팝업 관리 - GitHub JSON 기반
+// ============================================
+
+async function loadPopups() {
+    try {
+        const response = await fetch('/data/popups.json?_=' + Date.now());
+        const popups = await response.json();
+        const container = document.getElementById('popups-list');
+        
+        if (popups.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 팝업이 없습니다.</p>';
+            return;
+        }
+        
+        container.innerHTML = popups.map((popup, index) => `
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-bold text-lg">${popup.title}</h3>
+                        <p class="text-sm text-gray-600">
+                            위치: 위(${popup.top}cm), 왼쪽(${popup.left}cm)<br>
+                            크기: ${popup.width}x${popup.height}px<br>
+                            ${popup.startDate && popup.endDate ? `기간: ${popup.startDate} ~ ${popup.endDate}` : ''}
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editPopup(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-edit"></i> 수정
+                        </button>
+                        <button onclick="deletePopup(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+                ${popup.imageUrl ? `<img src="${popup.imageUrl}" class="w-full h-48 object-cover rounded-lg">` : ''}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load popups:', error);
+    }
+}
+
+async function openPopupModal(index = null) {
     const modal = document.getElementById('popup-modal');
     modal.classList.add('active');
     
     if (index !== null) {
-        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
-        const popup = popups[index];
-        document.getElementById('popup-id').value = index;
-        document.getElementById('popup-title').value = popup.title;
-        document.getElementById('popup-top').value = popup.top || '';
-        document.getElementById('popup-left').value = popup.left || '';
-        document.getElementById('popup-width').value = popup.width || 600;
-        document.getElementById('popup-height').value = popup.height || 400;
-        document.getElementById('popup-start-date').value = popup.startDate || '';
-        document.getElementById('popup-end-date').value = popup.endDate || '';
-        if (popup.imageUrl) {
-            document.getElementById('popup-preview').src = popup.imageUrl;
-            document.getElementById('popup-preview').classList.remove('hidden');
+        try {
+            const response = await fetch('/data/popups.json?_=' + Date.now());
+            const popups = await response.json();
+            const popup = popups[index];
+            document.getElementById('popup-id').value = index;
+            document.getElementById('popup-title').value = popup.title;
+            document.getElementById('popup-top').value = popup.top || '';
+            document.getElementById('popup-left').value = popup.left || '';
+            document.getElementById('popup-width').value = popup.width || 600;
+            document.getElementById('popup-height').value = popup.height || 400;
+            document.getElementById('popup-start-date').value = popup.startDate || '';
+            document.getElementById('popup-end-date').value = popup.endDate || '';
+            if (popup.imageUrl) {
+                document.getElementById('popup-preview').src = popup.imageUrl;
+                document.getElementById('popup-preview').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Failed to load popup:', error);
         }
     } else {
         document.getElementById('popup-id').value = '';
@@ -346,60 +450,86 @@ function handlePopupImageUpload(event) {
     reader.readAsDataURL(file);
 }
 
-function savePopup(event) {
+async function savePopup(event) {
     event.preventDefault();
     
-    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
-    const index = document.getElementById('popup-id').value;
-    const title = document.getElementById('popup-title').value;
-    const top = parseFloat(document.getElementById('popup-top').value) || 10;
-    const left = parseFloat(document.getElementById('popup-left').value) || 10;
-    const width = parseInt(document.getElementById('popup-width').value) || 600;
-    const height = parseInt(document.getElementById('popup-height').value) || 400;
-    const startDate = document.getElementById('popup-start-date').value;
-    const endDate = document.getElementById('popup-end-date').value;
-    const preview = document.getElementById('popup-preview');
-    const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-    
-    if (!imageUrl) {
-        alert('⚠️ 이미지를 업로드해주세요.');
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.');
         return;
     }
     
-    const popupData = {
-        title,
-        top,
-        left,
-        width,
-        height,
-        startDate,
-        endDate,
-        imageUrl,
-        createdAt: new Date().toISOString()
-    };
-    
-    if (index === '') {
-        // 새 팝업 추가
-        popups.push(popupData);
-    } else {
-        // 기존 팝업 수정
-        popups[parseInt(index)] = popupData;
+    try {
+        const response = await fetch('/data/popups.json?_=' + Date.now());
+        const popups = await response.json();
+        
+        const index = document.getElementById('popup-id').value;
+        const title = document.getElementById('popup-title').value;
+        const top = parseFloat(document.getElementById('popup-top').value) || 10;
+        const left = parseFloat(document.getElementById('popup-left').value) || 10;
+        const width = parseInt(document.getElementById('popup-width').value) || 600;
+        const height = parseInt(document.getElementById('popup-height').value) || 400;
+        const startDate = document.getElementById('popup-start-date').value;
+        const endDate = document.getElementById('popup-end-date').value;
+        const preview = document.getElementById('popup-preview');
+        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
+        
+        if (!imageUrl) {
+            alert('⚠️ 이미지를 업로드해주세요.');
+            return;
+        }
+        
+        const popupData = {
+            title, top, left, width, height, startDate, endDate, imageUrl,
+            createdAt: new Date().toISOString()
+        };
+        
+        if (index === '') {
+            popups.push(popupData);
+        } else {
+            popups[parseInt(index)] = popupData;
+        }
+        
+        await window.githubAPI.updateFile(
+            'docs/data/popups.json',
+            popups,
+            index === '' ? '새 팝업 추가' : '팝업 수정'
+        );
+        
+        closePopupModal();
+        loadPopups();
+        alert('✅ 팝업이 저장되었습니다.');
+    } catch (error) {
+        console.error('Failed to save popup:', error);
+        alert('⚠️ 팝업 저장 실패: ' + error.message);
     }
-    
-    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
-    closePopupModal();
-    loadPopups();
-    alert('✅ 팝업이 저장되었습니다.');
 }
 
-function deletePopup(index) {
+async function deletePopup(index) {
     if (!confirm('정말 이 팝업을 삭제하시겠습니까?')) return;
     
-    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
-    popups.splice(index, 1);
-    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
-    loadPopups();
-    alert('✅ 팝업이 삭제되었습니다.');
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/data/popups.json?_=' + Date.now());
+        const popups = await response.json();
+        
+        popups.splice(index, 1);
+        
+        await window.githubAPI.updateFile(
+            'docs/data/popups.json',
+            popups,
+            '팝업 삭제'
+        );
+        
+        loadPopups();
+        alert('✅ 팝업이 삭제되었습니다.');
+    } catch (error) {
+        console.error('Failed to delete popup:', error);
+        alert('⚠️ 팝업 삭제 실패: ' + error.message);
+    }
 }
 
 function editPopup(index) {
@@ -431,8 +561,48 @@ function showSection(sectionName) {
     if (sectionName === 'banners') loadBanners();
     if (sectionName === 'notices') loadNotices();
     if (sectionName === 'popups') loadPopups();
-    if (sectionName === 'members') loadMembers();
-    if (sectionName === 'settlement') loadSettlement();
+    if (sectionName === 'settings') loadSettings();
+}
+
+// ============================================
+// 📌 GitHub 설정
+// ============================================
+
+function loadSettings() {
+    const token = localStorage.getItem('github_token') || '';
+    const owner = localStorage.getItem('github_owner') || '';
+    const repo = localStorage.getItem('github_repo') || '';
+    
+    document.getElementById('github-token').value = token ? '••••••••••••••••' : '';
+    document.getElementById('github-owner').value = owner;
+    document.getElementById('github-repo').value = repo;
+    
+    const statusDiv = document.getElementById('github-status');
+    if (token && owner && repo) {
+        statusDiv.innerHTML = '<p class="text-green-600"><i class="fas fa-check-circle"></i> GitHub 연동 완료</p>';
+    } else {
+        statusDiv.innerHTML = '<p class="text-red-600"><i class="fas fa-times-circle"></i> GitHub 설정이 필요합니다</p>';
+    }
+}
+
+function saveSettings(event) {
+    event.preventDefault();
+    
+    const tokenInput = document.getElementById('github-token').value;
+    const owner = document.getElementById('github-owner').value;
+    const repo = document.getElementById('github-repo').value;
+    
+    // 토큰이 가려진 상태면 기존 값 유지
+    const token = tokenInput.includes('•') ? localStorage.getItem('github_token') : tokenInput;
+    
+    if (!token || !owner || !repo) {
+        alert('⚠️ 모든 항목을 입력해주세요.');
+        return;
+    }
+    
+    window.githubAPI.saveConfig(token, owner, repo);
+    alert('✅ GitHub 설정이 저장되었습니다.');
+    loadSettings();
 }
 
 // ============================================
@@ -440,7 +610,8 @@ function showSection(sectionName) {
 // ============================================
 
 window.addEventListener('DOMContentLoaded', () => {
-    loadBanners();
     loadNotices();
+    loadBanners();
     loadPopups();
+    loadSettings();
 });
