@@ -512,6 +512,7 @@ const questionList = [
 
 class ChatBot {
     constructor() {
+        console.log('ChatBot constructor called');
         this.isOpen = false;
         this.messages = [];
         this.currentView = 'menu'; // 'menu' or 'chat'
@@ -519,13 +520,17 @@ class ChatBot {
     }
 
     init() {
+        console.log('ChatBot init() called');
         this.createChatbotUI();
         this.addEventListeners();
         this.showMenuView();
+        console.log('ChatBot initialization complete');
     }
 
     createChatbotUI() {
+        console.log('createChatbotUI() called, currentLang:', window.currentLang);
         const t = chatbotTranslations[window.currentLang || 'ko'];
+        console.log('Using translations:', t.botTitle);
         
         const chatbotHTML = `
             <!-- 챗봇 버튼 (2배 확대) - 진한 색상 -->
@@ -601,7 +606,13 @@ class ChatBot {
             </div>
         `;
 
+        console.log('Inserting chatbot HTML into body');
         document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+        console.log('Chatbot HTML inserted');
+        
+        // 버튼이 실제로 DOM에 추가되었는지 확인
+        const button = document.getElementById('chatbot-button');
+        console.log('Chatbot button element:', button);
     }
 
     addEventListeners() {
@@ -870,17 +881,36 @@ class ChatBot {
 // 페이지 로드 시 챗봇 초기화
 let chatbotInstance = null;
 
+// 초기화 함수
+function initializeChatbot() {
+    if (!chatbotInstance) {
+        try {
+            console.log('Initializing chatbot...');
+            chatbotInstance = new ChatBot();
+            window.chatbotInstance = chatbotInstance;
+            console.log('Chatbot initialized successfully');
+        } catch (error) {
+            console.error('Chatbot initialization error:', error);
+        }
+    }
+}
+
+// 여러 방법으로 초기화 시도
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        // app.js의 언어 설정이 완료될 때까지 약간 대기
-        setTimeout(() => {
-            chatbotInstance = new ChatBot();
-            window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
-        }, 100);
+        setTimeout(initializeChatbot, 200);
     });
 } else {
-    setTimeout(() => {
-        chatbotInstance = new ChatBot();
-        window.chatbotInstance = chatbotInstance; // 전역 접근 가능하도록
-    }, 100);
+    // 이미 로드된 경우 즉시 초기화
+    setTimeout(initializeChatbot, 200);
 }
+
+// 추가 안전장치: window load 이벤트에서도 확인
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!chatbotInstance) {
+            console.log('Reinitializing chatbot on window load...');
+            initializeChatbot();
+        }
+    }, 300);
+});
