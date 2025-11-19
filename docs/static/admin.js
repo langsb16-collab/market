@@ -167,6 +167,7 @@ function openNoticeModal(index = null) {
         document.getElementById('notice-id').value = index;
         document.getElementById('notice-title').value = notice.title;
         document.getElementById('notice-content').value = notice.content;
+        document.getElementById('notice-youtube').value = notice.youtubeUrl || '';
         if (notice.imageUrl) {
             document.getElementById('notice-image-preview').src = notice.imageUrl;
             document.getElementById('notice-image-preview').classList.remove('hidden');
@@ -175,6 +176,7 @@ function openNoticeModal(index = null) {
         document.getElementById('notice-id').value = '';
         document.getElementById('notice-title').value = '';
         document.getElementById('notice-content').value = '';
+        document.getElementById('notice-youtube').value = '';
         document.getElementById('notice-image-preview').classList.add('hidden');
     }
 }
@@ -208,6 +210,7 @@ function saveNotice(event) {
     const index = document.getElementById('notice-id').value;
     const title = document.getElementById('notice-title').value;
     const content = document.getElementById('notice-content').value;
+    const youtubeUrl = document.getElementById('notice-youtube').value;
     const preview = document.getElementById('notice-image-preview');
     const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
     
@@ -215,6 +218,7 @@ function saveNotice(event) {
         title,
         content,
         imageUrl,
+        youtubeUrl,
         createdAt: new Date().toISOString()
     };
     
