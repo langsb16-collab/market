@@ -49,6 +49,8 @@ const translations = {
         loginButton: '로그인',
         signupButton: '회원가입',
         closeButton: '닫기',
+        noticeButton: '공지',
+        submitIssueButton: '이슈 등록',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -75,6 +77,8 @@ const translations = {
         loginButton: 'Login',
         signupButton: 'Sign Up',
         closeButton: 'Close',
+        noticeButton: 'Notice',
+        submitIssueButton: 'Submit Issue',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -101,6 +105,8 @@ const translations = {
         loginButton: '登录',
         signupButton: '注册',
         closeButton: '关闭',
+        noticeButton: '公告',
+        submitIssueButton: '提交问题',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -127,6 +133,8 @@ const translations = {
         loginButton: 'ログイン',
         signupButton: '会員登録',
         closeButton: '閉じる',
+        noticeButton: 'お知らせ',
+        submitIssueButton: '問題を提出',
     }
 }
 
@@ -443,6 +451,14 @@ function updateUITexts() {
     cryptoTexts.forEach(el => {
         el.textContent = t.onlyCrypto
     })
+    
+    // Update notice button text
+    const noticeBtnText = document.getElementById('notice-btn-text')
+    if (noticeBtnText) noticeBtnText.textContent = t.noticeButton
+    
+    // Update submit issue button text
+    const submitIssueBtnText = document.getElementById('submit-issue-btn-text')
+    if (submitIssueBtnText) submitIssueBtnText.textContent = t.submitIssueButton
     
     // Update all elements with data-ko, data-en, data-zh, data-ja attributes
     document.querySelectorAll('[data-ko]').forEach(element => {
