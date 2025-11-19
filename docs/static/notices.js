@@ -1,4 +1,15 @@
 // EventBET Notices System - 공지사항 시스템
+// GitHub Gist를 중앙 데이터 저장소로 사용
+
+// GitHub Gist 설정
+const GIST_CONFIG = {
+    // 나중에 실제 Gist ID로 교체해야 합니다
+    GIST_ID: 'YOUR_GIST_ID_HERE',
+    FILE_NAME: 'eventbet_notices.json',
+    // GitHub Personal Access Token (public gist 읽기용)
+    // 주의: 이 토큰은 public gist 읽기 권한만 가져야 합니다
+    ACCESS_TOKEN: 'YOUR_TOKEN_HERE'
+};
 
 // 유튜브 ID 추출 함수
 function extractYoutubeIdForNotice(url) {
@@ -48,10 +59,10 @@ const noticeTranslations = {
 };
 
 // 공지 모달 열기
-function openNoticeModal() {
+async function openNoticeModal() {
     const modal = document.getElementById('notice-modal');
     modal.classList.add('active');
-    loadNotices();
+    await loadNotices(); // 비동기 처리
     showNoticeList();
 }
 
@@ -68,8 +79,8 @@ function showNoticeList() {
 }
 
 // 공지 상세 뷰로 전환
-function showNoticeDetail(noticeIndex) {
-    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+async function showNoticeDetail(noticeIndex) {
+    const notices = await fetchNoticesFromGist();
     const notice = notices[noticeIndex];
     
     if (!notice) return;
@@ -109,10 +120,48 @@ function backToNoticeList() {
     showNoticeList();
 }
 
+// GitHub Gist에서 공지 목록 가져오기
+async function fetchNoticesFromGist() {
+    try {
+        console.log('[NOTICE] Fetching from GitHub Gist...');
+        
+        // Gist API 호출
+        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.GIST_ID}`);
+        
+        if (!response.ok) {
+            console.error('[NOTICE] Gist fetch failed:', response.status);
+            // Gist 연결 실패시 localStorage 폴백
+            return JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        }
+        
+        const gist = await response.json();
+        const fileContent = gist.files[GIST_CONFIG.FILE_NAME]?.content;
+        
+        if (!fileContent) {
+            console.error('[NOTICE] Gist file not found');
+            return JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        }
+        
+        const notices = JSON.parse(fileContent);
+        console.log('[NOTICE] Fetched from Gist:', notices.length, 'notices');
+        
+        // localStorage에도 캐시 저장 (오프라인 대비)
+        localStorage.setItem('eventbet_notices', JSON.stringify(notices));
+        
+        return notices;
+    } catch (error) {
+        console.error('[NOTICE] Gist fetch error:', error);
+        // 에러 발생시 localStorage 폴백
+        return JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    }
+}
+
 // 공지 목록 로드
-function loadNotices() {
+async function loadNotices() {
     console.log('[NOTICE] loadNotices() called');
-    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    
+    // GitHub Gist에서 데이터 가져오기 (비동기)
+    const notices = await fetchNoticesFromGist();
     console.log('[NOTICE] Found notices:', notices.length);
     
     const container = document.getElementById('notice-list-container');

@@ -1,5 +1,49 @@
 // EventBET Admin Panel JavaScript
 
+// GitHub Gist 설정 (notices.js와 동일)
+const GIST_CONFIG = {
+    GIST_ID: 'YOUR_GIST_ID_HERE',
+    FILE_NAME: 'eventbet_notices.json',
+    ACCESS_TOKEN: 'YOUR_TOKEN_HERE'
+};
+
+// Gist에 공지사항 업로드
+async function syncNoticesToGist() {
+    if (GIST_CONFIG.GIST_ID === 'YOUR_GIST_ID_HERE') {
+        alert('⚠️ Gist 설정이 필요합니다!\n\nREADME.md의 "GitHub Gist 설정" 섹션을 참고하여 GIST_ID와 ACCESS_TOKEN을 설정해주세요.');
+        return;
+    }
+    
+    try {
+        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        
+        const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.GIST_ID}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${GIST_CONFIG.ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                files: {
+                    [GIST_CONFIG.FILE_NAME]: {
+                        content: JSON.stringify(notices, null, 2)
+                    }
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Gist 업로드 실패: ${response.status}`);
+        }
+        
+        alert(`✅ 공지사항이 Gist에 동기화되었습니다!\n\n총 ${notices.length}개의 공지사항이 업로드되었습니다.\n이제 모바일에서도 공지를 볼 수 있습니다.`);
+        console.log('[ADMIN] Notices synced to Gist:', notices.length);
+    } catch (error) {
+        console.error('[ADMIN] Gist sync error:', error);
+        alert(`❌ Gist 동기화 실패\n\n${error.message}\n\nREADME.md의 설정을 확인해주세요.`);
+    }
+}
+
 // 섹션 전환
 function showSection(section) {
     // 모든 섹션 숨기기
@@ -243,6 +287,10 @@ function saveNotice(event) {
     localStorage.setItem('eventbet_notices', JSON.stringify(notices));
     closeNoticeModal();
     loadNotices();
+    
+    // Gist 자동 동기화
+    syncNoticesToGist();
+    
     alert('공지가 저장되었습니다.');
 }
 
@@ -257,6 +305,10 @@ function deleteNotice(index) {
     notices.splice(index, 1);
     localStorage.setItem('eventbet_notices', JSON.stringify(notices));
     loadNotices();
+    
+    // Gist 자동 동기화
+    syncNoticesToGist();
+    
     alert('공지가 삭제되었습니다.');
 }
 

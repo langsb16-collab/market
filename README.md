@@ -34,7 +34,8 @@
 - **Font Awesome** - 아이콘
 
 ### 데이터 저장
-- **LocalStorage** - 클라이언트 사이드 데이터 저장
+- **GitHub Gist** - 공지사항 중앙 데이터 저장소 (PC/모바일 동기화)
+- **LocalStorage** - 배너, 팝업 등 기타 데이터 저장
 - Base64 인코딩으로 이미지 저장
 
 ### 배포
@@ -218,7 +219,93 @@ git push origin main
 3. 선택한 언어로 질문 목록 표시
 4. 질문 클릭 시 해당 언어로 답변 제공
 
+## GitHub Gist 설정 (공지사항 동기화)
+
+### 왜 필요한가요?
+PC와 모바일의 localStorage는 완전히 분리되어 있습니다. PC 관리자 페이지에서 등록한 공지사항을 모바일에서도 보려면 **중앙 데이터 저장소**가 필요합니다.
+
+### 1. GitHub Gist 생성
+1. GitHub 로그인 → https://gist.github.com/
+2. **New gist** 클릭
+3. 설정:
+   - Filename: `eventbet_notices.json`
+   - Content: `[]` (빈 배열)
+   - **Public** gist로 생성 (Private 아님!)
+4. **Create public gist** 클릭
+5. URL에서 Gist ID 복사:
+   ```
+   https://gist.github.com/username/abc123def456...
+                                   ↑ 이 부분이 Gist ID
+   ```
+
+### 2. Personal Access Token 생성
+1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. **Generate new token (classic)** 클릭
+3. 설정:
+   - Note: `EventBET Notices Read`
+   - Expiration: No expiration (또는 1년)
+   - Scopes: **gist** 체크 ✅
+4. **Generate token** 클릭
+5. 토큰 복사 (한 번만 보여줍니다!)
+
+### 3. notices.js 파일 수정
+`/home/user/webapp/docs/static/notices.js` 파일 상단:
+
+```javascript
+const GIST_CONFIG = {
+    GIST_ID: 'abc123def456...',  // ← 여기에 Gist ID 입력
+    FILE_NAME: 'eventbet_notices.json',
+    ACCESS_TOKEN: 'ghp_xxxxxxxxxxxx'  // ← 여기에 토큰 입력
+};
+```
+
+### 4. 배포 및 테스트
+```bash
+git add docs/static/notices.js
+git commit -m "Configure GitHub Gist for notices sync"
+git push origin main
+```
+
+### 5. 초기 데이터 입력
+PC에서 관리자 페이지로 공지 등록 후, 브라우저 콘솔에서:
+```javascript
+// 현재 localStorage 데이터 확인
+const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+console.log(JSON.stringify(notices, null, 2));
+
+// 위 JSON을 복사하여 Gist에 수동으로 붙여넣기
+```
+
+**또는 자동 업로드 함수 사용** (콘솔에서 실행):
+```javascript
+async function uploadToGist() {
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const response = await fetch('https://api.github.com/gists/YOUR_GIST_ID', {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer YOUR_TOKEN',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            files: {
+                'eventbet_notices.json': {
+                    content: JSON.stringify(notices, null, 2)
+                }
+            }
+        })
+    });
+    console.log('Upload result:', await response.json());
+}
+uploadToGist();
+```
+
 ## 최근 업데이트
+
+### 2025-01-20
+- ✅ **모바일 공지사항 표시 오류 수정**
+  - 근본 원인: PC와 모바일 localStorage 분리 문제
+  - 해결: GitHub Gist를 중앙 데이터 저장소로 사용
+  - PC/모바일 공지사항 완전 동기화 지원
 
 ### 2024-11-19
 - ✅ **AI 챗봇 다국어 지원 완전 구현**
