@@ -2,15 +2,23 @@
 // GitHub Gist를 중앙 데이터 저장소로 사용하여 PC와 모바일 간 데이터 공유
 
 // GitHub Gist 설정
+// 보안상 토큰을 직접 코드에 넣지 않고 브라우저에서 입력받습니다
 const GIST_CONFIG = {
-    GIST_ID: 'YOUR_GIST_ID_HERE',
-    ACCESS_TOKEN: 'YOUR_TOKEN_HERE',
+    GIST_ID: '1c5fc81907b3069183cd64afa04abfbb',
+    ACCESS_TOKEN: localStorage.getItem('gist_token') || 'YOUR_TOKEN_HERE',
     FILES: {
         NOTICES: 'eventbet_notices.json',
         BANNERS: 'eventbet_banners.json',
         POPUPS: 'eventbet_popups.json'
     }
 };
+
+// 토큰 설정 함수 (관리자 페이지에서 한 번만 실행)
+function setGistToken(token) {
+    localStorage.setItem('gist_token', token);
+    console.log('[GIST] Token saved to localStorage');
+    alert('✅ Gist 토큰이 저장되었습니다!\n\n이제 동기화 버튼을 사용할 수 있습니다.');
+}
 
 // Gist에서 데이터 가져오기 (범용)
 async function fetchFromGist(fileName, localStorageKey) {
