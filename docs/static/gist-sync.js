@@ -74,8 +74,9 @@ async function uploadToGist(fileName, localStorageKey) {
         const response = await fetch(`https://api.github.com/gists/${GIST_CONFIG.GIST_ID}`, {
             method: 'PATCH',
             headers: {
-                'Authorization': `Bearer ${GIST_CONFIG.ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
+                'Authorization': `token ${GIST_CONFIG.ACCESS_TOKEN}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
             },
             body: JSON.stringify({
                 files: {
