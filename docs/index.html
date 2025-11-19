@@ -696,11 +696,18 @@
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
                             <i class="fas fa-wallet text-blue-600 text-lg"></i>
-                            <span class="font-bold text-sm sm:text-base text-gray-800 dark:text-white">플랫폼 지갑 주소</span>
+                            <span class="font-bold text-sm sm:text-base text-gray-800 dark:text-white" 
+                                  data-ko="플랫폼 지갑 주소" 
+                                  data-en="Platform Wallet Address" 
+                                  data-zh="平台钱包地址" 
+                                  data-ja="プラットフォームウォレットアドレス">플랫폼 지갑 주소</span>
                         </div>
                         <button onclick="copyWalletAddress()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition transform hover:scale-105 flex items-center gap-1">
                             <i class="fas fa-copy"></i>
-                            <span>복사</span>
+                            <span data-ko="복사" 
+                                  data-en="Copy" 
+                                  data-zh="复制" 
+                                  data-ja="コピー">복사</span>
                         </button>
                     </div>
                     <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
@@ -710,7 +717,10 @@
                     </div>
                     <p class="text-xs text-gray-600 dark:text-gray-400 mt-2 text-center">
                         <i class="fas fa-info-circle mr-1"></i>
-                        이슈 등록 입금 및 모든 거래에 사용되는 공식 지갑 주소입니다
+                        <span data-ko="이슈 등록 입금 및 모든 거래에 사용되는 공식 지갑 주소입니다" 
+                              data-en="Official wallet address used for issue registration deposits and all transactions" 
+                              data-zh="用于问题注册存款和所有交易的官方钱包地址" 
+                              data-ja="問題登録の入金およびすべての取引に使用される公式ウォレットアドレス">이슈 등록 입금 및 모든 거래에 사용되는 공식 지갑 주소입니다</span>
                     </p>
                 </div>
             </div>
@@ -793,7 +803,10 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg sm:text-2xl font-bold mobile-text">
                     <i class="fas fa-plus-circle mr-2 text-accent"></i>
-                    이슈 등록하기
+                    <span data-ko="이슈 등록하기" 
+                          data-en="Submit an Issue" 
+                          data-zh="提交问题" 
+                          data-ja="問題を登録">이슈 등록하기</span>
                 </h3>
                 <button id="close-submit-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
@@ -956,8 +969,11 @@
                     <div class="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
                         <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
                         <p>
-                            이슈 등록 시 <strong class="text-blue-600 dark:text-blue-400">이 주소로 USDT를 입금</strong>해주세요. 
-                            입금 확인 후 이슈가 활성화됩니다.
+                            <span data-ko="이슈 등록 시" data-en="When registering an issue" data-zh="注册问题时" data-ja="問題登録時">이슈 등록 시</span> 
+                            <strong class="text-blue-600 dark:text-blue-400">
+                                <span data-ko="이 주소로 USDT를 입금" data-en="deposit USDT to this address" data-zh="请向此地址存入USDT" data-ja="このアドレスにUSDTを入金">이 주소로 USDT를 입금</span>
+                            </strong>
+                            <span data-ko="해주세요. 입금 확인 후 이슈가 활성화됩니다." data-en="please. The issue will be activated after deposit confirmation." data-zh="。存款确认后问题将被激活。" data-ja="してください。入金確認後、問題が有効化されます。">해주세요. 입금 확인 후 이슈가 활성화됩니다.</span>
                         </p>
                     </div>
                 </div>
