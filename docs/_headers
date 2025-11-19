@@ -1,0 +1,59 @@
+# Cloudflare Pages Headers - 캐시 완전 비활성화
+
+# JavaScript 파일 - 절대 캐시하지 않음
+/static/*.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+  X-Content-Type-Options: nosniff
+
+# HTML 파일 - 절대 캐시하지 않음
+/*.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+  X-Content-Type-Options: nosniff
+
+/admin/*.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+  X-Content-Type-Options: nosniff
+
+# Root HTML
+/
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
+# JSON 데이터 파일
+/static/*.json
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Pragma: no-cache
+  Content-Type: application/json
+
+# CSS 파일 (짧은 캐시)
+/static/*.css
+  Cache-Control: public, max-age=300
+  X-Content-Type-Options: nosniff
+
+# 이미지 파일 (긴 캐시 허용)
+/static/*.png
+  Cache-Control: public, max-age=86400
+  X-Content-Type-Options: nosniff
+
+/static/*.jpg
+  Cache-Control: public, max-age=86400
+  X-Content-Type-Options: nosniff
+
+/static/*.jpeg
+  Cache-Control: public, max-age=86400
+  X-Content-Type-Options: nosniff
+
+/static/*.gif
+  Cache-Control: public, max-age=86400
+  X-Content-Type-Options: nosniff
+
+/static/*.svg
+  Cache-Control: public, max-age=86400
+  X-Content-Type-Options: nosniff
