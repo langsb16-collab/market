@@ -44,7 +44,11 @@ function setupAuthListeners() {
             if (!currentUser) {
                 e.preventDefault()
                 e.stopPropagation()
-                showAuthRequiredModal('이슈를 등록하려면 로그인이 필요합니다.')
+                // Get translations from app.js
+                const currentLang = window.currentLang || 'ko'
+                const translations = window.translations || {}
+                const t = translations[currentLang] || translations.ko || {}
+                showAuthRequiredModal(t.submitIssueLoginRequired || '이슈를 등록하려면 로그인이 필요합니다.')
             }
         })
     }
@@ -225,25 +229,30 @@ function updateUIForGuest() {
 
 // Show auth required modal
 function showAuthRequiredModal(message) {
+    // Get translations from app.js
+    const currentLang = window.currentLang || 'ko'
+    const translations = window.translations || {}
+    const t = translations[currentLang] || translations.ko || {}
+    
     const modal = document.createElement('div')
     modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4'
     modal.innerHTML = `
         <div class="modal-content rounded-lg p-6 max-w-md w-full text-center">
             <i class="fas fa-lock text-5xl text-yellow-500 mb-4"></i>
-            <h3 class="text-xl font-bold mb-3">로그인이 필요합니다</h3>
+            <h3 class="text-xl font-bold mb-3">${t.loginRequired || '로그인이 필요합니다'}</h3>
             <p class="text-secondary mb-6">${message}</p>
             <div class="flex space-x-3">
                 <button onclick="this.closest('.fixed').remove(); showLoginModal()" class="flex-1 btn-primary py-3 rounded-lg font-semibold">
                     <i class="fas fa-sign-in-alt mr-2"></i>
-                    로그인
+                    ${t.loginButton || '로그인'}
                 </button>
                 <button onclick="this.closest('.fixed').remove(); showRegisterModal()" class="flex-1 btn-primary py-3 rounded-lg font-semibold">
                     <i class="fas fa-user-plus mr-2"></i>
-                    회원가입
+                    ${t.signupButton || '회원가입'}
                 </button>
             </div>
             <button onclick="this.closest('.fixed').remove()" class="mt-3 text-secondary hover:text-accent">
-                닫기
+                ${t.closeButton || '닫기'}
             </button>
         </div>
     `

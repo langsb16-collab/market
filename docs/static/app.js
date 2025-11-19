@@ -4,7 +4,7 @@
 console.log('EventBET: Script loaded')
 
 let currentLang = 'ko'
-window.currentLang = currentLang // 챗봇에서 접근 가능하도록 전역 노출
+window.currentLang = currentLang // 챗봇과 auth에서 접근 가능하도록 전역 노출
 let currentWallet = null
 let isDarkMode = false
 let currentCategory = 'all'
@@ -41,6 +41,13 @@ const translations = {
         showingMarkets: '개 마켓 표시 중',
         totalMarkets: '전체',
         individual: '개',
+        // 로그인 모달 메시지
+        loginRequired: '로그인이 필요합니다',
+        loginRequiredDesc: '마켓 상세 정보를 보려면 로그인이 필요합니다.',
+        submitIssueLoginRequired: '이슈를 등록하려면 로그인이 필요합니다.',
+        loginButton: '로그인',
+        signupButton: '회원가입',
+        closeButton: '닫기',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -59,6 +66,13 @@ const translations = {
         showingMarkets: 'markets shown',
         totalMarkets: 'Total',
         individual: '',
+        // Login modal messages
+        loginRequired: 'Login Required',
+        loginRequiredDesc: 'You need to login to view market details.',
+        submitIssueLoginRequired: 'You need to login to submit an issue.',
+        loginButton: 'Login',
+        signupButton: 'Sign Up',
+        closeButton: 'Close',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -77,6 +91,13 @@ const translations = {
         showingMarkets: '个市场',
         totalMarkets: '总计',
         individual: '个',
+        // 登录模态框消息
+        loginRequired: '需要登录',
+        loginRequiredDesc: '您需要登录才能查看市场详情。',
+        submitIssueLoginRequired: '您需要登录才能提交问题。',
+        loginButton: '登录',
+        signupButton: '注册',
+        closeButton: '关闭',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -95,8 +116,18 @@ const translations = {
         showingMarkets: '件のマーケット',
         totalMarkets: '合計',
         individual: '件',
+        // ログインモーダルメッセージ
+        loginRequired: 'ログインが必要です',
+        loginRequiredDesc: 'マーケットの詳細を表示するにはログインが必要です。',
+        submitIssueLoginRequired: '問題を提出するにはログインが必要です。',
+        loginButton: 'ログイン',
+        signupButton: '会員登録',
+        closeButton: '閉じる',
     }
 }
+
+// 전역으로 translations 노출 (auth.js에서 사용)
+window.translations = translations
 
 // Categories
 const categories = [
@@ -642,7 +673,8 @@ function renderMarkets() {
 function openBetModal(eventId) {
     // Check if user is logged in
     if (window.EventBETAuth && !window.EventBETAuth.isLoggedIn()) {
-        window.EventBETAuth.showAuthRequiredModal('마켓 상세 정보를 보려면 로그인이 필요합니다.')
+        const t = translations[currentLang] || translations.ko
+        window.EventBETAuth.showAuthRequiredModal(t.loginRequiredDesc)
         return
     }
     
