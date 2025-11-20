@@ -543,6 +543,7 @@ function editPopup(index) {
 function showSection(sectionName) {
     // 모든 섹션 숨기기
     document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
         section.classList.remove('active');
     });
     
@@ -552,7 +553,11 @@ function showSection(sectionName) {
     });
     
     // 선택한 섹션 표시
-    document.getElementById(sectionName + '-section').classList.add('active');
+    const targetSection = document.getElementById(sectionName + '-section');
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.classList.add('active');
+    }
     
     // 선택한 사이드바 항목 활성화
     event.target.classList.add('active');
@@ -561,6 +566,7 @@ function showSection(sectionName) {
     if (sectionName === 'banners') loadBanners();
     if (sectionName === 'notices') loadNotices();
     if (sectionName === 'popups') loadPopups();
+    if (sectionName === 'issues') loadAdminIssues();
     if (sectionName === 'settings') loadSettings();
 }
 
@@ -809,7 +815,12 @@ async function submitBulkIssues(event) {
         const mergedIssues = [...existingIssues, ...issues];
         localStorage.setItem('admin_issues', JSON.stringify(mergedIssues));
         
-        alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!`);
+        // 메인 페이지에서 이슈를 즉시 반영하도록 이벤트 발생
+        window.dispatchEvent(new CustomEvent('adminIssuesUpdated', { 
+            detail: { count: mergedIssues.length } 
+        }));
+        
+        alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n메인 페이지를 새로고침하면 카테고리 개수가 업데이트됩니다.`);
         closeBulkIssueModal();
         loadAdminIssues();
     } catch (error) {
