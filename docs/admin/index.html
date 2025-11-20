@@ -470,12 +470,19 @@
                 <div class="bg-blue-50 rounded-lg p-4 mb-6">
                     <div class="flex items-start gap-3">
                         <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                        <div>
+                        <div class="flex-1">
                             <p class="text-sm text-blue-900 font-semibold mb-1">이슈 검색 및 관리</p>
                             <p class="text-sm text-blue-800">
                                 제목으로 이슈를 검색하고, 체크박스로 선택하여 일괄 삭제하거나 개별 편집/삭제할 수 있습니다.
                             </p>
                         </div>
+                        <button 
+                            onclick="createTestIssues(); location.reload();" 
+                            class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm whitespace-nowrap"
+                            title="테스트용 이슈 3개를 생성합니다"
+                        >
+                            <i class="fas fa-flask mr-1"></i>테스트 데이터 생성
+                        </button>
                     </div>
                 </div>
                 
