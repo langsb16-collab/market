@@ -855,19 +855,35 @@ function loadAdminIssues() {
 function renderIssuesList() {
     const container = document.getElementById('issues-list');
     
-    if (filteredIssues.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-12 text-gray-500">
-                <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
-                <p class="text-lg">검색 결과가 없습니다.</p>
-                <p class="text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
-            </div>
-        `;
-        updateSelectedCount();
+    if (!container) {
+        console.error('issues-list container not found');
         return;
     }
     
     const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    
+    if (filteredIssues.length === 0) {
+        // 전체 이슈가 없는 경우 vs 검색 결과가 없는 경우 구분
+        if (allIssues.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+                    <p class="text-lg">등록된 이슈가 없습니다.</p>
+                    <p class="text-sm mt-2">상단의 "이슈 일괄 등록" 버튼을 클릭하여 이슈를 추가하세요.</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-search text-6xl mb-4 opacity-50"></i>
+                    <p class="text-lg">검색 결과가 없습니다.</p>
+                    <p class="text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                </div>
+            `;
+        }
+        updateSelectedCount();
+        return;
+    }
     
     container.innerHTML = `
         <div class="overflow-x-auto">
@@ -1188,9 +1204,18 @@ function syncIssuesToMainSite() {
 // ============================================
 
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('Admin page loaded');
     loadNotices();
     loadBanners();
     loadPopups();
     loadSettings();
     loadAdminIssues();
+    
+    // 이슈 관리 섹션 디버깅
+    const issuesSection = document.getElementById('issues-section');
+    console.log('Issues section:', issuesSection);
+    const issuesList = document.getElementById('issues-list');
+    console.log('Issues list:', issuesList);
+    const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    console.log('Admin issues in localStorage:', adminIssues.length);
 });
