@@ -472,7 +472,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners()
     updateUITexts()
     renderCategories()
-    renderMarkets()
+    
+    // DOM이 완전히 준비될 때까지 약간 지연
+    setTimeout(() => {
+        renderMarkets()
+    }, 100)
 })
 
 // Setup event listeners
