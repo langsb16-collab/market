@@ -309,7 +309,7 @@ const categories = [
 const eventTemplates = {
     politics: [
         { ko: '조태용 전 국가정보원장 구속영장 발부. 실형 5년 이상, 이하', en: 'Arrest Warrant Issued for Former NIS Director Cho Tae-yong. Prison Sentence 5+ Years or Less', zh: '前国情院院长赵太庸逮捕令签发。实刑5年以上或以下', ja: '趙太庸前国情院長逮捕令状発付。実刑5年以上または以下' },
-        { ko: '대장동 개발사업 관련 검찰 항소 포기 및 해당 검사 징계 여부', en: 'Prosecutor's Appeal Abandonment in Daejang-dong Case and Disciplinary Action Against Prosecutor', zh: '大庄洞开发案相关检方放弃上诉及对该检察官的纪律处分', ja: '大壮洞開発事業関連検察控訴放棄および当該検事懲戒の有無' },
+        { ko: '대장동 개발사업 관련 검찰 항소 포기 및 해당 검사 징계 여부', en: 'Prosecutor Appeal Abandonment in Daejang-dong Case and Disciplinary Action Against Prosecutor', zh: '大庄洞开发案相关检方放弃上诉及对该检察官的纪律处分', ja: '大壮洞開発事業関連検察控訴放棄および当該検事懲戒の有無' },
         { ko: '서울시장 민주당 승리? 국민의힘 승리?', en: 'Seoul Mayor Election: Democratic Party Victory or People Power Party Victory?', zh: '首尔市长选举：民主党获胜还是国民力量党获胜？', ja: 'ソウル市長選挙：民主党勝利？国民の力勝利？' },
         { ko: '부산시장 민주당 승리? 국민의힘 승리?', en: 'Busan Mayor Election: Democratic Party Victory or People Power Party Victory?', zh: '釜山市长选举：民主党获胜还是国民力量党获胜？', ja: '釜山市長選挙：民主党勝利？国民の力勝利？' },
         { ko: '종묘 건축물 142m 개발 진행? 중단?', en: 'Jongmyo 142m Building Development: Proceed or Halt?', zh: '宗庙建筑142米开发项目：继续还是中断？', ja: '宗廟建築物142m開発：進行？中止？' },
