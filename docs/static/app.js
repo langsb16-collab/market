@@ -771,14 +771,12 @@ function renderCategories() {
     
     container.innerHTML = allCategories.map(category => {
         const isActive = currentCategory === category.slug
-        const categoryCount = category.slug === 'all' ? events.length : events.filter(e => e.category_slug === category.slug).length
         return `
         <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
              onclick="filterByCategory('${category.slug}')">
             <div class="text-center">
                 <div class="text-xl sm:text-2xl mb-1">${category.icon}</div>
                 <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${getCategoryName(category)}</h4>
-                <span class="text-xs text-gray-500">${categoryCount}</span>
             </div>
         </div>
         `
