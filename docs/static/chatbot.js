@@ -932,7 +932,7 @@ class ChatBot {
             </div>
 
             <!-- 챗봇 창 (모바일 최적화 - 중앙 정렬) -->
-            <div id="chatbot-window" class="fixed bottom-24 left-1/2 -translate-x-1/2 w-[400px] max-w-[95vw] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 560px; max-height: 85vh;">
+            <div id="chatbot-window" class="fixed bottom-24 left-1/2 -translate-x-1/2 w-[320px] max-w-[90vw] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 560px; max-height: 85vh;">
                 <!-- 헤더 - 진한 색상 -->
                 <div class="bg-gradient-to-r from-blue-800 to-purple-800 text-white p-4 rounded-t-2xl flex items-center justify-between">
                     <div class="flex items-center space-x-3">
