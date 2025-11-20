@@ -878,18 +878,45 @@ function renderIssuesList() {
         // 전체 이슈가 없는 경우 vs 검색 결과가 없는 경우 구분
         if (allIssues.length === 0) {
             container.innerHTML = `
-                <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
-                    <p class="text-lg">등록된 이슈가 없습니다.</p>
-                    <p class="text-sm mt-2">상단의 "이슈 일괄 등록" 버튼을 클릭하여 이슈를 추가하세요.</p>
+                <div class="text-center py-16 text-gray-500">
+                    <i class="fas fa-inbox text-8xl mb-6 opacity-30"></i>
+                    <p class="text-2xl font-bold text-gray-700 mb-2">등록된 이슈가 없습니다</p>
+                    <p class="text-base text-gray-600 mb-6">
+                        아래 방법 중 하나를 선택하여 이슈를 추가하세요
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <button 
+                            onclick="showBulkIssueModal()" 
+                            class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg flex items-center gap-2"
+                        >
+                            <i class="fas fa-plus-circle"></i>
+                            <span>이슈 일괄 등록</span>
+                        </button>
+                        <button 
+                            onclick="createTestIssues(); location.reload();" 
+                            class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors shadow-lg flex items-center gap-2"
+                        >
+                            <i class="fas fa-flask"></i>
+                            <span>테스트 데이터 생성</span>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-6">
+                        💡 테스트 데이터는 정치/스포츠/기술 카테고리에 각 1개씩 생성됩니다
+                    </p>
                 </div>
             `;
         } else {
             container.innerHTML = `
                 <div class="text-center py-12 text-gray-500">
                     <i class="fas fa-search text-6xl mb-4 opacity-50"></i>
-                    <p class="text-lg">검색 결과가 없습니다.</p>
-                    <p class="text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+                    <p class="text-lg font-semibold text-gray-700">검색 결과가 없습니다</p>
+                    <p class="text-sm mt-2 text-gray-600">다른 검색어나 필터를 시도해보세요</p>
+                    <button 
+                        onclick="document.getElementById('issue-search-input').value=''; document.getElementById('category-filter').value=''; searchIssues();" 
+                        class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        <i class="fas fa-redo mr-2"></i>검색 초기화
+                    </button>
                 </div>
             `;
         }
