@@ -947,11 +947,13 @@ function renderIssuesList() {
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     ${filteredIssues.map((issue, displayIndex) => {
-                        const originalIndex = allIssues.findIndex(i => 
-                            i.title_ko === issue.title_ko && 
-                            i.category_slug === issue.category_slug &&
-                            i.resolve_date === issue.resolve_date
-                        );
+                        // 더 유연한 인덱스 찾기 (다양한 필드명 지원)
+                        const originalIndex = allIssues.findIndex(i => {
+                            const titleMatch = (i.title_ko || i.title) === (issue.title_ko || issue.title);
+                            const categoryMatch = i.category_slug === issue.category_slug;
+                            const dateMatch = (i.resolve_date || i.end_date) === (issue.resolve_date || issue.end_date);
+                            return titleMatch && categoryMatch && dateMatch;
+                        });
                         const category = CATEGORIES.find(c => c.slug === issue.category_slug);
                         const isChecked = selectedIssueIndices.has(originalIndex);
                         return `
@@ -966,9 +968,9 @@ function renderIssuesList() {
                                 </td>
                                 <td class="px-4 py-3 text-sm">${displayIndex + 1}</td>
                                 <td class="px-4 py-3 text-sm">${category ? category.icon : ''} ${category ? category.name_ko : issue.category_slug}</td>
-                                <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko}</td>
-                                <td class="px-4 py-3 text-sm">${issue.resolve_date}</td>
-                                <td class="px-4 py-3 text-sm">$${issue.total_volume.toLocaleString()}</td>
+                                <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko || issue.title || issue.name_ko || issue.name || '제목 없음'}</td>
+                                <td class="px-4 py-3 text-sm">${issue.resolve_date || issue.end_date || '-'}</td>
+                                <td class="px-4 py-3 text-sm">$${(issue.total_volume || issue.volume || 0).toLocaleString()}</td>
                                 <td class="px-4 py-3 text-sm text-center">
                                     <button onclick="editAdminIssue(${originalIndex})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1">
                                         <i class="fas fa-edit"></i>
@@ -1011,28 +1013,42 @@ function searchIssues() {
     
     console.log('🔍 Search params:', { searchValue, categoryValue, totalIssues: allIssues.length });
     
+    // 첫 번째 이슈 구조 확인 (디버깅)
+    if (allIssues.length > 0) {
+        console.log('📋 First issue structure:', allIssues[0]);
+        console.log('📋 Available keys:', Object.keys(allIssues[0]));
+    }
+    
     filteredIssues = allIssues.filter(issue => {
         // 카테고리 필터
         if (categoryValue && issue.category_slug !== categoryValue) {
             return false;
         }
         
-        // 검색어 필터 (4개 언어 모두 검색)
+        // 검색어 필터 (모든 가능한 title 필드 검색)
         if (searchValue) {
+            // 다양한 필드명 지원
             const searchableText = [
-                issue.title_ko || '',
-                issue.title_en || '',
-                issue.title_zh || '',
-                issue.title_ja || ''
+                issue.title_ko || issue.title || issue.name_ko || issue.name || '',
+                issue.title_en || issue.name_en || '',
+                issue.title_zh || issue.name_zh || '',
+                issue.title_ja || issue.name_ja || '',
+                issue.description || issue.desc || ''
             ].join(' ').toLowerCase();
             
-            return searchableText.includes(searchValue);
+            const matches = searchableText.includes(searchValue);
+            
+            if (matches) {
+                console.log('✅ Match found:', issue.title_ko || issue.title || 'Unknown');
+            }
+            
+            return matches;
         }
         
         return true;
     });
     
-    console.log('✅ Filtered issues:', filteredIssues.length);
+    console.log('✅ Filtered issues:', filteredIssues.length, '/', allIssues.length);
     selectedIssueIndices.clear(); // 검색 시 선택 초기화
     renderIssuesList();
 }
