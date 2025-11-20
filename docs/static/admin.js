@@ -1033,6 +1033,18 @@ function searchIssues() {
         console.log('📋 Available keys:', Object.keys(allIssues[0]));
     }
     
+    // 검색어가 없으면 카테고리 필터만 적용
+    if (!searchValue) {
+        console.log('ℹ️ No search value, applying category filter only');
+        filteredIssues = categoryValue 
+            ? allIssues.filter(issue => issue.category_slug === categoryValue)
+            : allIssues;
+        console.log('✅ Filtered by category:', filteredIssues.length);
+        selectedIssueIndices.clear();
+        renderIssuesList();
+        return;
+    }
+    
     filteredIssues = allIssues.filter((issue, idx) => {
         // 카테고리 필터
         if (categoryValue && issue.category_slug !== categoryValue) {
@@ -1040,35 +1052,53 @@ function searchIssues() {
             return false;
         }
         
-        // 검색어 필터 (모든 가능한 title 필드 검색)
-        if (searchValue) {
-            // 다양한 필드명 지원 - 공백 제거하고 검색
-            const searchableText = [
-                issue.title_ko || issue.title || issue.name_ko || issue.name || '',
-                issue.title_en || issue.name_en || '',
-                issue.title_zh || issue.name_zh || '',
-                issue.title_ja || issue.name_ja || '',
-                issue.description || issue.desc || ''
-            ]
-            .join(' ')
-            .toLowerCase()
-            .replace(/\s+/g, ''); // 모든 공백 제거
-            
-            const searchValueNoSpace = searchValue.replace(/\s+/g, ''); // 검색어의 공백도 제거
-            
-            const matches = searchableText.includes(searchValueNoSpace);
-            
-            console.log(`${matches ? '✅' : '❌'} Issue ${idx + 1}:`, {
-                title: issue.title_ko || issue.title || 'No title',
-                searchableText: searchableText.substring(0, 50) + '...',
-                searchValue: searchValueNoSpace,
-                matches: matches
-            });
-            
-            return matches;
+        // 모든 속성 값을 검색 대상으로 만듦
+        const searchableValues = [];
+        
+        // 객체의 모든 속성을 순회
+        for (const key in issue) {
+            if (issue.hasOwnProperty(key)) {
+                const value = issue[key];
+                
+                // 문자열이나 숫자인 경우 직접 추가
+                if (typeof value === 'string') {
+                    searchableValues.push(value);
+                } else if (typeof value === 'number') {
+                    searchableValues.push(String(value));
+                } else if (Array.isArray(value)) {
+                    // 배열인 경우 (outcomes 등)
+                    value.forEach(item => {
+                        if (typeof item === 'string') {
+                            searchableValues.push(item);
+                        } else if (typeof item === 'object' && item !== null) {
+                            Object.values(item).forEach(v => {
+                                if (typeof v === 'string' || typeof v === 'number') {
+                                    searchableValues.push(String(v));
+                                }
+                            });
+                        }
+                    });
+                }
+            }
         }
         
-        return true;
+        // 전체 검색 가능한 텍스트 (공백 제거)
+        const searchableText = searchableValues
+            .join(' ')
+            .toLowerCase()
+            .replace(/\s+/g, '');
+        
+        const searchValueNoSpace = searchValue.replace(/\s+/g, '');
+        const matches = searchableText.includes(searchValueNoSpace);
+        
+        console.log(`${matches ? '✅' : '❌'} Issue ${idx + 1}:`, {
+            title: issue.title_ko || issue.title || 'No title',
+            searchValue: searchValueNoSpace,
+            searchablePreview: searchableText.substring(0, 100),
+            matches: matches
+        });
+        
+        return matches;
     });
     
     console.log('✅ Filtered issues:', filteredIssues.length, '/', allIssues.length);
