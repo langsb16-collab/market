@@ -451,7 +451,40 @@ const generateEvents = () => {
 }
 
 console.log('EventBET: About to call generateEvents()')
-const events = generateEvents()
+let events = generateEvents()
+
+// 관리자가 등록한 이슈 병합
+function loadAdminIssuesFromStorage() {
+    try {
+        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
+        if (adminIssues.length > 0) {
+            console.log(`Loading ${adminIssues.length} admin issues`)
+            
+            // 관리자 이슈에 ID 및 participants 추가
+            adminIssues.forEach((issue, index) => {
+                const newId = events.length + index + 1
+                const enhancedIssue = {
+                    ...issue,
+                    id: newId,
+                    participants: Math.floor(issue.total_volume / 1000) + Math.floor(Math.random() * 500),
+                    outcomes: issue.outcomes.map((outcome, oIndex) => ({
+                        id: newId * 2 + oIndex - 1,
+                        name: outcome.name,
+                        probability: outcome.probability
+                    }))
+                }
+                events.push(enhancedIssue)
+            })
+            
+            console.log(`Total events after merge: ${events.length}`)
+        }
+    } catch (error) {
+        console.error('Failed to load admin issues:', error)
+    }
+}
+
+// 관리자 이슈 로드
+loadAdminIssuesFromStorage()
 
 console.log(`Generated ${events.length} events`)
 
@@ -472,6 +505,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners()
     updateUITexts()
     renderCategories()
+    
+    // 관리자 이슈 업데이트 이벤트 리스너
+    window.addEventListener('adminIssuesUpdated', () => {
+        console.log('Admin issues updated, reloading...')
+        loadAdminIssuesFromStorage()
+        renderCategories()
+        renderMarkets()
+    })
     
     // DOM이 완전히 준비될 때까지 약간 지연
     setTimeout(() => {
