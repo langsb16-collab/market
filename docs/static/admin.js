@@ -606,6 +606,322 @@ function saveSettings(event) {
 }
 
 // ============================================
+// 📌 이슈 관리 (일괄 등록)
+// ============================================
+
+let issueFormCount = 0;
+const MAX_ISSUES = 5;
+
+// 카테고리 목록
+const CATEGORIES = [
+    { id: 1, slug: 'politics', name_ko: '정치', icon: '🏛️' },
+    { id: 2, slug: 'sports', name_ko: '스포츠', icon: '⚽' },
+    { id: 3, slug: 'technology', name_ko: '기술', icon: '💻' },
+    { id: 4, slug: 'cryptocurrency', name_ko: '암호화폐', icon: '₿' },
+    { id: 5, slug: 'entertainment', name_ko: '엔터테인먼트', icon: '🎬' },
+    { id: 6, slug: 'economy', name_ko: '경제', icon: '📈' },
+    { id: 7, slug: 'science', name_ko: '과학', icon: '🔬' },
+    { id: 8, slug: 'climate', name_ko: '기후', icon: '🌍' }
+];
+
+function showBulkIssueModal() {
+    const modal = document.getElementById('bulk-issue-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // 초기 폼 1개 추가
+    issueFormCount = 0;
+    document.getElementById('issues-container').innerHTML = '';
+    addIssueForm();
+}
+
+function closeBulkIssueModal() {
+    const modal = document.getElementById('bulk-issue-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    issueFormCount = 0;
+    document.getElementById('issues-container').innerHTML = '';
+}
+
+function addIssueForm() {
+    if (issueFormCount >= MAX_ISSUES) {
+        alert(`최대 ${MAX_ISSUES}개까지만 등록할 수 있습니다.`);
+        return;
+    }
+    
+    issueFormCount++;
+    const container = document.getElementById('issues-container');
+    const formId = `issue-form-${issueFormCount}`;
+    
+    const formHTML = `
+        <div id="${formId}" class="border-2 border-gray-300 rounded-lg p-6 bg-gray-50">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-bold text-gray-800">
+                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>
+                    이슈 #${issueFormCount}
+                </h4>
+                <button type="button" onclick="removeIssueForm('${formId}')" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 카테고리 선택 -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-folder mr-1 text-purple-600"></i>카테고리 *
+                </label>
+                <select name="category_${issueFormCount}" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    ${CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('')}
+                </select>
+            </div>
+            
+            <!-- 제목 (4개 언어) -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-heading mr-1 text-green-600"></i>제목 (4개 언어 필수) *
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">🇰🇷 한국어</label>
+                        <input type="text" name="title_ko_${issueFormCount}" required placeholder="예: 비트코인 $150K 돌파?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">🇬🇧 English</label>
+                        <input type="text" name="title_en_${issueFormCount}" required placeholder="e.g., Bitcoin reaches $150K?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">🇨🇳 中文</label>
+                        <input type="text" name="title_zh_${issueFormCount}" required placeholder="例如：比特币突破$150K？" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">🇯🇵 日本語</label>
+                        <input type="text" name="title_ja_${issueFormCount}" required placeholder="例：ビットコイン$150K突破？" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 내용 설명 -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-1 text-blue-600"></i>내용 설명 (선택)
+                </label>
+                <textarea name="description_${issueFormCount}" rows="2" placeholder="이슈에 대한 간단한 설명..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+            </div>
+            
+            <!-- 결론 결정 기간 & 배팅 설정 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar mr-1 text-red-600"></i>결론 결정 기간 *
+                    </label>
+                    <input type="date" name="resolve_date_${issueFormCount}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-percentage mr-1 text-green-600"></i>Yes 배팅 비율 (%)
+                    </label>
+                    <input type="number" name="yes_prob_${issueFormCount}" min="0" max="100" value="50" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-dollar-sign mr-1 text-yellow-600"></i>전체 배팅액 ($)
+                    </label>
+                    <input type="number" name="total_volume_${issueFormCount}" min="1000" value="100000" step="1000" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', formHTML);
+}
+
+function removeIssueForm(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        form.remove();
+        issueFormCount--;
+    }
+}
+
+function clearAllIssues() {
+    if (confirm('모든 입력 내용을 초기화하시겠습니까?')) {
+        issueFormCount = 0;
+        document.getElementById('issues-container').innerHTML = '';
+        addIssueForm();
+    }
+}
+
+async function submitBulkIssues(event) {
+    event.preventDefault();
+    
+    if (issueFormCount === 0) {
+        alert('등록할 이슈가 없습니다.');
+        return;
+    }
+    
+    const formData = new FormData(event.target);
+    const issues = [];
+    
+    // 각 이슈 폼에서 데이터 수집
+    for (let i = 1; i <= issueFormCount; i++) {
+        const category = formData.get(`category_${i}`);
+        const titleKo = formData.get(`title_ko_${i}`);
+        const titleEn = formData.get(`title_en_${i}`);
+        const titleZh = formData.get(`title_zh_${i}`);
+        const titleJa = formData.get(`title_ja_${i}`);
+        const description = formData.get(`description_${i}`) || '';
+        const resolveDate = formData.get(`resolve_date_${i}`);
+        const yesProb = parseInt(formData.get(`yes_prob_${i}`)) / 100;
+        const totalVolume = parseInt(formData.get(`total_volume_${i}`));
+        
+        if (titleKo && titleEn && titleZh && titleJa && resolveDate) {
+            const selectedCategory = CATEGORIES.find(c => c.slug === category);
+            
+            issues.push({
+                category_id: selectedCategory.id,
+                category_slug: category,
+                title_ko: titleKo,
+                title_en: titleEn,
+                title_zh: titleZh,
+                title_ja: titleJa,
+                description_ko: description || `${titleKo}에 대한 예측 마켓입니다.`,
+                description_en: description || `Prediction market for ${titleEn}.`,
+                description_zh: description || `关于${titleZh}的预测市场。`,
+                description_ja: description || `${titleJa}についての予測市場です。`,
+                resolve_date: resolveDate,
+                total_volume: totalVolume,
+                outcomes: [
+                    { name: '예', probability: yesProb },
+                    { name: '아니오', probability: 1 - yesProb }
+                ]
+            });
+        }
+    }
+    
+    if (issues.length === 0) {
+        alert('유효한 이슈 데이터가 없습니다.');
+        return;
+    }
+    
+    // localStorage에 저장 (기존 이슈와 병합)
+    try {
+        const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        const mergedIssues = [...existingIssues, ...issues];
+        localStorage.setItem('admin_issues', JSON.stringify(mergedIssues));
+        
+        alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!`);
+        closeBulkIssueModal();
+        loadAdminIssues();
+    } catch (error) {
+        console.error('Failed to save issues:', error);
+        alert('❌ 이슈 저장에 실패했습니다.');
+    }
+}
+
+function loadAdminIssues() {
+    try {
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        const container = document.getElementById('issues-list');
+        
+        if (issues.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+                    <p class="text-lg">등록된 이슈가 없습니다.</p>
+                    <p class="text-sm mt-2">이슈 일괄 등록 버튼을 클릭하여 이슈를 추가하세요.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">#</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">카테고리</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">제목 (한국어)</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">결론 기간</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">배팅액</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        ${issues.map((issue, index) => {
+                            const category = CATEGORIES.find(c => c.slug === issue.category_slug);
+                            return `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm">${index + 1}</td>
+                                    <td class="px-4 py-3 text-sm">${category ? category.icon : ''} ${category ? category.name_ko : issue.category_slug}</td>
+                                    <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko}</td>
+                                    <td class="px-4 py-3 text-sm">${issue.resolve_date}</td>
+                                    <td class="px-4 py-3 text-sm">$${issue.total_volume.toLocaleString()}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <button onclick="deleteAdminIssue(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6 flex justify-between items-center">
+                <p class="text-sm text-gray-600">총 <span class="font-bold text-blue-600">${issues.length}</span>개의 이슈</p>
+                <button onclick="syncIssuesToMainSite()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-sync mr-2"></i>메인 사이트에 반영
+                </button>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Failed to load issues:', error);
+    }
+}
+
+function deleteAdminIssue(index) {
+    if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        issues.splice(index, 1);
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
+        loadAdminIssues();
+        alert('✅ 이슈가 삭제되었습니다.');
+    } catch (error) {
+        console.error('Failed to delete issue:', error);
+        alert('❌ 이슈 삭제에 실패했습니다.');
+    }
+}
+
+function syncIssuesToMainSite() {
+    try {
+        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        
+        if (adminIssues.length === 0) {
+            alert('반영할 이슈가 없습니다.');
+            return;
+        }
+        
+        // JSON 파일로 다운로드
+        const dataStr = JSON.stringify(adminIssues, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'admin_issues.json';
+        link.click();
+        
+        alert(`✅ ${adminIssues.length}개의 이슈가 JSON 파일로 다운로드되었습니다.\n\n파일을 /docs/data/issues.json 경로에 업로드하고 GitHub에 푸시하세요.`);
+    } catch (error) {
+        console.error('Failed to sync issues:', error);
+        alert('❌ 이슈 동기화에 실패했습니다.');
+    }
+}
+
+// ============================================
 // 📌 초기화
 // ============================================
 
@@ -614,4 +930,5 @@ window.addEventListener('DOMContentLoaded', () => {
     loadBanners();
     loadPopups();
     loadSettings();
+    loadAdminIssues();
 });
