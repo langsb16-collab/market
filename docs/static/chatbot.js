@@ -919,20 +919,20 @@ class ChatBot {
         console.log('[CHATBOT] Using translations for:', currentLang, '- Title:', t.botTitle);
         
         const chatbotHTML = `
-            <!-- 챗봇 버튼 (2배 확대) - 진한 색상 -->
-            <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group" style="display: block !important;">
+            <!-- 챗봇 버튼 (중앙 하단 배치) - 진한 색상 -->
+            <div id="chatbot-button" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 cursor-pointer group" style="display: block !important;">
                 <div class="relative">
-                    <div class="bg-gradient-to-r from-blue-800 to-purple-800 rounded-full p-8 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
-                        <i class="fas fa-robot text-white text-6xl"></i>
+                    <div class="bg-gradient-to-r from-blue-800 to-purple-800 rounded-full p-6 shadow-2xl transform transition-all duration-300 group-hover:scale-110 animate-pulse">
+                        <i class="fas fa-robot text-white text-5xl"></i>
                     </div>
-                    <div class="absolute -top-4 -right-4 bg-red-600 text-white text-sm font-bold rounded-full w-12 h-12 flex items-center justify-center animate-bounce">
+                    <div class="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold rounded-full w-10 h-10 flex items-center justify-center animate-bounce">
                         AI
                     </div>
                 </div>
             </div>
 
-            <!-- 챗봇 창 (크기 확대) -->
-            <div id="chatbot-window" class="fixed bottom-32 right-6 w-[500px] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 700px; max-height: 85vh;">
+            <!-- 챗봇 창 (모바일 최적화 - 중앙 정렬) -->
+            <div id="chatbot-window" class="fixed bottom-24 left-1/2 -translate-x-1/2 w-[400px] max-w-[95vw] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 560px; max-height: 85vh;">
                 <!-- 헤더 - 진한 색상 -->
                 <div class="bg-gradient-to-r from-blue-800 to-purple-800 text-white p-4 rounded-t-2xl flex items-center justify-between">
                     <div class="flex items-center space-x-3">
