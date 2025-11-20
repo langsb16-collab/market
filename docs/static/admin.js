@@ -969,18 +969,29 @@ function renderIssuesList() {
 }
 
 function searchIssues() {
-    const searchInput = document.getElementById('issue-search-input').value.toLowerCase().trim();
-    const categoryFilter = document.getElementById('category-filter').value;
+    console.log('🔍 searchIssues() called');
+    const searchInput = document.getElementById('issue-search-input');
+    const categoryFilter = document.getElementById('category-filter');
+    
+    if (!searchInput || !categoryFilter) {
+        console.error('❌ Search elements not found');
+        return;
+    }
+    
+    const searchValue = searchInput.value.toLowerCase().trim();
+    const categoryValue = categoryFilter.value;
     const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    
+    console.log('🔍 Search params:', { searchValue, categoryValue, totalIssues: allIssues.length });
     
     filteredIssues = allIssues.filter(issue => {
         // 카테고리 필터
-        if (categoryFilter && issue.category_slug !== categoryFilter) {
+        if (categoryValue && issue.category_slug !== categoryValue) {
             return false;
         }
         
         // 검색어 필터 (4개 언어 모두 검색)
-        if (searchInput) {
+        if (searchValue) {
             const searchableText = [
                 issue.title_ko || '',
                 issue.title_en || '',
@@ -988,12 +999,13 @@ function searchIssues() {
                 issue.title_ja || ''
             ].join(' ').toLowerCase();
             
-            return searchableText.includes(searchInput);
+            return searchableText.includes(searchValue);
         }
         
         return true;
     });
     
+    console.log('✅ Filtered issues:', filteredIssues.length);
     selectedIssueIndices.clear(); // 검색 시 선택 초기화
     renderIssuesList();
 }
@@ -1054,49 +1066,73 @@ function updateSelectedCount() {
 }
 
 function bulkDeleteIssues() {
+    console.log('🗑️ bulkDeleteIssues() called');
+    console.log('Selected indices:', Array.from(selectedIssueIndices));
+    
     if (selectedIssueIndices.size === 0) {
         alert('삭제할 이슈를 선택해주세요.');
         return;
     }
     
     if (!confirm(`선택한 ${selectedIssueIndices.size}개의 이슈를 삭제하시겠습니까?`)) {
+        console.log('User cancelled deletion');
         return;
     }
     
     try {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        console.log('Before deletion:', issues.length);
         
         // 선택된 인덱스를 내림차순으로 정렬하여 삭제 (뒤에서부터 삭제해야 인덱스가 안 꼬임)
         const sortedIndices = Array.from(selectedIssueIndices).sort((a, b) => b - a);
+        console.log('Deleting indices (sorted):', sortedIndices);
         
         sortedIndices.forEach(index => {
+            console.log(`Deleting issue at index ${index}:`, issues[index]?.title_ko);
             issues.splice(index, 1);
         });
         
+        console.log('After deletion:', issues.length);
         localStorage.setItem('admin_issues', JSON.stringify(issues));
         selectedIssueIndices.clear();
         
         alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
         loadAdminIssues();
     } catch (error) {
-        console.error('Failed to delete issues:', error);
+        console.error('❌ Failed to delete issues:', error);
         alert('❌ 이슈 삭제에 실패했습니다.');
     }
 }
 
 function deleteAdminIssue(index) {
-    if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
+    console.log('🗑️ deleteAdminIssue() called with index:', index);
     
     try {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        const deletedIssue = issues[index];
+        console.log('Total issues before deletion:', issues.length);
+        
+        if (!issues[index]) {
+            console.error('❌ Issue not found at index:', index);
+            alert('이슈를 찾을 수 없습니다.');
+            return;
+        }
+        
+        const issueToDelete = issues[index];
+        console.log('Issue to delete:', issueToDelete.title_ko);
+        
+        if (!confirm(`이 이슈를 삭제하시겠습니까?\n\n"${issueToDelete.title_ko}"`)) {
+            console.log('User cancelled deletion');
+            return;
+        }
+        
         issues.splice(index, 1);
         localStorage.setItem('admin_issues', JSON.stringify(issues));
+        console.log('✅ Issue deleted. Remaining:', issues.length);
         
-        alert(`✅ 이슈 "${deletedIssue.title_ko}"가 삭제되었습니다.`);
+        alert(`✅ 이슈 "${issueToDelete.title_ko}"가 삭제되었습니다.`);
         loadAdminIssues();
     } catch (error) {
-        console.error('Failed to delete issue:', error);
+        console.error('❌ Failed to delete issue:', error);
         alert('❌ 이슈 삭제에 실패했습니다.');
     }
 }
@@ -1215,6 +1251,68 @@ function syncIssuesToMainSite() {
 // 📌 초기화
 // ============================================
 
+// 테스트 데이터 생성 함수 (디버깅용)
+function createTestIssues() {
+    const testIssues = [
+        {
+            category_slug: 'politics',
+            title_ko: '2024년 대선 결과 예측',
+            title_en: '2024 Presidential Election Results',
+            title_zh: '2024年总统选举结果',
+            title_ja: '2024年大統領選挙結果',
+            resolve_date: '2024-12-31',
+            total_volume: 50000,
+            outcomes: [
+                { name: '예', probability: 0.55 },
+                { name: '아니오', probability: 0.45 }
+            ]
+        },
+        {
+            category_slug: 'sports',
+            title_ko: '월드컵 우승팀 예측',
+            title_en: 'World Cup Winner Prediction',
+            title_zh: '世界杯冠军预测',
+            title_ja: 'ワールドカップ優勝チーム予想',
+            resolve_date: '2024-11-30',
+            total_volume: 30000,
+            outcomes: [
+                { name: '예', probability: 0.60 },
+                { name: '아니오', probability: 0.40 }
+            ]
+        },
+        {
+            category_slug: 'tech',
+            title_ko: 'AI 기술 발전 전망',
+            title_en: 'AI Technology Development',
+            title_zh: 'AI技术发展展望',
+            title_ja: 'AI技術発展の展望',
+            resolve_date: '2024-10-15',
+            total_volume: 20000,
+            outcomes: [
+                { name: '예', probability: 0.70 },
+                { name: '아니오', probability: 0.30 }
+            ]
+        }
+    ];
+    
+    localStorage.setItem('admin_issues', JSON.stringify(testIssues));
+    console.log('✅ Test issues created:', testIssues.length);
+    return testIssues;
+}
+
+// 전역 함수로 노출 (콘솔에서 호출 가능)
+window.createTestIssues = createTestIssues;
+window.clearAllIssues = function() {
+    localStorage.removeItem('admin_issues');
+    console.log('✅ All issues cleared');
+    location.reload();
+};
+window.showIssues = function() {
+    const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    console.log('📦 Current issues:', issues);
+    return issues;
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Admin page DOMContentLoaded');
     loadNotices();
@@ -1235,6 +1333,8 @@ window.addEventListener('DOMContentLoaded', () => {
     
     if (adminIssues.length > 0) {
         console.log('First issue:', adminIssues[0]);
+    } else {
+        console.log('💡 Tip: Run createTestIssues() in console to create test data');
     }
     
     // 이슈 로드
