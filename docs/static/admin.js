@@ -834,33 +834,45 @@ let filteredIssues = [];
 let selectedIssueIndices = new Set();
 
 function loadAdminIssues() {
+    console.log('🔄 loadAdminIssues() started');
     try {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        console.log('📊 Total issues loaded:', issues.length);
+        
         filteredIssues = issues; // 초기에는 전체 이슈
         selectedIssueIndices.clear(); // 선택 초기화
         
         // 카테고리 필터 옵션 생성
         const categoryFilter = document.getElementById('category-filter');
+        console.log('🔍 Category filter element:', !!categoryFilter);
         if (categoryFilter) {
             categoryFilter.innerHTML = '<option value="">전체</option>' + 
                 CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('');
+            console.log('✅ Category filter options created');
+        } else {
+            console.warn('⚠️ Category filter element not found');
         }
         
+        console.log('🎨 Calling renderIssuesList()...');
         renderIssuesList();
+        console.log('✅ loadAdminIssues() completed');
     } catch (error) {
-        console.error('Failed to load issues:', error);
+        console.error('❌ Failed to load issues:', error);
     }
 }
 
 function renderIssuesList() {
+    console.log('🎨 renderIssuesList() started');
     const container = document.getElementById('issues-list');
     
     if (!container) {
-        console.error('issues-list container not found');
+        console.error('❌ issues-list container not found!');
         return;
     }
+    console.log('✅ Container found:', container);
     
     const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    console.log('📊 All issues:', allIssues.length, 'Filtered:', filteredIssues.length);
     
     if (filteredIssues.length === 0) {
         // 전체 이슈가 없는 경우 vs 검색 결과가 없는 경우 구분
@@ -1204,18 +1216,28 @@ function syncIssuesToMainSite() {
 // ============================================
 
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('Admin page loaded');
+    console.log('✅ Admin page DOMContentLoaded');
     loadNotices();
     loadBanners();
     loadPopups();
     loadSettings();
-    loadAdminIssues();
     
     // 이슈 관리 섹션 디버깅
+    console.log('🔍 Checking issues section...');
     const issuesSection = document.getElementById('issues-section');
-    console.log('Issues section:', issuesSection);
+    console.log('Issues section found:', !!issuesSection);
+    
     const issuesList = document.getElementById('issues-list');
-    console.log('Issues list:', issuesList);
+    console.log('Issues list found:', !!issuesList);
+    
     const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-    console.log('Admin issues in localStorage:', adminIssues.length);
+    console.log('📦 Admin issues in localStorage:', adminIssues.length);
+    
+    if (adminIssues.length > 0) {
+        console.log('First issue:', adminIssues[0]);
+    }
+    
+    // 이슈 로드
+    loadAdminIssues();
+    console.log('✅ loadAdminIssues() called');
 });
