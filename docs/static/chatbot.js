@@ -705,6 +705,160 @@ const questionList = [
             zh: "基本信息",
             ja: "基本情報"
         }
+    },
+    {
+        id: 31,
+        question: {
+            ko: "고급 전략 1: 초기 참여자 프리미엄",
+            en: "Advanced Strategy 1: Early Participant Premium",
+            zh: "高级策略1：早期参与者溢价",
+            ja: "上級戦略1：早期参加者プレミアム"
+        },
+        answer: {
+            ko: "이슈가 등록된 지 얼마 안 되었을 때 참여하면 베팅 자금이 적어 배당 비율이 매우 높게 형성됩니다.\n\n특히 YES/NO 비중 차이가 큰 초기 구간은 의외로 고평가·저평가가 자주 발생하기 때문에 초기 물량 진입 → 배당 극대화 가능성이 큽니다.\n\n💡 핵심: 이슈 등록 직후 빠른 진입으로 높은 배당 비율 확보",
+            en: "Participating shortly after an issue is registered means low betting funds and very high payout ratios.\n\nEspecially in early periods with large YES/NO weight differences, overvaluation and undervaluation occur surprisingly often, so early entry → high potential for maximizing payouts.\n\n💡 Key: Secure high payout ratios through quick entry right after issue registration",
+            zh: "在问题注册后不久参与意味着投注资金少，分红比例非常高。\n\n特别是在YES/NO权重差异大的早期阶段，高估和低估经常出人意料地发生，因此早期进入 → 最大化分红的可能性很大。\n\n💡 关键：通过问题注册后快速进入获得高分红比例",
+            ja: "イシューが登録されて間もない時に参加すると、ベット資金が少なく配当比率が非常に高く形成されます。\n\n特にYES/NOの比重差が大きい初期区間は意外に高評価・低評価が頻繁に発生するため、初期参入 → 配当最大化の可能性が大きいです。\n\n💡 ポイント：イシュー登録直後の迅速な参入で高い配当比率を確保"
+        },
+        icon: "fas fa-rocket",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 32,
+        question: {
+            ko: "고급 전략 2: 과소평가 포지션 (역발상)",
+            en: "Advanced Strategy 2: Undervalued Position (Contrarian)",
+            zh: "高级策略2：被低估的头寸（逆向思维）",
+            ja: "上級戦略2：過小評価ポジション（逆張り）"
+        },
+        answer: {
+            ko: "많은 유저가 YES 쪽으로 몰려 있을 때, 객관적 통계상 NO가 맞을 확률이 더 높은 경우가 있습니다.\n\n이런 상황에서는 군중이 무리하게 베팅한 쪽의 반대 방향으로 들어가면 승리 시 '승자 독식 구조 × 소수 포지션' 효과로 배당이 폭발합니다.\n\n💡 핵심: 군중 심리와 반대로 움직여 높은 배당 노리기",
+            en: "When many users crowd toward YES, there are cases where NO has a statistically higher probability of being correct.\n\nIn such situations, going against the crowd's excessive betting results in 'winner-takes-all structure × minority position' effect for explosive payouts when you win.\n\n💡 Key: Move against crowd psychology to target high payouts",
+            zh: "当许多用户挤向YES时，在客观统计上NO正确的概率可能更高。\n\n在这种情况下，如果反向进入群众过度投注的一方，获胜时会产生'赢家通吃结构 × 少数头寸'效应，分红会爆炸性增长。\n\n💡 关键：与群众心理相反移动以瞄准高分红",
+            ja: "多くのユーザーがYESに殺到している時、客観的統計上NOが正しい確率が高い場合があります。\n\nこのような状況では、群衆が無理にベットした側の反対方向に入ると、勝利時に「勝者総取り構造 × 少数ポジション」効果で配当が爆発します。\n\n💡 ポイント：群衆心理と反対に動いて高配当を狙う"
+        },
+        icon: "fas fa-exchange-alt",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 33,
+        question: {
+            ko: "고급 전략 3: 종료시간 근접 전략",
+            en: "Advanced Strategy 3: Near-Deadline Strategy",
+            zh: "高级策略3：临近截止时间策略",
+            ja: "上級戦略3：締切時間接近戦略"
+        },
+        answer: {
+            ko: "예측 시장은 종료 1~3시간 전에 참여자가 급증하면서 YES/NO 밸런스가 흔들립니다.\n\n이때 과도한 공포·탐욕 흐름이 생겨 고평가 구간이 발생하므로 마감 직전 한 번 더 진입하면 높은 배당비율 + 높은 정확도를 동시에 노릴 수 있습니다.\n\n💡 핵심: 마감 직전 시장 불균형 활용",
+            en: "Prediction markets see YES/NO balance shake as participants surge 1-3 hours before closing.\n\nExcessive fear/greed flows create overvalued periods, so entering once more right before deadline allows targeting high payout ratios + high accuracy simultaneously.\n\n💡 Key: Exploit market imbalances right before deadline",
+            zh: "预测市场在结束前1-3小时参与者激增，YES/NO平衡被打破。\n\n此时出现过度的恐慌·贪婪流动，产生高估区间，因此在截止前再次进入可以同时瞄准高分红比例 + 高准确度。\n\n💡 关键：利用截止前市场失衡",
+            ja: "予測市場は終了1〜3時間前に参加者が急増し、YES/NOバランスが崩れます。\n\nこの時、過度な恐怖・貪欲な流れが生じて高評価区間が発生するため、締切直前にもう一度参入すると高い配当比率 + 高い精度を同時に狙えます。\n\n💡 ポイント：締切直前の市場不均衡を活用"
+        },
+        icon: "fas fa-clock",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 34,
+        question: {
+            ko: "고급 전략 4: 이슈 등록자 수익 구조",
+            en: "Advanced Strategy 4: Issue Creator Revenue Structure",
+            zh: "高级策略4：问题创建者收入结构",
+            ja: "上級戦略4：イシュー登録者収益構造"
+        },
+        answer: {
+            ko: "고급 이용자라면 베팅만 하지 말고 직접 이슈 등록도 병행해야 합니다.\n\n• 참여자가 많이 몰릴 만한 주제\n• 객관적 결과가 명확한 주제\n• 글로벌 언어 제목(4종)으로 확장성 극대화\n\n이런 구조로 등록하면 남들이 참여할 때마다 등록자가 자동으로 수익을 가져가는 '패지 않아도 돈 버는 전략'이 성립합니다.\n\n💡 핵심: 베팅 + 이슈등록 병행으로 수익 다각화",
+            en: "Advanced users should not only bet but also register issues themselves.\n\n• Topics likely to attract many participants\n• Topics with clear objective results\n• Maximize scalability with global language titles (4 types)\n\nRegistering with this structure creates a 'make money without losing' strategy as creators automatically earn revenue each time others participate.\n\n💡 Key: Diversify revenue by combining betting + issue registration",
+            zh: "高级用户不应该只投注，还应该自己注册问题。\n\n• 可能吸引许多参与者的主题\n• 具有明确客观结果的主题\n• 用全球语言标题（4种）最大化可扩展性\n\n用这种结构注册，每当其他人参与时，创建者就会自动获得收入，形成'不输也赚钱的策略'。\n\n💡 关键：通过投注 + 问题注册相结合实现收入多元化",
+            ja: "上級ユーザーならベットだけでなく、直接イシュー登録も並行すべきです。\n\n• 参加者が多く集まりそうなトピック\n• 客観的結果が明確なトピック\n• グローバル言語タイトル（4種）で拡張性を最大化\n\nこの構造で登録すると、他人が参加するたびに登録者が自動的に収益を得る「負けなくてもお金を稼ぐ戦略」が成立します。\n\n💡 ポイント：ベット + イシュー登録並行で収益多角化"
+        },
+        icon: "fas fa-user-tie",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 35,
+        question: {
+            ko: "고급 전략 5: 객관적 지표 기반 퀀트 전략",
+            en: "Advanced Strategy 5: Objective Indicator-Based Quant Strategy",
+            zh: "高级策略5：基于客观指标的量化策略",
+            ja: "上級戦略5：客観的指標ベースのクォント戦略"
+        },
+        answer: {
+            ko: "예측 시장에서도 퀀트 방식이 통합니다.\n\n예시:\n• 코인 가격 예측 → RSI·MACD·거래량 기반 확률\n• 스포츠 경기 → Elo Rating, 최근 20경기 승률\n• 경제지표 → 과거 발표 패턴 분석\n\n확률 모델로 계산한 기대값(EV)이 1보다 크면 장기적으로 승률과 배당이 일관되게 수익을 가져옵니다.\n\n💡 핵심: 감정이 아닌 데이터와 통계로 베팅",
+            en: "Quant methods work in prediction markets too.\n\nExamples:\n• Crypto price prediction → RSI, MACD, volume-based probability\n• Sports matches → Elo Rating, recent 20-game win rate\n• Economic indicators → Historical announcement pattern analysis\n\nWhen expected value (EV) calculated by probability models exceeds 1, win rates and payouts consistently bring profits long-term.\n\n💡 Key: Bet based on data and statistics, not emotions",
+            zh: "量化方法在预测市场中也有效。\n\n示例：\n• 加密货币价格预测 → 基于RSI、MACD、交易量的概率\n• 体育比赛 → Elo评级，最近20场胜率\n• 经济指标 → 历史公告模式分析\n\n当概率模型计算的期望值（EV）大于1时，胜率和分红会长期一致地带来利润。\n\n💡 关键：基于数据和统计投注，而非情绪",
+            ja: "予測市場でもクォント方式が通用します。\n\n例：\n• 仮想通貨価格予測 → RSI・MACD・出来高ベースの確率\n• スポーツ試合 → Elo Rating、最近20試合の勝率\n• 経済指標 → 過去の発表パターン分析\n\n確率モデルで計算した期待値（EV）が1より大きければ、長期的に勝率と配当が一貫して利益をもたらします。\n\n💡 ポイント：感情ではなくデータと統計でベット"
+        },
+        icon: "fas fa-chart-bar",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 36,
+        question: {
+            ko: "고급 전략 6: 쟁점 vs 비쟁점 이슈 분리",
+            en: "Advanced Strategy 6: Controversial vs Non-Controversial Issue Separation",
+            zh: "高级策略6：争议与非争议问题分离",
+            ja: "上級戦略6：争点vs非争点イシューの分離"
+        },
+        answer: {
+            ko: "사람들이 많이 모이는 '핫 이슈(대선, 빅뉴스)'보다 오히려 비인기 이슈에서 높은 배당 + 높은 일관성이 나옵니다.\n\n이유:\n• 참여자 수 적음 → 과소평가 포지션 많음\n• 정보 과잉·감정적 베팅이 적음\n• 통계 기반 예측이 잘 맞음\n\n고급 이용자는 '참여자 많은 이슈' + '참여자 적은 이슈' 두 가지 시장을 교차 체크하며 전략을 사용합니다.\n\n💡 핵심: 비인기 이슈에서 숨은 기회 발굴",
+            en: "Non-popular issues actually provide higher payouts + higher consistency than crowded 'hot issues (elections, big news)'.\n\nReasons:\n• Fewer participants → More undervalued positions\n• Less information overload and emotional betting\n• Statistical predictions work better\n\nAdvanced users cross-check both 'high-participant issues' + 'low-participant issues' markets when using strategies.\n\n💡 Key: Discover hidden opportunities in unpopular issues",
+            zh: "非热门问题实际上比拥挤的'热门问题（选举、重大新闻）'提供更高的分红 + 更高的一致性。\n\n原因：\n• 参与者较少 → 被低估的头寸更多\n• 信息过载和情绪化投注较少\n• 统计预测效果更好\n\n高级用户在使用策略时会交叉检查'高参与问题' + '低参与问题'两个市场。\n\n💡 关键：在非热门问题中发现隐藏机会",
+            ja: "人々が多く集まる「ホットイシュー（大統領選、ビッグニュース）」よりも、むしろ不人気イシューで高配当 + 高い一貫性が得られます。\n\n理由：\n• 参加者数が少ない → 過小評価ポジションが多い\n• 情報過多・感情的ベットが少ない\n• 統計ベースの予測がよく当たる\n\n上級ユーザーは「参加者の多いイシュー」+「参加者の少ないイシュー」の両市場をクロスチェックしながら戦略を使用します。\n\n💡 ポイント：不人気イシューで隠れた機会を発掘"
+        },
+        icon: "fas fa-search",
+        category: {
+            ko: "고급전략",
+            en: "Advanced",
+            zh: "高级策略",
+            ja: "上級戦略"
+        }
+    },
+    {
+        id: 37,
+        question: {
+            ko: "리스크 관리: 베팅 비율 전략",
+            en: "Risk Management: Betting Ratio Strategy",
+            zh: "风险管理：投注比例策略",
+            ja: "リスク管理：ベット比率戦略"
+        },
+        answer: {
+            ko: "승자 독식 구조 기반 수익 극대화 팁:\n\n• 풀 켈리의 50% 이하만 실제 베팅 비율로 사용\n• 하나의 이슈에 계좌의 20% 이상 몰빵하지 않기\n• 여러 이슈에 분산해서 EV>0 판만 반복 공략\n\n시뮬레이션 결과:\n• 보수형(5% 베팅): 안정적 성장\n• 공격형(25% 베팅): 높은 수익but 높은 변동성\n\n💡 핵심: 베팅 비율 관리가 장기 생존의 열쇠",
+            en: "Tips for maximizing profits based on winner-takes-all structure:\n\n• Use only 50% or less of full Kelly as actual betting ratio\n• Don't go all-in with more than 20% of account on one issue\n• Distribute across multiple issues, repeatedly targeting only EV>0 opportunities\n\nSimulation results:\n• Conservative (5% betting): Stable growth\n• Aggressive (25% betting): High profits but high volatility\n\n💡 Key: Betting ratio management is key to long-term survival",
+            zh: "基于赢家通吃结构最大化利润的技巧：\n\n• 仅使用完整凯利的50%或更少作为实际投注比例\n• 不要在一个问题上全押账户的20%以上\n• 分散到多个问题，重复瞄准只有EV>0的机会\n\n模拟结果：\n• 保守型（5%投注）：稳定增长\n• 激进型（25%投注）：高利润但高波动性\n\n💡 关键：投注比例管理是长期生存的关键",
+            ja: "勝者総取り構造に基づく利益最大化のヒント：\n\n• フルケリーの50%以下のみを実際のベット比率として使用\n• 一つのイシューにアカウントの20%以上をオールインしない\n• 複数のイシューに分散し、EV>0の機会のみを繰り返し狙う\n\nシミュレーション結果：\n• 保守型（5%ベット）：安定した成長\n• 攻撃型（25%ベット）：高利益だが高変動性\n\n💡 ポイント：ベット比率管理が長期生存の鍵"
+        },
+        icon: "fas fa-shield-alt",
+        category: {
+            ko: "리스크",
+            en: "Risks",
+            zh: "风险",
+            ja: "リスク"
+        }
     }
 ];
 
