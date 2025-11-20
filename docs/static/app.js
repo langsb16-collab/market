@@ -1007,7 +1007,14 @@ function openSubmitIssueModal() {
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">카테고리 *</label>
+                    <select id="issue-category" required ${!currentWallet ? 'disabled' : ''}
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        ${categories.map(cat => `<option value="${cat.slug}">${cat.icon} ${getCategoryName(cat)}</option>`).join('')}
+                    </select>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">결과 옵션 *</label>
                     <select required ${!currentWallet ? 'disabled' : ''}
@@ -1079,6 +1086,45 @@ function openSubmitIssueModal() {
     if (form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault()
+            
+            // 폼 데이터 수집
+            const formData = new FormData(form)
+            const inputs = form.querySelectorAll('input[type="text"], textarea, input[type="email"], input[type="number"], select')
+            
+            // 카테고리 선택 값 가져오기
+            const categorySelect = document.getElementById('issue-category')
+            const selectedCategorySlug = categorySelect ? categorySelect.value : 'politics'
+            const selectedCategory = categories.find(c => c.slug === selectedCategorySlug) || categories[0]
+            
+            // 새 이슈 생성
+            const newIssue = {
+                id: events.length + 1,
+                category_id: selectedCategory.id,
+                category_slug: selectedCategory.slug,
+                title_ko: inputs[0].value,
+                title_en: inputs[1].value,
+                title_zh: inputs[2].value,
+                title_ja: inputs[3].value,
+                description_ko: inputs[4].value || `${inputs[0].value}에 대한 예측 마켓입니다.`,
+                description_en: inputs[4].value || `Prediction market for ${inputs[1].value}.`,
+                description_zh: inputs[4].value || `关于${inputs[2].value}的预测市场。`,
+                description_ja: inputs[4].value || `${inputs[3].value}についての予測市場です。`,
+                resolve_date: getRandomDateWithinMonth(),
+                total_volume: Math.floor(Math.random() * 1000000) + 100000,
+                participants: Math.floor(Math.random() * 100) + 10,
+                outcomes: [
+                    { id: (events.length + 1) * 2 - 1, name: '예', probability: 0.5 },
+                    { id: (events.length + 1) * 2, name: '아니오', probability: 0.5 }
+                ]
+            }
+            
+            // events 배열에 추가
+            events.push(newIssue)
+            
+            // UI 업데이트
+            renderCategories() // 카테고리 개수 업데이트
+            renderMarkets()    // 마켓 목록 업데이트
+            
             alert('이슈가 성공적으로 제출되었습니다!')
             closeSubmitIssueModal()
         })
