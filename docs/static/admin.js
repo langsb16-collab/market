@@ -829,66 +829,230 @@ async function submitBulkIssues(event) {
     }
 }
 
+// 전역 변수로 필터된 이슈 저장
+let filteredIssues = [];
+let selectedIssueIndices = new Set();
+
 function loadAdminIssues() {
     try {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        const container = document.getElementById('issues-list');
+        filteredIssues = issues; // 초기에는 전체 이슈
+        selectedIssueIndices.clear(); // 선택 초기화
         
-        if (issues.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
-                    <p class="text-lg">등록된 이슈가 없습니다.</p>
-                    <p class="text-sm mt-2">이슈 일괄 등록 버튼을 클릭하여 이슈를 추가하세요.</p>
-                </div>
-            `;
-            return;
+        // 카테고리 필터 옵션 생성
+        const categoryFilter = document.getElementById('category-filter');
+        if (categoryFilter) {
+            categoryFilter.innerHTML = '<option value="">전체</option>' + 
+                CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('');
         }
         
-        container.innerHTML = `
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">#</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">카테고리</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">제목 (한국어)</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">결론 기간</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">배팅액</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        ${issues.map((issue, index) => {
-                            const category = CATEGORIES.find(c => c.slug === issue.category_slug);
-                            return `
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 text-sm">${index + 1}</td>
-                                    <td class="px-4 py-3 text-sm">${category ? category.icon : ''} ${category ? category.name_ko : issue.category_slug}</td>
-                                    <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko}</td>
-                                    <td class="px-4 py-3 text-sm">${issue.resolve_date}</td>
-                                    <td class="px-4 py-3 text-sm">$${issue.total_volume.toLocaleString()}</td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <button onclick="deleteAdminIssue(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="mt-6 flex justify-between items-center">
-                <p class="text-sm text-gray-600">총 <span class="font-bold text-blue-600">${issues.length}</span>개의 이슈</p>
-                <button onclick="syncIssuesToMainSite()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                    <i class="fas fa-sync mr-2"></i>메인 사이트에 반영
-                </button>
-            </div>
-        `;
+        renderIssuesList();
     } catch (error) {
         console.error('Failed to load issues:', error);
+    }
+}
+
+function renderIssuesList() {
+    const container = document.getElementById('issues-list');
+    
+    if (filteredIssues.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg">검색 결과가 없습니다.</p>
+                <p class="text-sm mt-2">다른 검색어나 필터를 시도해보세요.</p>
+            </div>
+        `;
+        updateSelectedCount();
+        return;
+    }
+    
+    const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    
+    container.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-center">
+                            <input 
+                                type="checkbox" 
+                                id="select-all-checkbox"
+                                onchange="toggleSelectAll(this.checked)"
+                                class="w-4 h-4 cursor-pointer"
+                            >
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">#</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">카테고리</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">제목 (한국어)</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">결론 기간</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">배팅액</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700">관리</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    ${filteredIssues.map((issue, displayIndex) => {
+                        const originalIndex = allIssues.findIndex(i => 
+                            i.title_ko === issue.title_ko && 
+                            i.category_slug === issue.category_slug &&
+                            i.resolve_date === issue.resolve_date
+                        );
+                        const category = CATEGORIES.find(c => c.slug === issue.category_slug);
+                        const isChecked = selectedIssueIndices.has(originalIndex);
+                        return `
+                            <tr class="hover:bg-gray-50 ${isChecked ? 'bg-blue-50' : ''}">
+                                <td class="px-4 py-3 text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        ${isChecked ? 'checked' : ''}
+                                        onchange="toggleIssueSelection(${originalIndex}, this.checked)"
+                                        class="w-4 h-4 cursor-pointer"
+                                    >
+                                </td>
+                                <td class="px-4 py-3 text-sm">${displayIndex + 1}</td>
+                                <td class="px-4 py-3 text-sm">${category ? category.icon : ''} ${category ? category.name_ko : issue.category_slug}</td>
+                                <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko}</td>
+                                <td class="px-4 py-3 text-sm">${issue.resolve_date}</td>
+                                <td class="px-4 py-3 text-sm">$${issue.total_volume.toLocaleString()}</td>
+                                <td class="px-4 py-3 text-sm text-center">
+                                    <button onclick="editAdminIssue(${originalIndex})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteAdminIssue(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-6 flex justify-between items-center">
+            <p class="text-sm text-gray-600">총 <span class="font-bold text-blue-600">${filteredIssues.length}</span>개의 이슈</p>
+            <button onclick="syncIssuesToMainSite()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-sync mr-2"></i>메인 사이트에 반영
+            </button>
+        </div>
+    `;
+    
+    updateSelectedCount();
+}
+
+function searchIssues() {
+    const searchInput = document.getElementById('issue-search-input').value.toLowerCase().trim();
+    const categoryFilter = document.getElementById('category-filter').value;
+    const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    
+    filteredIssues = allIssues.filter(issue => {
+        // 카테고리 필터
+        if (categoryFilter && issue.category_slug !== categoryFilter) {
+            return false;
+        }
+        
+        // 검색어 필터 (4개 언어 모두 검색)
+        if (searchInput) {
+            const searchableText = [
+                issue.title_ko || '',
+                issue.title_en || '',
+                issue.title_zh || '',
+                issue.title_ja || ''
+            ].join(' ').toLowerCase();
+            
+            return searchableText.includes(searchInput);
+        }
+        
+        return true;
+    });
+    
+    selectedIssueIndices.clear(); // 검색 시 선택 초기화
+    renderIssuesList();
+}
+
+function toggleSelectAll(checked) {
+    const allIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+    
+    if (checked) {
+        // 현재 필터된 이슈들의 원본 인덱스를 모두 선택
+        filteredIssues.forEach(issue => {
+            const originalIndex = allIssues.findIndex(i => 
+                i.title_ko === issue.title_ko && 
+                i.category_slug === issue.category_slug &&
+                i.resolve_date === issue.resolve_date
+            );
+            if (originalIndex !== -1) {
+                selectedIssueIndices.add(originalIndex);
+            }
+        });
+    } else {
+        selectedIssueIndices.clear();
+    }
+    
+    renderIssuesList();
+}
+
+function toggleIssueSelection(index, checked) {
+    if (checked) {
+        selectedIssueIndices.add(index);
+    } else {
+        selectedIssueIndices.delete(index);
+    }
+    
+    updateSelectedCount();
+    
+    // 체크박스 배경색 업데이트
+    const row = event.target.closest('tr');
+    if (row) {
+        if (checked) {
+            row.classList.add('bg-blue-50');
+        } else {
+            row.classList.remove('bg-blue-50');
+        }
+    }
+}
+
+function updateSelectedCount() {
+    const countElement = document.getElementById('selected-count');
+    const deleteBtn = document.getElementById('bulk-delete-btn');
+    
+    if (countElement) {
+        countElement.textContent = selectedIssueIndices.size;
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.disabled = selectedIssueIndices.size === 0;
+    }
+}
+
+function bulkDeleteIssues() {
+    if (selectedIssueIndices.size === 0) {
+        alert('삭제할 이슈를 선택해주세요.');
+        return;
+    }
+    
+    if (!confirm(`선택한 ${selectedIssueIndices.size}개의 이슈를 삭제하시겠습니까?`)) {
+        return;
+    }
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        
+        // 선택된 인덱스를 내림차순으로 정렬하여 삭제 (뒤에서부터 삭제해야 인덱스가 안 꼬임)
+        const sortedIndices = Array.from(selectedIssueIndices).sort((a, b) => b - a);
+        
+        sortedIndices.forEach(index => {
+            issues.splice(index, 1);
+        });
+        
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
+        selectedIssueIndices.clear();
+        
+        alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
+        loadAdminIssues();
+    } catch (error) {
+        console.error('Failed to delete issues:', error);
+        alert('❌ 이슈 삭제에 실패했습니다.');
     }
 }
 
@@ -897,13 +1061,100 @@ function deleteAdminIssue(index) {
     
     try {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        const deletedIssue = issues[index];
         issues.splice(index, 1);
         localStorage.setItem('admin_issues', JSON.stringify(issues));
+        
+        alert(`✅ 이슈 "${deletedIssue.title_ko}"가 삭제되었습니다.`);
         loadAdminIssues();
-        alert('✅ 이슈가 삭제되었습니다.');
     } catch (error) {
         console.error('Failed to delete issue:', error);
         alert('❌ 이슈 삭제에 실패했습니다.');
+    }
+}
+
+function editAdminIssue(index) {
+    try {
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        const issue = issues[index];
+        
+        if (!issue) {
+            alert('이슈를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 모달 열기
+        document.getElementById('edit-issue-modal').style.display = 'flex';
+        
+        // 카테고리 옵션 생성
+        const categorySelect = document.getElementById('edit-category');
+        categorySelect.innerHTML = '<option value="">카테고리 선택</option>' + 
+            CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('');
+        
+        // 폼에 데이터 채우기
+        document.getElementById('edit-issue-index').value = index;
+        document.getElementById('edit-category').value = issue.category_slug;
+        document.getElementById('edit-title-ko').value = issue.title_ko;
+        document.getElementById('edit-title-en').value = issue.title_en;
+        document.getElementById('edit-title-zh').value = issue.title_zh;
+        document.getElementById('edit-title-ja').value = issue.title_ja;
+        document.getElementById('edit-resolve-date').value = issue.resolve_date;
+        document.getElementById('edit-total-volume').value = issue.total_volume;
+    } catch (error) {
+        console.error('Failed to edit issue:', error);
+        alert('❌ 이슈 불러오기에 실패했습니다.');
+    }
+}
+
+function closeEditIssueModal() {
+    document.getElementById('edit-issue-modal').style.display = 'none';
+}
+
+function saveEditedIssue(event) {
+    event.preventDefault();
+    
+    try {
+        const index = parseInt(document.getElementById('edit-issue-index').value);
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        
+        if (!issues[index]) {
+            alert('이슈를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 수정된 데이터 가져오기
+        const updatedIssue = {
+            ...issues[index], // 기존 데이터 유지
+            category_slug: document.getElementById('edit-category').value,
+            title_ko: document.getElementById('edit-title-ko').value,
+            title_en: document.getElementById('edit-title-en').value,
+            title_zh: document.getElementById('edit-title-zh').value,
+            title_ja: document.getElementById('edit-title-ja').value,
+            resolve_date: document.getElementById('edit-resolve-date').value,
+            total_volume: parseInt(document.getElementById('edit-total-volume').value)
+        };
+        
+        // 카테고리 변경 시 outcomes도 업데이트
+        const category = CATEGORIES.find(c => c.slug === updatedIssue.category_slug);
+        if (category && issues[index].category_slug !== updatedIssue.category_slug) {
+            // 카테고리가 변경된 경우 기본 outcomes 재생성
+            const yesProb = 0.5 + (Math.random() * 0.3 - 0.15);
+            updatedIssue.outcomes = [
+                { name: '예', probability: yesProb },
+                { name: '아니오', probability: 1 - yesProb }
+            ];
+        }
+        
+        // 배열에서 업데이트
+        issues[index] = updatedIssue;
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
+        
+        alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다.`);
+        closeEditIssueModal();
+        loadAdminIssues();
+    } catch (error) {
+        console.error('Failed to save issue:', error);
+        alert('❌ 이슈 저장에 실패했습니다.');
     }
 }
 
