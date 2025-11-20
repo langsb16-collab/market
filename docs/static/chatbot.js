@@ -507,6 +507,204 @@ const questionList = [
             zh: `对比分析`,
             ja: `比較分析`
         }
+    },
+    {
+        id: 22,
+        question: {
+            ko: "이 플랫폼에서 '배당'이 어떻게 돌아가나요?",
+            en: "How does the 'payout' system work on this platform?",
+            zh: "这个平台的'分红'是如何运作的？",
+            ja: "このプラットフォームで「配当」はどのように機能しますか？"
+        },
+        answer: {
+            ko: "캐쉬아이큐에서는 단순히 결과를 맞춘 사람이 나눠 갖는 구조가 아니라, 결과가 맞았을 경우 '승자만' 배당을 받는 구조입니다.\n\n즉, 예측했던 이슈에서 맞은 쪽이 배당 전체를 가져가는 형태로 설계되어 있으므로, 맞추는 사람에게 더 많은 인센티브가 걸려 있다는 점이 핵심입니다.",
+            en: "At CashIQ, instead of winners simply sharing the payout, only the 'winners' receive the payout when the result is correct.\n\nIn other words, the winning side takes the entire payout pool, which provides stronger incentives for accurate predictions.",
+            zh: "在CashIQ，不是简单地由猜对结果的人分享，而是结果正确时只有'赢家'获得分红。\n\n换句话说，猜对的一方获得全部分红池，这为准确预测提供了更强的激励。",
+            ja: "CashIQでは、単に結果を当てた人が分け合う構造ではなく、結果が正しかった場合は「勝者のみ」が配当を受け取る構造です。\n\nつまり、予測した問題で正解した側が配当全体を取る形で設計されているため、当てる人により多くのインセンティブがかかっているのが核心です。"
+        },
+        icon: "fas fa-hand-holding-usd",
+        category: {
+            ko: "수수료/배당",
+            en: "Fees/Payouts",
+            zh: "费用/赔付",
+            ja: "手数料/配当"
+        }
+    },
+    {
+        id: 23,
+        question: {
+            ko: "'이슈 등록'이란 무엇인가요?",
+            en: "What is 'issue registration'?",
+            zh: "什么是'问题注册'？",
+            ja: "「イシュー登録」とは何ですか？"
+        },
+        answer: {
+            ko: "플랫폼 내 '이슈 등록하기' 메뉴를 통해 유저 스스로가 앞으로 벌어질 미래 사건이나 판단이 필요한 질문(Yes/No 형식)을 등록할 수 있습니다.\n\n예: '다음달 말까지 A회사 주가가 10 달러 이상일 것이다 – 예/아니오'\n\n등록할 때 제목을 네 개 언어(한국어, 영어, 중국어, 일본어)로 기입해야 하며, 결과 YES/NO 형식으로 설정됩니다.\n\n이슈 등록자는 해당 이슈에 참여한 사람들로부터 일정 수수료 혹은 배당 구조 혜택을 받을 수 있습니다.",
+            en: "Through the 'Register Issue' menu, users can create future events or Yes/No questions themselves.\n\nExample: 'Company A's stock will be above $10 by the end of next month – Yes/No'\n\nWhen registering, you must enter the title in four languages (Korean, English, Chinese, Japanese) and set the result as YES/NO format.\n\nIssue creators can receive certain fees or payout benefits from participants.",
+            zh: "通过平台内的'注册问题'菜单，用户可以自己创建未来事件或需要判断的Yes/No问题。\n\n例如：'A公司股价到下个月底将超过10美元 – 是/否'\n\n注册时必须用四种语言（韩语、英语、中文、日语）输入标题，并将结果设置为YES/NO格式。\n\n问题创建者可以从参与者那里获得一定的费用或分红结构利益。",
+            ja: "プラットフォーム内の「イシュー登録」メニューを通じて、ユーザー自身が将来発生する出来事や判断が必要な質問（Yes/No形式）を登録できます。\n\n例：「来月末までにA社の株価が10ドル以上になる – はい/いいえ」\n\n登録時にタイトルを4つの言語（韓国語、英語、中国語、日本語）で入力する必要があり、結果をYES/NO形式で設定します。\n\nイシュー登録者は、そのイシューに参加した人々から一定の手数料または配当構造の恩恵を受けることができます。"
+        },
+        icon: "fas fa-plus-square",
+        category: {
+            ko: "이용방법",
+            en: "How to Use",
+            zh: "使用方法",
+            ja: "使用方法"
+        }
+    },
+    {
+        id: 24,
+        question: {
+            ko: "지갑 연결(Connect Wallet)은 어떻게 하나요?",
+            en: "How do I connect my wallet?",
+            zh: "如何连接钱包？",
+            ja: "ウォレット接続はどうすればいいですか？"
+        },
+        answer: {
+            ko: "지갑 연결은 다음과 같은 방식으로 진행됩니다:\n\n1. 우측 상단 'Connect Wallet' 클릭\n2. 지원 지갑 선택 (예: MetaMask, OKX Wallet 등)\n3. 지갑 팝업에서 로그인 승인\n4. 연결 완료 후, 계정 주소가 우측에 표시됨\n\n⚠️ 주의:\n• 지갑이 연결되어야만 이슈 등록·베팅 참여·배당 수령이 가능합니다\n• 모바일 이용 시, 지갑 앱(메타마스크 앱)에서 브라우저 기능 사용을 권장합니다",
+            en: "Wallet connection process:\n\n1. Click 'Connect Wallet' in the upper right\n2. Select supported wallet (e.g., MetaMask, OKX Wallet, etc.)\n3. Approve login in wallet popup\n4. After connection, account address is displayed on the right\n\n⚠️ Note:\n• Wallet connection is required for issue registration, betting, and payout receipt\n• For mobile use, we recommend using the browser feature in the wallet app (MetaMask app)",
+            zh: "钱包连接流程：\n\n1. 点击右上角的'Connect Wallet'\n2. 选择支持的钱包（例如：MetaMask、OKX Wallet等）\n3. 在钱包弹窗中批准登录\n4. 连接完成后，账户地址显示在右侧\n\n⚠️ 注意：\n• 必须连接钱包才能进行问题注册、投注参与和分红领取\n• 移动设备使用时，建议使用钱包应用（MetaMask应用）的浏览器功能",
+            ja: "ウォレット接続の手順：\n\n1. 右上の'Connect Wallet'をクリック\n2. サポートされているウォレットを選択（例：MetaMask、OKX Walletなど）\n3. ウォレットポップアップでログインを承認\n4. 接続完了後、アカウントアドレスが右側に表示されます\n\n⚠️ 注意：\n• ウォレットが接続されていないと、イシュー登録・ベット参加・配当受領ができません\n• モバイル利用時は、ウォレットアプリ（MetaMaskアプリ）のブラウザ機能の使用を推奨します"
+        },
+        icon: "fas fa-wallet",
+        category: {
+            ko: "이용방법",
+            en: "How to Use",
+            zh: "使用方法",
+            ja: "使用方法"
+        }
+    },
+    {
+        id: 25,
+        question: {
+            ko: "베팅은 어떤 방식으로 이루어지나요?",
+            en: "How does betting work?",
+            zh: "投注是如何进行的？",
+            ja: "ベットはどのように行われますか？"
+        },
+        answer: {
+            ko: "모든 베팅은 암호화폐(지갑 연동 기반)으로 처리되며, 유저는 YES 또는 NO 중 하나를 선택하여 금액을 걸게 됩니다.\n\n특징:\n• 1인당 최소/최대 참여 금액이 있음\n• 등록자가 지정한 범위 내에서 참여 가능\n• 종료 시간 이후에는 추가 베팅 불가",
+            en: "All betting is processed with cryptocurrency (wallet-based), and users choose either YES or NO to place their bet.\n\nFeatures:\n• Minimum/maximum participation amount per person\n• Participation within the range set by the creator\n• No additional betting allowed after closing time",
+            zh: "所有投注都通过加密货币（基于钱包连接）处理，用户选择YES或NO中的一个进行投注。\n\n特点：\n• 每人有最小/最大参与金额\n• 在创建者指定的范围内参与\n• 结束时间后不允许追加投注",
+            ja: "すべてのベットは暗号通貨（ウォレット連動ベース）で処理され、ユーザーはYESまたはNOのいずれかを選択して金額を賭けます。\n\n特徴：\n• 1人あたりの最小/最大参加金額があります\n• 登録者が指定した範囲内で参加可能\n• 終了時間後は追加ベット不可"
+        },
+        icon: "fas fa-coins",
+        category: {
+            ko: "이용방법",
+            en: "How to Use",
+            zh: "使用方法",
+            ja: "使用方法"
+        }
+    },
+    {
+        id: 26,
+        question: {
+            ko: "배당은 어떻게 계산되나요? (승자 독식)",
+            en: "How are payouts calculated? (Winner-takes-all)",
+            zh: "分红是如何计算的？（赢家通吃）",
+            ja: "配当はどのように計算されますか？（勝者総取り）"
+        },
+        answer: {
+            ko: "캐쉬아이큐 배당의 핵심은 '승자 독식(Winner-Takes-All)' 방식입니다.\n\n✔ 예시 상황:\n• YES 총 베팅액: 500 USDT\n• NO 총 베팅액: 300 USDT\n• 실제 결과: YES 정답\n\n✔ 배당 지급:\n• YES 선택자 전체가 800 USDT를 나눠 가짐\n• NO는 배당 없음 (0)\n• YES 참여자들은 자신의 비율대로 배당을 수령\n• 플랫폼 수수료 제외 후 순수 배당 지급\n\n즉, 승자만 모든 배당을 가져가는 구조입니다.",
+            en: "The core of CashIQ's payout system is the 'Winner-Takes-All' method.\n\n✔ Example scenario:\n• YES total bets: 500 USDT\n• NO total bets: 300 USDT\n• Actual result: YES correct\n\n✔ Payout distribution:\n• All YES voters share 800 USDT\n• NO receives nothing (0)\n• YES participants receive payouts proportional to their share\n• Net payout after platform fees\n\nIn other words, only winners take all payouts.",
+            zh: "CashIQ分红的核心是'赢家通吃(Winner-Takes-All)'方式。\n\n✔ 示例情况：\n• YES总投注额：500 USDT\n• NO总投注额：300 USDT\n• 实际结果：YES正确\n\n✔ 分红分配：\n• 所有YES选择者分享800 USDT\n• NO没有分红（0）\n• YES参与者按自己的比例领取分红\n• 扣除平台费用后支付净分红\n\n换句话说，只有赢家获得所有分红。",
+            ja: "CashIQ配当の核心は「勝者総取り(Winner-Takes-All)」方式です。\n\n✔ 例の状況：\n• YES総ベット額：500 USDT\n• NO総ベット額：300 USDT\n• 実際の結果：YES正解\n\n✔ 配当支給：\n• YESを選んだ全員が800 USDTを分け合う\n• NOは配当なし（0）\n• YES参加者は自分の比率に応じて配当を受領\n• プラットフォーム手数料を除いた純配当を支給\n\nつまり、勝者だけがすべての配当を得る構造です。"
+        },
+        icon: "fas fa-trophy",
+        category: {
+            ko: "수수료/배당",
+            en: "Fees/Payouts",
+            zh: "费用/赔付",
+            ja: "手数料/配当"
+        }
+    },
+    {
+        id: 27,
+        question: {
+            ko: "이슈 등록자에게는 어떤 이익이 있나요?",
+            en: "What benefits do issue creators receive?",
+            zh: "问题创建者有什么好处？",
+            ja: "イシュー登録者にはどのようなメリットがありますか？"
+        },
+        answer: {
+            ko: "등록자는 단순히 이벤트만 올리는 것이 아니라, 타 유저가 참여할 때마다 등록자에게 배당 수익 일부가 돌아갑니다.\n\n등록자 이익 요소:\n• 참여자가 많을수록 수익 증가\n• 이슈가 흥미롭고 참여도가 높을수록 등록자의 실질 수익이 커짐\n• 자신이 세운 미래 예측이 시장에서 검증되면 예측 능력 자체가 자산화\n\n즉, 캐쉬아이큐는 '유저가 직접 미래를 제시하고, 사람들을 모아 수익을 만들어내는 구조'입니다.",
+            en: "Creators don't just post events - they receive a portion of the payout revenue each time other users participate.\n\nCreator benefits:\n• More participants = more revenue\n• More interesting and engaging issues = higher actual revenue for creators\n• When your future predictions are validated by the market, your prediction ability itself becomes an asset\n\nIn other words, CashIQ is a structure where 'users present the future directly and create revenue by gathering people'.",
+            zh: "创建者不仅仅是发布事件 - 每当其他用户参与时，创建者都会获得一部分分红收入。\n\n创建者利益要素：\n• 参与者越多 = 收入越多\n• 问题越有趣、参与度越高 = 创建者的实际收入越大\n• 当您的未来预测被市场验证时，预测能力本身就成为资产\n\n换句话说，CashIQ是一个'用户直接提出未来，聚集人群创造收入的结构'。",
+            ja: "登録者は単にイベントを投稿するだけでなく、他のユーザーが参加するたびに登録者に配当収益の一部が還元されます。\n\n登録者の利益要素：\n• 参加者が多いほど収益が増加\n• イシューが興味深く参加度が高いほど登録者の実質収益が大きくなる\n• 自分が立てた未来予測が市場で検証されれば予測能力自体が資産化\n\nつまり、CashIQは「ユーザーが直接未来を提示し、人々を集めて収益を生み出す構造」です。"
+        },
+        icon: "fas fa-user-plus",
+        category: {
+            ko: "수수료/배당",
+            en: "Fees/Payouts",
+            zh: "费用/赔付",
+            ja: "手数料/配当"
+        }
+    },
+    {
+        id: 28,
+        question: {
+            ko: "이슈 종료 후 결과는 누가 확정하나요?",
+            en: "Who confirms the results after an issue closes?",
+            zh: "问题结束后由谁确认结果？",
+            ja: "イシュー終了後、結果は誰が確定しますか？"
+        },
+        answer: {
+            ko: "결과 확정은 공식 데이터·언론·거래소·지표 등 객관적 기준을 기반으로 이루어집니다.\n\n예를 들어:\n• 주가 관련 → TradingView, 공식 거래소 종가 기준\n• 스포츠 → 공식 기록\n• 경제 수치 → 정부/공공기관 발표 자료\n• 뉴스 → 언론 공식 발표\n\n결과 확정 후, 즉시 승자에게 배당이 분배됩니다.",
+            en: "Result confirmation is based on objective criteria such as official data, media, exchanges, and indicators.\n\nFor example:\n• Stock-related → TradingView, official exchange closing prices\n• Sports → Official records\n• Economic figures → Government/public agency announcements\n• News → Official media announcements\n\nAfter results are confirmed, payouts are immediately distributed to winners.",
+            zh: "结果确认基于官方数据、媒体、交易所、指标等客观标准。\n\n例如：\n• 股票相关 → TradingView、官方交易所收盘价\n• 体育 → 官方记录\n• 经济数据 → 政府/公共机构公告\n• 新闻 → 媒体官方公告\n\n结果确认后，立即向赢家分配分红。",
+            ja: "結果確定は公式データ・メディア・取引所・指標などの客観的基準に基づいて行われます。\n\n例えば：\n• 株価関連 → TradingView、公式取引所の終値基準\n• スポーツ → 公式記録\n• 経済数値 → 政府/公共機関の発表資料\n• ニュース → メディアの公式発表\n\n結果確定後、すぐに勝者に配当が分配されます。"
+        },
+        icon: "fas fa-check-circle",
+        category: {
+            ko: "이용방법",
+            en: "How to Use",
+            zh: "使用方法",
+            ja: "使用方法"
+        }
+    },
+    {
+        id: 29,
+        question: {
+            ko: "신규 유저가 가장 먼저 해야 하는 순서는?",
+            en: "What should new users do first?",
+            zh: "新用户应该首先做什么？",
+            ja: "新規ユーザーが最初にすべきことは？"
+        },
+        answer: {
+            ko: "다음 순서가 가장 효율적입니다:\n\n1. 지갑 연결\n2. 인기 이슈를 한 번 살펴보기\n3. 작은 금액으로 테스트 베팅\n4. 자신만의 첫 이슈 등록\n5. 참여자 유입 → 수익 창출 경험하기",
+            en: "This order is most efficient:\n\n1. Connect wallet\n2. Browse popular issues\n3. Test bet with small amount\n4. Register your first issue\n5. Experience participant inflow → revenue generation",
+            zh: "以下顺序最有效：\n\n1. 连接钱包\n2. 浏览热门问题\n3. 用小额进行测试投注\n4. 注册您的第一个问题\n5. 体验参与者流入 → 创造收入",
+            ja: "次の順序が最も効率的です：\n\n1. ウォレット接続\n2. 人気のイシューを一度見てみる\n3. 少額でテストベット\n4. 自分だけの最初のイシューを登録\n5. 参加者流入 → 収益創出を体験"
+        },
+        icon: "fas fa-play-circle",
+        category: {
+            ko: "이용방법",
+            en: "How to Use",
+            zh: "使用方法",
+            ja: "使用方法"
+        }
+    },
+    {
+        id: 30,
+        question: {
+            ko: "왜 '미래 예측 능력 = 수익'이 되나요?",
+            en: "Why does 'prediction ability = profit'?",
+            zh: "为什么'预测能力 = 利润'？",
+            ja: "なぜ「予測能力 = 収益」になるのですか？"
+        },
+        answer: {
+            ko: "다른 플랫폼은 '추천·댓글·게시물 작성'이 수익과 직접 연결되지 않지만, 캐쉬아이큐는 '이슈 자체가 시장'이므로 다음 구조가 성립합니다:\n\n• 아이디어(이슈) = 자산\n• 예측 능력 = 배당 수익\n• 다른 유저의 참여 = 등록자 수익 증가\n\n이 때문에 단순 자동응답형 챗봇이나 기존 투표/설문 앱에서는 제공하지 않는 전혀 새로운 형태의 예측 기반 수익 플랫폼입니다.",
+            en: "Unlike other platforms where 'recommendations, comments, posts' don't directly connect to revenue, CashIQ's 'issues are markets themselves', so this structure applies:\n\n• Ideas (issues) = Assets\n• Prediction ability = Payout revenue\n• Other users' participation = Creator revenue increase\n\nThis makes it a completely new type of prediction-based revenue platform that simple chatbots or traditional voting/survey apps don't offer.",
+            zh: "与其他平台不同，'推荐、评论、帖子'不直接与收入挂钩，但在CashIQ中，'问题本身就是市场'，因此形成以下结构：\n\n• 想法（问题）= 资产\n• 预测能力 = 分红收入\n• 其他用户的参与 = 创建者收入增加\n\n这使其成为一个全新类型的基于预测的收入平台，这是简单的聊天机器人或传统投票/调查应用无法提供的。",
+            ja: "他のプラットフォームでは「おすすめ・コメント・投稿」が収益と直接つながりませんが、CashIQは「イシュー自体が市場」なので、次の構造が成立します：\n\n• アイデア（イシュー）= 資産\n• 予測能力 = 配当収益\n• 他のユーザーの参加 = 登録者の収益増加\n\nそのため、単純な自動応答型チャットボットや既存の投票/アンケートアプリでは提供できない全く新しい形態の予測ベースの収益プラットフォームです。"
+        },
+        icon: "fas fa-lightbulb",
+        category: {
+            ko: "기본정보",
+            en: "Basic Info",
+            zh: "基本信息",
+            ja: "基本情報"
+        }
     }
 ];
 
@@ -579,8 +777,8 @@ class ChatBot {
                 </div>
             </div>
 
-            <!-- 챗봇 창 -->
-            <div id="chatbot-window" class="fixed bottom-32 right-6 w-96 bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 600px; max-height: 80vh;">
+            <!-- 챗봇 창 (크기 확대) -->
+            <div id="chatbot-window" class="fixed bottom-32 right-6 w-[500px] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col" style="height: 700px; max-height: 85vh;">
                 <!-- 헤더 - 진한 색상 -->
                 <div class="bg-gradient-to-r from-blue-800 to-purple-800 text-white p-4 rounded-t-2xl flex items-center justify-between">
                     <div class="flex items-center space-x-3">
