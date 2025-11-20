@@ -839,6 +839,20 @@ function loadAdminIssues() {
         const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         console.log('📊 Total issues loaded:', issues.length);
         
+        // 각 이슈의 필드 구조 출력
+        if (issues.length > 0) {
+            console.log('📋 Issue data samples:');
+            issues.forEach((issue, idx) => {
+                console.log(`Issue ${idx + 1}:`, {
+                    keys: Object.keys(issue),
+                    title_ko: issue.title_ko,
+                    title: issue.title,
+                    name_ko: issue.name_ko,
+                    category: issue.category_slug
+                });
+            });
+        }
+        
         filteredIssues = issues; // 초기에는 전체 이슈
         selectedIssueIndices.clear(); // 선택 초기화
         
@@ -1019,28 +1033,37 @@ function searchIssues() {
         console.log('📋 Available keys:', Object.keys(allIssues[0]));
     }
     
-    filteredIssues = allIssues.filter(issue => {
+    filteredIssues = allIssues.filter((issue, idx) => {
         // 카테고리 필터
         if (categoryValue && issue.category_slug !== categoryValue) {
+            console.log(`❌ Issue ${idx + 1} filtered by category:`, issue.category_slug, '!==', categoryValue);
             return false;
         }
         
         // 검색어 필터 (모든 가능한 title 필드 검색)
         if (searchValue) {
-            // 다양한 필드명 지원
+            // 다양한 필드명 지원 - 공백 제거하고 검색
             const searchableText = [
                 issue.title_ko || issue.title || issue.name_ko || issue.name || '',
                 issue.title_en || issue.name_en || '',
                 issue.title_zh || issue.name_zh || '',
                 issue.title_ja || issue.name_ja || '',
                 issue.description || issue.desc || ''
-            ].join(' ').toLowerCase();
+            ]
+            .join(' ')
+            .toLowerCase()
+            .replace(/\s+/g, ''); // 모든 공백 제거
             
-            const matches = searchableText.includes(searchValue);
+            const searchValueNoSpace = searchValue.replace(/\s+/g, ''); // 검색어의 공백도 제거
             
-            if (matches) {
-                console.log('✅ Match found:', issue.title_ko || issue.title || 'Unknown');
-            }
+            const matches = searchableText.includes(searchValueNoSpace);
+            
+            console.log(`${matches ? '✅' : '❌'} Issue ${idx + 1}:`, {
+                title: issue.title_ko || issue.title || 'No title',
+                searchableText: searchableText.substring(0, 50) + '...',
+                searchValue: searchValueNoSpace,
+                matches: matches
+            });
             
             return matches;
         }
