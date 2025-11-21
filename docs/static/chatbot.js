@@ -10,7 +10,8 @@ const chatbotTranslations = {
         inputPlaceholder: "질문을 입력하세요...",
         footerContact: "📞 추가 문의: @HERB4989 (텔레그램)",
         footerEmail: "📧 locks88@naver.com",
-        noAnswerMessage: "죄송합니다. 해당 질문에 대한 답변을 찾지 못했습니다. 😅\n\n왼쪽 상단의 ← 버튼을 클릭하여 질문 목록으로 돌아가세요.\n\n또는 다음 연락처로 문의해주세요:\n📞 텔레그램: @HERB4989\n📧 이메일: locks88@naver.com"
+        noAnswerMessage: "죄송합니다. 해당 질문에 대한 답변을 찾지 못했습니다. 😅\n\n왼쪽 상단의 ← 버튼을 클릭하여 질문 목록으로 돌아가세요.\n\n또는 다음 연락처로 문의해주세요:\n📞 텔레그램: @HERB4989\n📧 이메일: locks88@naver.com",
+        tooltipText: "궁금하신 질문은\n자동응답봇에\n문의하세요"
     },
     en: {
         botTitle: "EventBET AI Bot",
@@ -20,7 +21,8 @@ const chatbotTranslations = {
         inputPlaceholder: "Enter your question...",
         footerContact: "📞 Contact: @HERB4989 (Telegram)",
         footerEmail: "📧 locks88@naver.com",
-        noAnswerMessage: "Sorry, I couldn't find an answer to that question. 😅\n\nClick the ← button at the top left to return to the question list.\n\nOr contact us:\n📞 Telegram: @HERB4989\n📧 Email: locks88@naver.com"
+        noAnswerMessage: "Sorry, I couldn't find an answer to that question. 😅\n\nClick the ← button at the top left to return to the question list.\n\nOr contact us:\n📞 Telegram: @HERB4989\n📧 Email: locks88@naver.com",
+        tooltipText: "Ask your\nquestions to\nAI chatbot"
     },
     zh: {
         botTitle: "EventBET AI 机器人",
@@ -30,7 +32,8 @@ const chatbotTranslations = {
         inputPlaceholder: "输入您的问题...",
         footerContact: "📞 联系我们：@HERB4989（Telegram）",
         footerEmail: "📧 locks88@naver.com",
-        noAnswerMessage: "抱歉，找不到该问题的答案。😅\n\n点击左上角的 ← 按钮返回问题列表。\n\n或联系我们：\n📞 Telegram：@HERB4989\n📧 邮箱：locks88@naver.com"
+        noAnswerMessage: "抱歉，找不到该问题的答案。😅\n\n点击左上角的 ← 按钮返回问题列表。\n\n或联系我们：\n📞 Telegram：@HERB4989\n📧 邮箱：locks88@naver.com",
+        tooltipText: "有疑问请\n咨询自动\n回复机器人"
     },
     ja: {
         botTitle: "EventBET AIボット",
@@ -40,7 +43,8 @@ const chatbotTranslations = {
         inputPlaceholder: "質問を入力してください...",
         footerContact: "📞 お問い合わせ：@HERB4989（Telegram）",
         footerEmail: "📧 locks88@naver.com",
-        noAnswerMessage: "申し訳ございません。その質問の答えが見つかりませんでした。😅\n\n左上の ← ボタンをクリックして質問リストに戻ってください。\n\nまたはお問い合わせください：\n📞 Telegram：@HERB4989\n📧 メール：locks88@naver.com"
+        noAnswerMessage: "申し訳ございません。その質問の答えが見つかりませんでした。😅\n\n左上の ← ボタンをクリックして質問リストに戻ってください。\n\nまたはお問い合わせください：\n📞 Telegram：@HERB4989\n📧 メール：locks88@naver.com",
+        tooltipText: "ご質問は\n自動応答\nボットへ"
     }
 };
 
@@ -919,6 +923,15 @@ class ChatBot {
         console.log('[CHATBOT] Using translations for:', currentLang, '- Title:', t.botTitle);
         
         const chatbotHTML = `
+            <!-- 챗봇 안내 메시지 (챗봇 버튼 위에 배치) -->
+            <div id="chatbot-tooltip" class="fixed bottom-36 right-6 z-50 pointer-events-none" style="display: block !important;">
+                <div class="bg-white rounded-lg shadow-xl px-3 py-2 text-center border-2 border-blue-800 max-w-[140px]">
+                    <p id="chatbot-tooltip-text" class="text-xs font-bold text-blue-900 leading-tight whitespace-pre-line"></p>
+                </div>
+                <!-- 말풍선 꼬리 -->
+                <div class="absolute -bottom-2 right-10 w-0 h-0" style="border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #1e40af;"></div>
+            </div>
+
             <!-- 챗봇 버튼 (오른쪽 하단 배치) - 진한 색상 -->
             <div id="chatbot-button" class="fixed bottom-6 right-6 z-50 cursor-pointer group" style="display: block !important;">
                 <div class="relative">
@@ -1003,6 +1016,12 @@ class ChatBot {
         document.body.insertAdjacentHTML('beforeend', chatbotHTML);
         console.log('[CHATBOT] ✅ Chatbot HTML inserted');
         
+        // 툴팁 텍스트 설정
+        const tooltipTextEl = document.getElementById('chatbot-tooltip-text');
+        if (tooltipTextEl) {
+            tooltipTextEl.textContent = t.tooltipText;
+        }
+        
         // 버튼이 실제로 DOM에 추가되었는지 확인
         setTimeout(() => {
             const button = document.getElementById('chatbot-button');
@@ -1050,11 +1069,13 @@ class ChatBot {
         this.isOpen = !this.isOpen;
         const chatWindow = document.getElementById('chatbot-window');
         const chatButton = document.getElementById('chatbot-button');
+        const chatTooltip = document.getElementById('chatbot-tooltip');
 
         if (this.isOpen) {
             chatWindow.classList.remove('hidden');
             chatWindow.classList.add('flex');
             chatButton.style.display = 'none';
+            if (chatTooltip) chatTooltip.style.display = 'none';
             // 챗봇 열 때마다 현재 언어로 업데이트
             this.updateLanguage();
             this.showMenuView();
@@ -1062,6 +1083,7 @@ class ChatBot {
             chatWindow.classList.add('hidden');
             chatWindow.classList.remove('flex');
             chatButton.style.display = 'block';
+            if (chatTooltip) chatTooltip.style.display = 'block';
         }
     }
 
@@ -1093,6 +1115,10 @@ class ChatBot {
     updateLanguage() {
         const currentLang = window.currentLang || 'ko';
         const t = chatbotTranslations[currentLang];
+        
+        // 툴팁 업데이트
+        const tooltipTextEl = document.getElementById('chatbot-tooltip-text');
+        if (tooltipTextEl) tooltipTextEl.textContent = t.tooltipText;
         
         // 헤더 업데이트
         const titleEl = document.getElementById('chatbot-title');
