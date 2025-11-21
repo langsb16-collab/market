@@ -1060,8 +1060,8 @@ function renderMarkets() {
                 
                 card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
                 card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
-                card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
-                card += '<span class="font-bold text-xs ' + textColor + '">' + translatedName + '</span>'
+                card += '<div class="relative z-10 flex flex-col items-center justify-center p-2">'
+                card += '<span class="font-bold text-xs ' + textColor + ' mb-0.5">' + translatedName + '</span>'
                 card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
                 card += '</div>'
                 card += '</div>'
@@ -1160,8 +1160,8 @@ function openBetModal(eventId) {
                         return `
                         <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
                                 ${!currentWallet ? 'disabled' : ''}>
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold ${textColor}">${translatedName}</span>
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="font-bold text-lg ${textColor} mb-2">${translatedName}</span>
                                 <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                         </button>
