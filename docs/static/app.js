@@ -825,18 +825,24 @@ function getFilteredEvents() {
         return 0
     }
     
-    // 관리자 이슈와 일반 이슈 분리
-    const adminIssues = filtered.filter(e => e.status === 'published' && e.publishedAt)
-    const regularIssues = filtered.filter(e => !e.status || e.status !== 'published' || !e.publishedAt)
-    
-    console.log('EventBET: Admin issues:', adminIssues.length, 'Regular issues:', regularIssues.length)
-    
-    // 각 그룹을 선택된 정렬 기준으로 정렬
-    adminIssues.sort(sortFunction)
-    regularIssues.sort(sortFunction)
-    
-    // 합치기: 관리자 이슈 먼저, 그 다음 일반 이슈
-    filtered = [...adminIssues, ...regularIssues]
+    // "최근등록순"에만 admin issues를 먼저 표시
+    if (currentSortBy === 'recent') {
+        // 관리자 이슈와 일반 이슈 분리
+        const adminIssues = filtered.filter(e => e.status === 'published' && e.publishedAt)
+        const regularIssues = filtered.filter(e => !e.status || e.status !== 'published' || !e.publishedAt)
+        
+        console.log('EventBET: Admin issues:', adminIssues.length, 'Regular issues:', regularIssues.length)
+        
+        // 각 그룹을 선택된 정렬 기준으로 정렬
+        adminIssues.sort(sortFunction)
+        regularIssues.sort(sortFunction)
+        
+        // 합치기: 관리자 이슈 먼저, 그 다음 일반 이슈
+        filtered = [...adminIssues, ...regularIssues]
+    } else {
+        // 다른 정렬 기준에서는 모든 이슈를 동일하게 정렬 (admin 우선 없음)
+        filtered.sort(sortFunction)
+    }
     
     console.log('EventBET: Sorted by:', currentSortBy)
     console.log('EventBET: Final filtered events:', filtered.length, '(admin issues first)')
