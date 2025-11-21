@@ -678,14 +678,11 @@ function updateUITexts() {
     updateMarketCount()
 }
 
-// Update market count
+// Update market count (removed from UI but kept for compatibility)
 function updateMarketCount() {
-    const t = translations[currentLang] || translations.ko
-    const marketCount = document.getElementById('market-count')
-    const filteredEvents = getFilteredEvents()
-    if (marketCount) {
-        marketCount.textContent = `${t.showingMarkets}: ${Math.min(displayedMarkets, filteredEvents.length)}${t.individual} / ${t.totalMarkets} ${filteredEvents.length}${t.individual}`
-    }
+    // Market count display has been removed from UI
+    // Function kept for compatibility with existing code
+    return
 }
 
 // Get filtered events
