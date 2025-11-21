@@ -14,6 +14,12 @@ let currentSortBy = 'recent' // 'recent', 'date', 'volume', 'participants' - 기
 
 console.log('EventBET: Variables initialized')
 
+// Outcome label translations
+const outcomeTranslations = {
+    '예': { ko: '예', en: 'YES', zh: '是', ja: 'はい' },
+    '아니오': { ko: '아니오', en: 'NO', zh: '不是', ja: 'いいえ' }
+}
+
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
     const today = new Date()
@@ -939,6 +945,16 @@ const getEventDescription = (event) => {
     return event[`description_${currentLang}`] || event.description_en
 }
 
+// Translate outcome label based on current language
+const translateOutcome = (outcomeName) => {
+    // Check if it's a Korean outcome that needs translation
+    if (outcomeTranslations[outcomeName]) {
+        return outcomeTranslations[outcomeName][currentLang] || outcomeName
+    }
+    // Return original name if not found in translations
+    return outcomeName
+}
+
 // Get event image with category-specific variety
 const getEventImage = (categorySlug, eventId) => {
     const imageIdsByCategory = {
@@ -1034,6 +1050,7 @@ function renderMarkets() {
         if (hasOutcomes) {
             card += '<div class="grid grid-cols-2 gap-1.5">'
             event.outcomes.slice(0, 2).forEach(outcome => {
+                const translatedName = translateOutcome(outcome.name)
                 const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                 const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                 const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
@@ -1044,7 +1061,7 @@ function renderMarkets() {
                 card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
                 card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
                 card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
-                card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
+                card += '<span class="font-bold text-xs ' + textColor + '">' + translatedName + '</span>'
                 card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
                 card += '</div>'
                 card += '</div>'
@@ -1135,6 +1152,7 @@ function openBetModal(eventId) {
                 ` : ''}
                 <div class="grid grid-cols-1 gap-3">
                     ${event.outcomes.map(outcome => {
+                        const translatedName = translateOutcome(outcome.name)
                         const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                         const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
@@ -1143,7 +1161,7 @@ function openBetModal(eventId) {
                         <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
                                 ${!currentWallet ? 'disabled' : ''}>
                             <div class="flex justify-between items-center">
-                                <span class="font-bold ${textColor}">${outcome.name}</span>
+                                <span class="font-bold ${textColor}">${translatedName}</span>
                                 <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                         </button>
