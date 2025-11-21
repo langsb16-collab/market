@@ -507,6 +507,14 @@ loadAdminIssuesFromStorage()
 
 console.log(`Generated ${events.length} events`)
 
+// localStorage 변경 감지 (관리자 페이지에서 이슈 등록 시)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'admin_issues' && e.newValue !== e.oldValue) {
+        console.log('🔄 Admin issues updated in storage, reloading page...')
+        location.reload() // 페이지 새로고침
+    }
+})
+
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
