@@ -60,7 +60,7 @@
     "id": 1763721221916,
     "category_id": 5,
     "category_slug": "entertainment",
-    "title_ko": "뉴진스 5명 재결합, 속사·어도어 복귀 한다? 안 한다",
+    "title_ko": "뉴진스 5명 재결합, 소속사  어도어 복귀 한다? 안 한다",
     "title_en": "NewJeans 5 members reuniting — will they return to ADOR or not?",
     "title_zh": "NewJeans 五名成员重组——会不会回到 ADOR？",
     "title_ja": "NewJeans 5人再結成——ADOR に復帰する？しない？",
@@ -82,16 +82,17 @@
       }
     ],
     "createdAt": "2025-11-21T10:33:41.915Z",
-    "publishedAt": "2025-11-21T10:33:42.694Z"
+    "publishedAt": "2025-11-21T10:33:42.694Z",
+    "updatedAt": "2025-11-21T12:57:07.262Z"
   },
   {
     "id": 1763727460148,
     "category_id": 1,
     "category_slug": "politics",
-    "title_ko": "중국이 일본에 희토류 수출 금지?  YES ? NO ?",
-    "title_en": "China bans rare earth exports to Japan? Yes or no?",
-    "title_zh": "中国禁止向日本出口稀土？是？否？",
-    "title_ja": "中国が日本に希土類輸出禁止？ YES ？ NO？",
+    "title_ko": "중국이 희토류 일본 수출 금지?  YES ? NO ?",
+    "title_en": "Is China going to ban rare-earth exports?  YES ? NO ?",
+    "title_zh": "中国要禁止稀土出口吗？YES ? NO ?",
+    "title_ja": "中国はレアアースの輸出を禁止しないのか？ YES ? NO ?",
     "description_ko": "중국이 희토류 수출 금지?  YES ? NO ?에 대한 예측 마켓입니다.",
     "description_en": "Prediction market for Is China going to ban rare-earth exports?  YES ? NO ?.",
     "description_zh": "关于中国要禁止稀土出口吗？YES ? NO ?的预测市场。",
@@ -102,43 +103,15 @@
     "outcomes": [
       {
         "name": "예",
-        "probability": 0.56
+        "probability": 0.58
       },
       {
         "name": "아니오",
-        "probability": 0.44
+        "probability": 0.42
       }
     ],
     "createdAt": "2025-11-21T12:17:40.147Z",
     "publishedAt": "2025-11-21T12:17:40.407Z",
-    "updatedAt": "2025-11-21T12:25:59.116Z"
-  },
-  {
-    "id": 1763727579724,
-    "category_id": 1,
-    "category_slug": "politics",
-    "title_ko": "중국이 희토류 수출 금지?  YES ? NO ?",
-    "title_en": "Is China going to ban rare-earth exports?  YES ? NO ?",
-    "title_zh": "中国要禁止稀土出口吗？YES ? NO ?",
-    "title_ja": "中国はレアアースの輸出を禁止しないのか？ YES ? NO ?",
-    "description_ko": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_en": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_zh": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_ja": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "resolve_date": "2025-12-31",
-    "total_volume": 100000,
-    "status": "published",
-    "outcomes": [
-      {
-        "name": "예",
-        "probability": 0.57
-      },
-      {
-        "name": "아니오",
-        "probability": 0.43000000000000005
-      }
-    ],
-    "createdAt": "2025-11-21T12:19:39.723Z",
-    "publishedAt": "2025-11-21T12:19:40.231Z"
+    "updatedAt": "2025-11-21T12:21:07.067Z"
   }
 ]
