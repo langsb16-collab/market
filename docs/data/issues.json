@@ -55,5 +55,33 @@
     ],
     "createdAt": "2025-11-21T10:31:51.574Z",
     "publishedAt": "2025-11-21T10:31:52.182Z"
+  },
+  {
+    "id": 1763721221916,
+    "category_id": 5,
+    "category_slug": "entertainment",
+    "title_ko": "뉴진스 5명 재결합, 속사·어도어 복귀 한다? 안 한다",
+    "title_en": "NewJeans 5 members reuniting — will they return to ADOR or not?",
+    "title_zh": "NewJeans 五名成员重组——会不会回到 ADOR？",
+    "title_ja": "NewJeans 5人再結成——ADOR に復帰する？しない？",
+    "description_ko": "뉴진스 5명 재결합, 속사·어도어 복귀 한다? 안 한다에 대한 예측 마켓입니다.",
+    "description_en": "Prediction market for NewJeans 5 members reuniting — will they return to ADOR or not?.",
+    "description_zh": "关于NewJeans 五名成员重组——会不会回到 ADOR？的预测市场。",
+    "description_ja": "NewJeans 5人再結成——ADOR に復帰する？しない？についての予測市場です。",
+    "resolve_date": "2026-01-31",
+    "total_volume": 50000,
+    "status": "published",
+    "outcomes": [
+      {
+        "name": "예",
+        "probability": 0.6
+      },
+      {
+        "name": "아니오",
+        "probability": 0.4
+      }
+    ],
+    "createdAt": "2025-11-21T10:33:41.915Z",
+    "publishedAt": "2025-11-21T10:33:42.694Z"
   }
 ]
