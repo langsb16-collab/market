@@ -456,6 +456,22 @@ console.log('EventBET: About to call generateEvents()')
 let events = generateEvents()
 console.log('EventBET: Events generated successfully:', events.length, 'events')
 
+// 카테고리 ID 검증
+if (events.length > 0) {
+    const firstEvent = events[0]
+    console.log('EventBET: First event sample:', {
+        id: firstEvent.id,
+        category_id: firstEvent.category_id,
+        category_slug: firstEvent.category_slug,
+        title_ko: firstEvent.title_ko
+    })
+    
+    const categoryIds = events.map(e => e.category_id)
+    const uniqueCategoryIds = [...new Set(categoryIds)]
+    console.log('EventBET: Unique category IDs in events:', uniqueCategoryIds)
+    console.log('EventBET: Available categories:', categories.map(c => c.id))
+}
+
 // 관리자가 등록한 이슈 병합
 function loadAdminIssuesFromStorage() {
     try {
@@ -800,6 +816,10 @@ function filterByCategory(categorySlug) {
 
 // Get category name
 const getCategoryName = (category) => {
+    if (!category) {
+        console.error('EventBET: getCategoryName called with undefined category')
+        return 'Unknown'
+    }
     return category[`name_${currentLang}`] || category.name_en
 }
 
@@ -859,6 +879,13 @@ function renderMarkets() {
     
     const html = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
+        
+        // 카테고리를 찾지 못한 경우 에러 로그 및 스킵
+        if (!category) {
+            console.error('EventBET: Category not found for event:', event.id, 'category_id:', event.category_id)
+            return '' // 빈 문자열 반환하여 스킵
+        }
+        
         const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         
