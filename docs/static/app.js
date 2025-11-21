@@ -447,11 +447,14 @@ const generateEvents = () => {
     })
     
     // Shuffle to mix categories
-    return allEvents.sort(() => Math.random() - 0.5)
+    const shuffled = allEvents.sort(() => Math.random() - 0.5)
+    console.log('EventBET: Generated events count:', shuffled.length)
+    return shuffled
 }
 
 console.log('EventBET: About to call generateEvents()')
 let events = generateEvents()
+console.log('EventBET: Events generated successfully:', events.length, 'events')
 
 // 관리자가 등록한 이슈 병합
 function loadAdminIssuesFromStorage() {
@@ -687,10 +690,15 @@ function updateMarketCount() {
 
 // Get filtered events
 function getFilteredEvents() {
+    console.log('EventBET: getFilteredEvents() called')
+    console.log('EventBET: events array exists:', !!events)
+    console.log('EventBET: events length:', events ? events.length : 0)
+    
     let filtered = events
     
     if (currentCategory !== 'all') {
         filtered = filtered.filter(e => e.category_slug === currentCategory)
+        console.log('EventBET: After category filter:', filtered.length, 'category:', currentCategory)
     }
     
     const searchInput = document.getElementById('search-input')
@@ -702,6 +710,7 @@ function getFilteredEvents() {
             e.title_zh.toLowerCase().includes(query) ||
             e.title_ja.toLowerCase().includes(query)
         )
+        console.log('EventBET: After search filter:', filtered.length)
     }
     
     // Apply sorting
@@ -716,6 +725,7 @@ function getFilteredEvents() {
         filtered.sort((a, b) => b.participants - a.participants)
     }
     
+    console.log('EventBET: Final filtered events:', filtered.length)
     return filtered
 }
 
@@ -831,6 +841,8 @@ const formatNumber = (num) => {
 // Render markets
 function renderMarkets() {
     console.log('EventBET: renderMarkets() called')
+    console.log('EventBET: Total events available:', events ? events.length : 0)
+    
     const container = document.getElementById('markets-container')
     if (!container) {
         console.error('EventBET: markets-container not found!')
@@ -839,7 +851,11 @@ function renderMarkets() {
     console.log('EventBET: markets-container found, rendering...')
     
     const filteredEvents = getFilteredEvents()
+    console.log('EventBET: Filtered events:', filteredEvents.length)
+    console.log('EventBET: displayedMarkets:', displayedMarkets)
+    
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
+    console.log('EventBET: Events to show:', eventsToShow.length)
     
     const html = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
