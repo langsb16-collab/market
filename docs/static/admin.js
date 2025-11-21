@@ -1319,6 +1319,18 @@ function editAdminIssue(index) {
         document.getElementById('edit-title-ja').value = issue.title_ja;
         document.getElementById('edit-resolve-date').value = issue.resolve_date;
         document.getElementById('edit-total-volume').value = issue.total_volume;
+        
+        // yes/no 확률 값 채우기 (0-1 범위를 0-100% 범위로 변환)
+        if (issue.outcomes && issue.outcomes.length >= 2) {
+            const yesProb = (issue.outcomes[0].probability || 0.5) * 100;
+            const noProb = (issue.outcomes[1].probability || 0.5) * 100;
+            document.getElementById('edit-probability-yes').value = yesProb.toFixed(1);
+            document.getElementById('edit-probability-no').value = noProb.toFixed(1);
+        } else {
+            // 기본값 50/50
+            document.getElementById('edit-probability-yes').value = '50.0';
+            document.getElementById('edit-probability-no').value = '50.0';
+        }
     } catch (error) {
         console.error('Failed to edit issue:', error);
         alert('❌ 이슈 불러오기에 실패했습니다.');
@@ -1347,6 +1359,17 @@ async function saveEditedIssue(event) {
             return;
         }
         
+        // yes/no 확률 값 가져오기 (0-100% 범위를 0-1 범위로 변환)
+        const yesProbPercent = parseFloat(document.getElementById('edit-probability-yes').value);
+        const noProbPercent = parseFloat(document.getElementById('edit-probability-no').value);
+        
+        // 확률 값 검증 (합계가 100%인지 확인)
+        const totalPercent = yesProbPercent + noProbPercent;
+        if (Math.abs(totalPercent - 100) > 0.01) {
+            alert(`⚠️ 확률 합계가 100%가 아닙니다. (현재: ${totalPercent.toFixed(1)}%)`);
+            return;
+        }
+        
         // 수정된 데이터 가져오기
         const updatedIssue = {
             ...issues[index], // 기존 데이터 유지
@@ -1357,19 +1380,14 @@ async function saveEditedIssue(event) {
             title_ja: document.getElementById('edit-title-ja').value,
             resolve_date: document.getElementById('edit-resolve-date').value,
             total_volume: parseInt(document.getElementById('edit-total-volume').value),
+            outcomes: [
+                { name: '예', probability: yesProbPercent / 100 },
+                { name: '아니오', probability: noProbPercent / 100 }
+            ],
             updatedAt: new Date().toISOString()
         };
         
-        // 카테고리 변경 시 outcomes도 업데이트
-        const category = CATEGORIES.find(c => c.slug === updatedIssue.category_slug);
-        if (category && issues[index].category_slug !== updatedIssue.category_slug) {
-            // 카테고리가 변경된 경우 기본 outcomes 재생성
-            const yesProb = 0.5 + (Math.random() * 0.3 - 0.15);
-            updatedIssue.outcomes = [
-                { name: '예', probability: yesProb },
-                { name: '아니오', probability: 1 - yesProb }
-            ];
-        }
+        // outcomes는 이미 위에서 설정했으므로 이 부분 제거
         
         // 배열에서 업데이트
         issues[index] = updatedIssue;
