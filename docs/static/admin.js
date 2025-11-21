@@ -834,16 +834,27 @@ async function submitBulkIssues(event) {
             `${issues.length}개의 새 이슈 추가`
         );
         
-        // 성공 메시지 표시
-        alert(
-            `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
-            `💡 이슈가 pending 상태로 저장되었습니다.\n` +
-            `"메인 사이트에 반영" 버튼을 클릭하여 공개하세요.\n\n` +
-            `(GitHub Pages 반영까지 1-2분 소요)`
-        );
+        // "즉시 공개" 체크박스 확인
+        const publishImmediately = document.getElementById('publish-immediately')?.checked;
         
         closeBulkIssueModal();
         loadAdminIssues();
+        
+        // 즉시 공개 옵션이 체크된 경우
+        if (publishImmediately) {
+            alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n메인 사이트에 공개 중...\n(GitHub Pages 반영까지 1-2분 소요)`);
+            
+            setTimeout(() => {
+                syncIssuesToMainSite();
+            }, 500);
+        } else {
+            alert(
+                `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
+                `💡 이슈가 pending 상태로 저장되었습니다.\n` +
+                `"메인 사이트에 반영" 버튼을 클릭하여 공개하세요.\n\n` +
+                `(GitHub Pages 반영까지 1-2분 소요)`
+            );
+        }
     } catch (error) {
         console.error('Failed to save issues:', error);
         alert('❌ 이슈 저장에 실패했습니다: ' + error.message);
