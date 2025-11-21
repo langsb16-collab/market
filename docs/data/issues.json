@@ -13,7 +13,7 @@
     "description_ja": "한국 전 대통령 윤석렬 2026년 6월까지 김건희 부인과 이혼한다 .yes? n",
     "resolve_date": "2026-06-30",
     "total_volume": 100000,
-    "status": "pending",
+    "status": "published",
     "outcomes": [
       {
         "name": "예",
@@ -24,6 +24,7 @@
         "probability": 0.5
       }
     ],
-    "createdAt": "2025-11-21T03:08:16.525Z"
+    "createdAt": "2025-11-21T03:08:16.525Z",
+    "publishedAt": "2025-11-21T03:16:21.020Z"
   }
 ]
