@@ -472,15 +472,21 @@ if (events.length > 0) {
     console.log('EventBET: Available categories:', categories.map(c => c.id))
 }
 
-// 관리자가 등록한 이슈 병합
-function loadAdminIssuesFromStorage() {
+// 관리자가 등록한 이슈 병합 (GitHub JSON 파일에서 로드)
+async function loadAdminIssuesFromGitHub() {
     try {
-        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
-        if (adminIssues.length > 0) {
-            console.log(`Loading ${adminIssues.length} admin issues`)
+        console.log('EventBET: Loading admin issues from GitHub...')
+        const response = await fetch('/data/issues.json?_=' + Date.now())
+        const adminIssues = await response.json()
+        
+        // published 상태의 이슈만 표시
+        const publishedIssues = adminIssues.filter(issue => issue.status === 'published')
+        
+        if (publishedIssues.length > 0) {
+            console.log(`EventBET: Loading ${publishedIssues.length} published admin issues (total: ${adminIssues.length})`)
             
             // 관리자 이슈에 ID 및 participants 추가
-            adminIssues.forEach((issue, index) => {
+            publishedIssues.forEach((issue, index) => {
                 const newId = events.length + index + 1
                 const enhancedIssue = {
                     ...issue,
@@ -495,7 +501,14 @@ function loadAdminIssuesFromStorage() {
                 events.push(enhancedIssue)
             })
             
-            console.log(`Total events after merge: ${events.length}`)
+            console.log(`EventBET: Total events after merge: ${events.length}`)
+            console.log(`EventBET: Published issues: ${publishedIssues.length}, Pending issues: ${adminIssues.length - publishedIssues.length}`)
+            
+            // 이슈 로드 후 화면 갱신
+            renderMarkets()
+            updateMarketCount()
+        } else {
+            console.log('EventBET: No published admin issues found')
         }
     } catch (error) {
         console.error('Failed to load admin issues:', error)
@@ -506,7 +519,7 @@ function loadAdminIssuesFromStorage() {
 console.log('EventBET: Loading admin issues from localStorage...')
 const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
 console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
-loadAdminIssuesFromStorage()
+loadAdminIssuesFromGitHub()
 
 console.log(`Generated ${events.length} events (including ${adminIssuesCount} admin issues)`)
 
@@ -568,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 관리자 이슈 업데이트 이벤트 리스너
     window.addEventListener('adminIssuesUpdated', () => {
         console.log('Admin issues updated, reloading...')
-        loadAdminIssuesFromStorage()
+        loadAdminIssuesFromGitHub()
         renderCategories()
         renderMarkets()
     })
