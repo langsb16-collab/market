@@ -820,7 +820,8 @@ async function submitBulkIssues(event) {
             detail: { count: mergedIssues.length } 
         }));
         
-        alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n메인 페이지를 새로고침하면 카테고리 개수가 업데이트됩니다.`);
+        // 성공 메시지 표시
+        alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n💡 메인 페이지(cashiq.my)가 열려있다면 자동으로 새로고침됩니다.\n열려있지 않다면 메인 페이지를 방문하여 확인하세요.`);
         closeBulkIssueModal();
         loadAdminIssues();
     } catch (error) {
