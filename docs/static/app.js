@@ -477,13 +477,27 @@ async function loadAdminIssuesFromGitHub() {
     try {
         console.log('EventBET: Loading admin issues from GitHub...')
         const response = await fetch('/data/issues.json?_=' + Date.now())
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const adminIssues = await response.json()
+        console.log('EventBET: Admin issues loaded from GitHub:', adminIssues.length, 'total issues')
+        
+        // 각 이슈의 status 확인
+        adminIssues.forEach((issue, idx) => {
+            console.log(`EventBET: Issue ${idx + 1} - status: ${issue.status}, title: ${issue.title_ko}`)
+        })
         
         // published 상태의 이슈만 표시
         const publishedIssues = adminIssues.filter(issue => issue.status === 'published')
+        const pendingIssues = adminIssues.filter(issue => issue.status === 'pending')
+        
+        console.log(`EventBET: Published issues: ${publishedIssues.length}, Pending issues: ${pendingIssues.length}`)
         
         if (publishedIssues.length > 0) {
-            console.log(`EventBET: Loading ${publishedIssues.length} published admin issues (total: ${adminIssues.length})`)
+            console.log(`EventBET: Adding ${publishedIssues.length} published issues to events array...`)
             
             // 관리자 이슈에 ID 및 participants 추가
             publishedIssues.forEach((issue, index) => {
@@ -498,20 +512,29 @@ async function loadAdminIssuesFromGitHub() {
                         probability: outcome.probability
                     }))
                 }
+                console.log(`EventBET: Adding issue ${index + 1}:`, {
+                    id: enhancedIssue.id,
+                    title: enhancedIssue.title_ko,
+                    status: enhancedIssue.status,
+                    category: enhancedIssue.category_slug
+                })
                 events.push(enhancedIssue)
             })
             
-            console.log(`EventBET: Total events after merge: ${events.length}`)
-            console.log(`EventBET: Published issues: ${publishedIssues.length}, Pending issues: ${adminIssues.length - publishedIssues.length}`)
+            console.log(`EventBET: ✅ Total events after merge: ${events.length}`)
+            console.log(`EventBET: Events array now contains ${publishedIssues.length} admin issues`)
             
             // 이슈 로드 후 화면 갱신
             renderMarkets()
             updateMarketCount()
         } else {
-            console.log('EventBET: No published admin issues found')
+            console.log('EventBET: ⚠️ No published admin issues found')
+            if (pendingIssues.length > 0) {
+                console.log(`EventBET: ℹ️ There are ${pendingIssues.length} pending issues waiting to be published`)
+            }
         }
     } catch (error) {
-        console.error('Failed to load admin issues:', error)
+        console.error('EventBET: ❌ Failed to load admin issues:', error)
     }
 }
 
