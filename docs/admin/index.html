@@ -571,14 +571,14 @@
                         </div>
                         <div class="flex gap-2">
                             <button 
-                                onclick="createTestIssues(); location.reload();" 
+                                onclick="createTestIssues()" 
                                 class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm whitespace-nowrap"
-                                title="테스트용 이슈 3개를 생성합니다"
+                                title="테스트용 이슈 3개를 생성합니다 (pending 상태)"
                             >
                                 <i class="fas fa-flask mr-1"></i>테스트 데이터
                             </button>
                             <button 
-                                onclick="if(confirm('⚠️ 모든 이슈를 삭제하시겠습니까?\\n\\n이 작업은 되돌릴 수 없습니다.')) { clearAllIssues(); }" 
+                                onclick="clearAllIssues()" 
                                 class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm whitespace-nowrap"
                                 title="모든 이슈를 삭제합니다"
                             >

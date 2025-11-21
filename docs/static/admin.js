@@ -935,7 +935,7 @@ function renderIssuesList() {
                             <span>이슈 일괄 등록</span>
                         </button>
                         <button 
-                            onclick="createTestIssues(); location.reload();" 
+                            onclick="createTestIssues()" 
                             class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors shadow-lg flex items-center gap-2"
                         >
                             <i class="fas fa-flask"></i>
@@ -984,6 +984,7 @@ function renderIssuesList() {
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">제목 (한국어)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">결론 기간</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">배팅액</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700">상태</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700">관리</th>
                     </tr>
                 </thead>
@@ -1013,11 +1014,16 @@ function renderIssuesList() {
                                 <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko || issue.title || issue.name_ko || issue.name || '제목 없음'}</td>
                                 <td class="px-4 py-3 text-sm">${issue.resolve_date || issue.end_date || '-'}</td>
                                 <td class="px-4 py-3 text-sm">$${(issue.total_volume || issue.volume || 0).toLocaleString()}</td>
+                                <td class="px-4 py-3 text-center">
+                                    ${issue.status === 'published' 
+                                        ? '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>공개됨</span>' 
+                                        : '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800"><i class="fas fa-clock mr-1"></i>대기중</span>'}
+                                </td>
                                 <td class="px-4 py-3 text-sm text-center">
-                                    <button onclick="editAdminIssue(${originalIndex})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1">
+                                    <button onclick="editAdminIssue(${originalIndex})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1" title="편집">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button onclick="deleteAdminIssue(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">
+                                    <button onclick="deleteAdminIssue(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" title="삭제">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -1471,70 +1477,141 @@ async function syncIssuesToMainSite() {
 // ============================================
 
 // 테스트 데이터 생성 함수 (디버깅용)
-function createTestIssues() {
+async function createTestIssues() {
+    // GitHub API 설정 확인
+    if (!window.githubAPI.isConfigured()) {
+        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
+        return;
+    }
+    
     const testIssues = [
         {
+            id: Date.now() + 1,
+            category_id: 1,
             category_slug: 'politics',
             title_ko: '2024년 대선 결과 예측',
             title_en: '2024 Presidential Election Results',
             title_zh: '2024年总统选举结果',
             title_ja: '2024年大統領選挙結果',
+            description_ko: '2024년 대선 결과 예측 마켓입니다.',
+            description_en: 'Prediction market for 2024 Presidential Election Results.',
+            description_zh: '关于2024年总统选举结果的预测市场。',
+            description_ja: '2024年大統領選挙結果についての予測市場です。',
             resolve_date: '2024-12-31',
             total_volume: 50000,
+            status: 'pending',
             outcomes: [
                 { name: '예', probability: 0.55 },
                 { name: '아니오', probability: 0.45 }
-            ]
+            ],
+            createdAt: new Date().toISOString()
         },
         {
+            id: Date.now() + 2,
+            category_id: 2,
             category_slug: 'sports',
             title_ko: '월드컵 우승팀 예측',
             title_en: 'World Cup Winner Prediction',
             title_zh: '世界杯冠军预测',
             title_ja: 'ワールドカップ優勝チーム予想',
+            description_ko: '월드컵 우승팀 예측 마켓입니다.',
+            description_en: 'Prediction market for World Cup Winner.',
+            description_zh: '关于世界杯冠军的预测市场。',
+            description_ja: 'ワールドカップ優勝チームについての予測市場です。',
             resolve_date: '2024-11-30',
             total_volume: 30000,
+            status: 'pending',
             outcomes: [
                 { name: '예', probability: 0.60 },
                 { name: '아니오', probability: 0.40 }
-            ]
+            ],
+            createdAt: new Date().toISOString()
         },
         {
-            category_slug: 'tech',
+            id: Date.now() + 3,
+            category_id: 3,
+            category_slug: 'technology',
             title_ko: 'AI 기술 발전 전망',
             title_en: 'AI Technology Development',
             title_zh: 'AI技术发展展望',
             title_ja: 'AI技術発展の展望',
+            description_ko: 'AI 기술 발전 전망 마켓입니다.',
+            description_en: 'Prediction market for AI Technology Development.',
+            description_zh: '关于AI技术发展展望的预测市场。',
+            description_ja: 'AI技術発展の展望についての予測市場です。',
             resolve_date: '2024-10-15',
             total_volume: 20000,
+            status: 'pending',
             outcomes: [
                 { name: '예', probability: 0.70 },
                 { name: '아니오', probability: 0.30 }
-            ]
+            ],
+            createdAt: new Date().toISOString()
         }
     ];
     
-    window.adminIssues = testIssues;
-    console.log('✅ Test issues created:', testIssues.length);
-    console.log('⚠️ Note: These are temporary test issues. Use GitHub API to save permanently.');
-    return testIssues;
+    try {
+        // 현재 이슈 목록 가져오기
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        const existingIssues = await response.json();
+        
+        // 기존 이슈와 병합
+        const mergedIssues = [...existingIssues, ...testIssues];
+        
+        // GitHub에 저장
+        await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            mergedIssues,
+            '테스트 이슈 3개 추가'
+        );
+        
+        alert('✅ 테스트 이슈 3개가 생성되었습니다! (GitHub Pages 반영까지 1-2분 소요)');
+        loadAdminIssues();
+    } catch (error) {
+        console.error('Failed to create test issues:', error);
+        alert('❌ 테스트 이슈 생성 실패: ' + error.message);
+    }
 }
 
 // 전역 함수로 노출 (콘솔에서 호출 가능)
 window.createTestIssues = createTestIssues;
-window.clearAllIssues = function() {
-    localStorage.removeItem('admin_issues');
-    console.log('✅ All issues cleared');
-    location.reload();
-};
 window.showIssues = function() {
     const issues = window.adminIssues || [];
     console.log('📦 Current issues:', issues);
     return issues;
 };
 
+// 카테고리 필터 초기화
+function initializeCategoryFilter() {
+    const categoryFilter = document.getElementById('category-filter');
+    if (!categoryFilter) {
+        console.error('❌ Category filter element not found');
+        return;
+    }
+    
+    // 기존 옵션 제거 (전체 옵션 제외)
+    while (categoryFilter.options.length > 1) {
+        categoryFilter.remove(1);
+    }
+    
+    // 카테고리 옵션 추가
+    CATEGORIES.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.slug;
+        option.textContent = `${category.icon} ${category.name_ko}`;
+        categoryFilter.appendChild(option);
+    });
+    
+    console.log('✅ Category filter initialized with', CATEGORIES.length, 'categories');
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Admin page DOMContentLoaded');
+    
+    // 카테고리 필터 초기화
+    initializeCategoryFilter();
+    
+    // 데이터 로드
     loadNotices();
     loadBanners();
     loadPopups();
@@ -1547,15 +1624,6 @@ window.addEventListener('DOMContentLoaded', () => {
     
     const issuesList = document.getElementById('issues-list');
     console.log('Issues list found:', !!issuesList);
-    
-    const adminIssues = window.adminIssues || [];
-    console.log('📦 Admin issues in localStorage:', adminIssues.length);
-    
-    if (adminIssues.length > 0) {
-        console.log('First issue:', adminIssues[0]);
-    } else {
-        console.log('💡 Tip: Run createTestIssues() in console to create test data');
-    }
     
     // 이슈 로드
     loadAdminIssues();
