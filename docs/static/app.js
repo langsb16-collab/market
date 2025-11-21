@@ -911,14 +911,24 @@ function renderMarkets() {
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
     console.log('EventBET: Events to show:', eventsToShow.length)
     
-    const html = eventsToShow.map(event => {
-        const category = categories.find(c => c.id === event.category_id)
-        
-        // 카테고리를 찾지 못한 경우 에러 로그 및 스킵
-        if (!category) {
-            console.error('EventBET: Category not found for event:', event.id, 'category_id:', event.category_id)
-            return '' // 빈 문자열 반환하여 스킵
-        }
+    // 첫 번째 이벤트 샘플 출력
+    if (eventsToShow.length > 0) {
+        console.log('EventBET: First event to render:', {
+            id: eventsToShow[0].id,
+            category_id: eventsToShow[0].category_id,
+            title_ko: eventsToShow[0].title_ko
+        })
+    }
+    
+    const html = eventsToShow.map((event, index) => {
+        try {
+            const category = categories.find(c => c.id === event.category_id)
+            
+            // 카테고리를 찾지 못한 경우 에러 로그 및 스킵
+            if (!category) {
+                console.error('EventBET: Category not found for event:', event.id, 'category_id:', event.category_id)
+                return '' // 빈 문자열 반환하여 스킵
+            }
         
         const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
@@ -964,6 +974,10 @@ function renderMarkets() {
         
         card += '</div></div></div>'
         return card
+        } catch (error) {
+            console.error('EventBET: Error rendering event', index, event.id, error)
+            return '' // 에러 발생 시 빈 문자열 반환
+        }
     }).join('')
     
     console.log('EventBET: Generated HTML length:', html.length)
