@@ -503,17 +503,43 @@ function loadAdminIssuesFromStorage() {
 }
 
 // 관리자 이슈 로드
+console.log('EventBET: Loading admin issues from localStorage...')
+const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
 loadAdminIssuesFromStorage()
 
-console.log(`Generated ${events.length} events`)
+console.log(`Generated ${events.length} events (including ${adminIssuesCount} admin issues)`)
 
 // localStorage 변경 감지 (관리자 페이지에서 이슈 등록 시)
+// storage 이벤트는 다른 탭/창에서만 발생하므로, 추가로 focus 이벤트도 감지
+let lastAdminIssuesLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+
 window.addEventListener('storage', (e) => {
     if (e.key === 'admin_issues' && e.newValue !== e.oldValue) {
-        console.log('🔄 Admin issues updated in storage, reloading page...')
-        location.reload() // 페이지 새로고침
+        console.log('🔄 Admin issues updated in storage (storage event), reloading page...')
+        location.reload()
     }
 })
+
+// 페이지에 포커스가 돌아올 때 체크
+window.addEventListener('focus', () => {
+    const currentLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+    if (currentLength !== lastAdminIssuesLength) {
+        console.log('🔄 Admin issues count changed (focus event), reloading page...')
+        console.log(`Previous: ${lastAdminIssuesLength}, Current: ${currentLength}`)
+        location.reload()
+    }
+})
+
+// 주기적으로 체크 (5초마다)
+setInterval(() => {
+    const currentLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+    if (currentLength !== lastAdminIssuesLength) {
+        console.log('🔄 Admin issues count changed (interval check), reloading page...')
+        console.log(`Previous: ${lastAdminIssuesLength}, Current: ${currentLength}`)
+        location.reload()
+    }
+}, 5000)
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
