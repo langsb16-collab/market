@@ -10,7 +10,7 @@ let isDarkMode = false
 let currentCategory = 'all'
 let displayedMarkets = 12
 const MARKETS_PER_PAGE = 12
-let currentSortBy = 'date' // 'date', 'volume', 'participants'
+let currentSortBy = 'recent' // 'recent', 'date', 'volume', 'participants' - 기본값을 'recent'로 변경
 
 console.log('EventBET: Variables initialized')
 
@@ -811,6 +811,20 @@ function getFilteredEvents() {
     
     console.log('EventBET: Admin issues:', adminIssues.length, 'Regular issues:', regularIssues.length)
     
+    // "최근 등록순" 정렬 처리
+    if (currentSortBy === 'recent') {
+        // 모든 이슈를 등록일(createdAt 또는 publishedAt) 기준으로 최신순 정렬
+        filtered.sort((a, b) => {
+            const dateA = new Date(a.publishedAt || a.createdAt || 0)
+            const dateB = new Date(b.publishedAt || b.createdAt || 0)
+            return dateB - dateA // 최신순 (내림차순)
+        })
+        
+        console.log('EventBET: Sorted by recent (latest first)')
+        console.log('EventBET: Final filtered events:', filtered.length)
+        return filtered
+    }
+    
     // Apply sorting to each group
     const sortFunction = (a, b) => {
         if (currentSortBy === 'date') {
@@ -842,6 +856,7 @@ function sortMarkets(sortBy) {
     displayedMarkets = MARKETS_PER_PAGE
     
     // Update button states
+    document.getElementById('sort-recent')?.classList.remove('active')
     document.getElementById('sort-date')?.classList.remove('active')
     document.getElementById('sort-volume')?.classList.remove('active')
     document.getElementById('sort-participants')?.classList.remove('active')
@@ -851,6 +866,7 @@ function sortMarkets(sortBy) {
         activeBtn.classList.add('active')
     }
     
+    console.log('EventBET: Sorting by:', sortBy)
     renderMarkets()
 }
 
