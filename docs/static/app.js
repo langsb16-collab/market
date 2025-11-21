@@ -966,7 +966,13 @@ function renderMarkets() {
         return card
     }).join('')
     
+    console.log('EventBET: Generated HTML length:', html.length)
+    console.log('EventBET: HTML preview (first 500 chars):', html.substring(0, 500))
+    
     container.innerHTML = html
+    
+    console.log('EventBET: HTML injected into container')
+    console.log('EventBET: Container children count:', container.children.length)
     
     // Show/hide load more button
     const loadMoreBtn = document.getElementById('load-more-btn')
