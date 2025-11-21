@@ -827,26 +827,44 @@ async function submitBulkIssues(event) {
         // 기존 이슈와 병합
         const mergedIssues = [...existingIssues, ...issues];
         
+        // "즉시 공개" 체크박스 확인
+        const publishImmediately = document.getElementById('publish-immediately')?.checked;
+        
+        // 즉시 공개인 경우 상태를 published로 변경
+        if (publishImmediately) {
+            mergedIssues.forEach(issue => {
+                // 새로 추가된 이슈만 published로 변경
+                const isNewIssue = issues.some(newIssue => 
+                    newIssue.title_ko === issue.title_ko && 
+                    issue.status === 'pending'
+                );
+                if (isNewIssue) {
+                    issue.status = 'published';
+                    issue.publishedAt = new Date().toISOString();
+                }
+            });
+        }
+        
         // GitHub에 저장
         await window.githubAPI.updateFile(
             'docs/data/issues.json',
             mergedIssues,
-            `${issues.length}개의 새 이슈 추가`
+            publishImmediately 
+                ? `${issues.length}개의 새 이슈 추가 (즉시 공개)`
+                : `${issues.length}개의 새 이슈 추가`
         );
-        
-        // "즉시 공개" 체크박스 확인
-        const publishImmediately = document.getElementById('publish-immediately')?.checked;
         
         closeBulkIssueModal();
         loadAdminIssues();
         
-        // 즉시 공개 옵션이 체크된 경우
+        // 성공 메시지
         if (publishImmediately) {
-            alert(`✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n메인 사이트에 공개 중...\n(GitHub Pages 반영까지 1-2분 소요)`);
-            
-            setTimeout(() => {
-                syncIssuesToMainSite();
-            }, 500);
+            alert(
+                `✅ ${issues.length}개의 이슈가 메인 사이트에 공개되었습니다!\n\n` +
+                `💡 메인 페이지를 열어서 확인하세요:\n` +
+                `https://cashiq.my\n\n` +
+                `(GitHub Pages 반영까지 1-2분 소요)`
+            );
         } else {
             alert(
                 `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
@@ -1562,6 +1580,22 @@ async function createTestIssues() {
     ];
     
     try {
+        // 사용자에게 즉시 공개 여부 확인
+        const publishNow = confirm(
+            '🧪 테스트 이슈 3개를 생성합니다.\n\n' +
+            '즉시 메인 사이트에 공개하시겠습니까?\n\n' +
+            '확인: 즉시 공개 (published)\n' +
+            '취소: 대기 상태 (pending)'
+        );
+        
+        // 즉시 공개 선택 시 상태 변경
+        if (publishNow) {
+            testIssues.forEach(issue => {
+                issue.status = 'published';
+                issue.publishedAt = new Date().toISOString();
+            });
+        }
+        
         // 현재 이슈 목록 가져오기
         const response = await fetch('/data/issues.json?_=' + Date.now());
         const existingIssues = await response.json();
@@ -1573,10 +1607,25 @@ async function createTestIssues() {
         await window.githubAPI.updateFile(
             'docs/data/issues.json',
             mergedIssues,
-            '테스트 이슈 3개 추가'
+            publishNow ? '테스트 이슈 3개 추가 (즉시 공개)' : '테스트 이슈 3개 추가'
         );
         
-        alert('✅ 테스트 이슈 3개가 생성되었습니다! (GitHub Pages 반영까지 1-2분 소요)');
+        if (publishNow) {
+            alert(
+                '✅ 테스트 이슈 3개가 메인 사이트에 공개되었습니다!\n\n' +
+                '💡 메인 페이지를 열어서 확인하세요:\n' +
+                'https://cashiq.my\n\n' +
+                '(GitHub Pages 반영까지 1-2분 소요)'
+            );
+        } else {
+            alert(
+                '✅ 테스트 이슈 3개가 생성되었습니다!\n\n' +
+                '💡 pending 상태로 저장되었습니다.\n' +
+                '"메인 사이트에 반영" 버튼으로 공개하세요.\n\n' +
+                '(GitHub Pages 반영까지 1-2분 소요)'
+            );
+        }
+        
         loadAdminIssues();
     } catch (error) {
         console.error('Failed to create test issues:', error);
