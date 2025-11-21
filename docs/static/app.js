@@ -1039,7 +1039,7 @@ function renderMarkets() {
         card += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">'
         card += category.icon + ' ' + getCategoryName(category)
         card += '</span>'
-        card += '<span class="text-xs font-bold text-green-600">$' + formatNumber(event.total_volume) + '</span>'
+        card += '<span class="text-xs font-bold text-green-600">' + formatNumber(event.total_volume) + ' USDT</span>'
         card += '</div>'
         card += '<h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">' + getEventTitle(event) + '</h3>'
         card += '<div class="flex items-center text-xs text-gray-500 mb-2">'
@@ -1136,7 +1136,7 @@ function openBetModal(eventId) {
             
             <div class="flex items-center text-sm text-gray-600">
                 <i class="fas fa-chart-line mr-2"></i>
-                <span>${translations[currentLang].volume}: $${formatNumber(event.total_volume)}</span>
+                <span>${translations[currentLang].volume}: ${formatNumber(event.total_volume)} USDT</span>
             </div>
             
             ${event.outcomes && event.outcomes.length > 0 ? `
