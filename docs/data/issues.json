@@ -113,33 +113,5 @@
     "createdAt": "2025-11-21T12:17:40.147Z",
     "publishedAt": "2025-11-21T12:17:40.407Z",
     "updatedAt": "2025-11-21T12:25:59.116Z"
-  },
-  {
-    "id": 1763727579724,
-    "category_id": 1,
-    "category_slug": "politics",
-    "title_ko": "중국이 희토류 수출 금지?  YES ? NO ?",
-    "title_en": "Is China going to ban rare-earth exports?  YES ? NO ?",
-    "title_zh": "中国要禁止稀土出口吗？YES ? NO ?",
-    "title_ja": "中国はレアアースの輸出を禁止しないのか？ YES ? NO ?",
-    "description_ko": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_en": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_zh": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "description_ja": "중·일 관계가 최악으로 치닫는다면 중국이 희토류 수출 금지와 중국 진출 일본 기업 제재 등의 초강경 카드를 꺼낼 가능성도 배제할 수 없는 상황이다. ",
-    "resolve_date": "2025-12-31",
-    "total_volume": 100000,
-    "status": "published",
-    "outcomes": [
-      {
-        "name": "예",
-        "probability": 0.57
-      },
-      {
-        "name": "아니오",
-        "probability": 0.43000000000000005
-      }
-    ],
-    "createdAt": "2025-11-21T12:19:39.723Z",
-    "publishedAt": "2025-11-21T12:19:40.231Z"
   }
 ]
