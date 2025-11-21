@@ -910,6 +910,7 @@ function renderMarkets() {
     
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
     console.log('EventBET: Events to show:', eventsToShow.length)
+    console.log('EventBET: eventsToShow is array:', Array.isArray(eventsToShow))
     
     // 첫 번째 이벤트 샘플 출력
     if (eventsToShow.length > 0) {
@@ -918,10 +919,17 @@ function renderMarkets() {
             category_id: eventsToShow[0].category_id,
             title_ko: eventsToShow[0].title_ko
         })
+    } else {
+        console.warn('EventBET: No events to show!')
+        container.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500">표시할 마켓이 없습니다.</p></div>'
+        return
     }
+    
+    console.log('EventBET: Starting to map events...')
     
     const html = eventsToShow.map((event, index) => {
         try {
+            console.log(`EventBET: Rendering event ${index}/${eventsToShow.length}`, event.id)
             const category = categories.find(c => c.id === event.category_id)
             
             // 카테고리를 찾지 못한 경우 에러 로그 및 스킵
