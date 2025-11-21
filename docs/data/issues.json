@@ -83,5 +83,33 @@
     ],
     "createdAt": "2025-11-21T10:33:41.915Z",
     "publishedAt": "2025-11-21T10:33:42.694Z"
+  },
+  {
+    "id": 1763727460148,
+    "category_id": 1,
+    "category_slug": "politics",
+    "title_ko": "중국이 희토류 수출 금지?  YES ? NO ?",
+    "title_en": "Is China going to ban rare-earth exports?  YES ? NO ?",
+    "title_zh": "中国要禁止稀土出口吗？YES ? NO ?",
+    "title_ja": "中国はレアアースの輸出を禁止しないのか？ YES ? NO ?",
+    "description_ko": "중국이 희토류 수출 금지?  YES ? NO ?에 대한 예측 마켓입니다.",
+    "description_en": "Prediction market for Is China going to ban rare-earth exports?  YES ? NO ?.",
+    "description_zh": "关于中国要禁止稀土出口吗？YES ? NO ?的预测市场。",
+    "description_ja": "中国はレアアースの輸出を禁止しないのか？ YES ? NO ?についての予測市場です。",
+    "resolve_date": "2025-12-31",
+    "total_volume": 100000,
+    "status": "published",
+    "outcomes": [
+      {
+        "name": "예",
+        "probability": 0.58
+      },
+      {
+        "name": "아니오",
+        "probability": 0.42000000000000004
+      }
+    ],
+    "createdAt": "2025-11-21T12:17:40.147Z",
+    "publishedAt": "2025-11-21T12:17:40.407Z"
   }
 ]
