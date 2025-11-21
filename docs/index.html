@@ -769,8 +769,11 @@
                     <span data-ko="인기 마켓" data-en="Popular Markets" data-zh="热门市场" data-ja="人気市場">인기 마켓</span>
                 </h3>
                 <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
-                    <button onclick="sortMarkets('date')" id="sort-date" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                        <i class="fas fa-calendar mr-1"></i><span data-ko="날짜순서" data-en="Latest" data-zh="日期顺序" data-ja="日付順">날짜순서</span>
+                    <button onclick="sortMarkets('recent')" id="sort-recent" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                        <i class="fas fa-clock mr-1"></i><span data-ko="최근등록순" data-en="Recently Added" data-zh="最新注册" data-ja="最近登録順">최근등록순</span>
+                    </button>
+                    <button onclick="sortMarkets('date')" id="sort-date" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                        <i class="fas fa-calendar mr-1"></i><span data-ko="결과발표일" data-en="Resolution Date" data-zh="结果日期" data-ja="結果日付">결과발표일</span>
                     </button>
                     <button onclick="sortMarkets('volume')" id="sort-volume" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
                         <i class="fas fa-chart-bar mr-1"></i><span data-ko="배팅규모" data-en="Volume" data-zh="交易量" data-ja="取引量">배팅규모</span>
