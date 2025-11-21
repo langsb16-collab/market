@@ -805,19 +805,34 @@ function getFilteredEvents() {
         console.log('EventBET: After search filter:', filtered.length)
     }
     
-    // Apply sorting
-    if (currentSortBy === 'date') {
-        // Sort by resolve_date (earliest first)
-        filtered.sort((a, b) => new Date(a.resolve_date) - new Date(b.resolve_date))
-    } else if (currentSortBy === 'volume') {
-        // Sort by total_volume (highest first)
-        filtered.sort((a, b) => b.total_volume - a.total_volume)
-    } else if (currentSortBy === 'participants') {
-        // Sort by participants (highest first) - 이용객 숫자
-        filtered.sort((a, b) => b.participants - a.participants)
+    // 관리자 이슈와 일반 이슈 분리
+    const adminIssues = filtered.filter(e => e.status === 'published' && e.publishedAt)
+    const regularIssues = filtered.filter(e => !e.status || e.status !== 'published' || !e.publishedAt)
+    
+    console.log('EventBET: Admin issues:', adminIssues.length, 'Regular issues:', regularIssues.length)
+    
+    // Apply sorting to each group
+    const sortFunction = (a, b) => {
+        if (currentSortBy === 'date') {
+            return new Date(a.resolve_date) - new Date(b.resolve_date)
+        } else if (currentSortBy === 'volume') {
+            return b.total_volume - a.total_volume
+        } else if (currentSortBy === 'participants') {
+            return b.participants - a.participants
+        }
+        return 0
     }
     
-    console.log('EventBET: Final filtered events:', filtered.length)
+    adminIssues.sort(sortFunction)
+    regularIssues.sort(sortFunction)
+    
+    // 관리자 이슈를 최상단에 배치 (최신순으로 정렬)
+    adminIssues.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    
+    // 합치기: 관리자 이슈 먼저, 그 다음 일반 이슈
+    filtered = [...adminIssues, ...regularIssues]
+    
+    console.log('EventBET: Final filtered events:', filtered.length, '(admin first)')
     return filtered
 }
 
