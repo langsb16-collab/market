@@ -1167,6 +1167,49 @@
                     </div>
                 </div>
                 
+                <!-- yes/no 확률 편집 -->
+                <div class="mb-4 bg-blue-50 rounded-lg p-4">
+                    <h4 class="text-sm font-bold text-blue-800 mb-3">
+                        <i class="fas fa-percentage mr-2"></i>yes/no 표시 비율 (%)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <span class="text-green-600">✓</span> 예 (Yes) %
+                            </label>
+                            <input 
+                                type="number" 
+                                id="edit-probability-yes" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                                min="0" 
+                                max="100" 
+                                step="0.1"
+                                required
+                                oninput="updateNoProbability()"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <span class="text-red-600">✗</span> 아니오 (No) %
+                            </label>
+                            <input 
+                                type="number" 
+                                id="edit-probability-no" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-100" 
+                                min="0" 
+                                max="100" 
+                                step="0.1"
+                                required
+                                readonly
+                            >
+                        </div>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        예(Yes) 비율을 입력하면 아니오(No) 비율은 자동으로 계산됩니다. (합계: 100%)
+                    </p>
+                </div>
+                
                 <div class="flex space-x-3">
                     <button type="submit" class="btn-primary flex-1">
                         <i class="fas fa-save mr-2"></i>저장
@@ -1231,6 +1274,28 @@
             if (confirm('로그아웃 하시겠습니까?')) {
                 sessionStorage.removeItem('admin_logged_in');
                 location.reload();
+            }
+        };
+        
+        // yes/no 확률 자동 계산 함수
+        window.updateNoProbability = function() {
+            const yesInput = document.getElementById('edit-probability-yes');
+            const noInput = document.getElementById('edit-probability-no');
+            
+            if (yesInput && noInput) {
+                const yesProb = parseFloat(yesInput.value) || 0;
+                const noProb = 100 - yesProb;
+                
+                // 범위 검증
+                if (yesProb < 0) {
+                    yesInput.value = 0;
+                    noInput.value = 100;
+                } else if (yesProb > 100) {
+                    yesInput.value = 100;
+                    noInput.value = 0;
+                } else {
+                    noInput.value = noProb.toFixed(1);
+                }
             }
         };
     </script>
