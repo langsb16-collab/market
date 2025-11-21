@@ -519,6 +519,12 @@ window.addEventListener('storage', (e) => {
         console.log('🔄 Admin issues updated in storage (storage event), reloading page...')
         location.reload()
     }
+    
+    // "메인 사이트에 반영" 버튼 트리거 감지
+    if (e.key === 'admin_issues_sync_trigger') {
+        console.log('🔄 Admin issues sync triggered, reloading page...')
+        location.reload()
+    }
 })
 
 // 페이지에 포커스가 돌아올 때 체크

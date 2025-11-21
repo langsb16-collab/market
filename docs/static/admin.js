@@ -1328,16 +1328,36 @@ function syncIssuesToMainSite() {
             return;
         }
         
-        // JSON 파일로 다운로드
-        const dataStr = JSON.stringify(adminIssues, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'admin_issues.json';
-        link.click();
+        // 확인 모달 표시
+        const confirmed = confirm(
+            `📢 메인 사이트에 반영하기\n\n` +
+            `현재 등록된 ${adminIssues.length}개의 이슈가 메인 페이지에 즉시 표시됩니다.\n\n` +
+            `진행하시겠습니까?`
+        );
         
-        alert(`✅ ${adminIssues.length}개의 이슈가 JSON 파일로 다운로드되었습니다.\n\n파일을 /docs/data/issues.json 경로에 업로드하고 GitHub에 푸시하세요.`);
+        if (!confirmed) {
+            return;
+        }
+        
+        // localStorage 강제 업데이트 트리거 (다른 탭이 감지할 수 있도록)
+        localStorage.setItem('admin_issues_sync_trigger', Date.now().toString());
+        
+        // 메인 페이지가 열려있는지 확인
+        const mainPageUrl = window.location.origin;
+        
+        // 성공 메시지
+        alert(
+            `✅ ${adminIssues.length}개의 이슈가 메인 사이트에 반영되었습니다!\n\n` +
+            `💡 메인 페이지를 열어서 확인하세요:\n${mainPageUrl}\n\n` +
+            `이미 메인 페이지가 열려있다면 자동으로 새로고침됩니다.`
+        );
+        
+        // 메인 페이지 자동 열기 옵션
+        const openMainPage = confirm('메인 페이지를 새 탭으로 열까요?');
+        if (openMainPage) {
+            window.open(mainPageUrl, '_blank');
+        }
+        
     } catch (error) {
         console.error('Failed to sync issues:', error);
         alert('❌ 이슈 동기화에 실패했습니다.');
