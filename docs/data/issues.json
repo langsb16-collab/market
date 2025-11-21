@@ -17,14 +17,15 @@
     "outcomes": [
       {
         "name": "예",
-        "probability": 0.5
+        "probability": 0.65
       },
       {
         "name": "아니오",
-        "probability": 0.5
+        "probability": 0.35
       }
     ],
     "createdAt": "2025-11-21T03:08:16.525Z",
-    "publishedAt": "2025-11-21T03:16:21.020Z"
+    "publishedAt": "2025-11-21T03:16:21.020Z",
+    "updatedAt": "2025-11-21T04:26:22.453Z"
   }
 ]
