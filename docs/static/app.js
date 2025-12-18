@@ -596,8 +596,40 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUITexts()
     renderCategories()
     
-    // URL 파라미터로 테스트 이슈 자동 생성 (모바일 테스트용)
+    // URL 파라미터로 이슈 로드 (PC→모바일 공유용)
     const urlParams = new URLSearchParams(window.location.search)
+    const loadIssuesParam = urlParams.get('loadissues')
+    
+    if (loadIssuesParam) {
+        try {
+            console.log('EventBET: Loading issues from URL parameter...')
+            const issuesJson = decodeURIComponent(escape(atob(loadIssuesParam)))
+            const sharedIssues = JSON.parse(issuesJson)
+            
+            // 기존 이슈와 병합
+            const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
+            const mergedIssues = [...existingIssues, ...sharedIssues]
+            
+            // 중복 제거 (title_ko 기준)
+            const uniqueIssues = mergedIssues.filter((issue, index, self) =>
+                index === self.findIndex((t) => t.title_ko === issue.title_ko)
+            )
+            
+            localStorage.setItem('admin_issues', JSON.stringify(uniqueIssues))
+            console.log(`EventBET: ✅ Loaded ${sharedIssues.length} issues from URL`)
+            
+            // URL 파라미터 제거하고 리다이렉트
+            window.history.replaceState({}, document.title, window.location.origin + window.location.pathname)
+            alert(`✅ ${sharedIssues.length}개의 이슈가 성공적으로 로드되었습니다!\n\n페이지를 새로고침합니다.`)
+            location.reload()
+            return
+        } catch (error) {
+            console.error('EventBET: Failed to load issues from URL:', error)
+            alert('❌ 이슈 로드에 실패했습니다.')
+        }
+    }
+    
+    // URL 파라미터로 테스트 이슈 자동 생성 (모바일 테스트용)
     if (urlParams.get('testissues') === 'true') {
         console.log('EventBET: Creating test issues...')
         const testIssues = [

@@ -1363,41 +1363,27 @@ function saveEditedIssue(event) {
     }
 }
 
-async function syncIssuesToMainSite() {
+function syncIssuesToMainSite() {
     try {
-        // GitHub API 설정 확인
-        if (!window.githubAPI.isConfigured()) {
-            alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-            return;
-        }
+        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         
-        // 현재 이슈 목록 가져오기
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        const allIssues = await response.json();
-        
-        if (allIssues.length === 0) {
+        if (adminIssues.length === 0) {
             alert('반영할 이슈가 없습니다.');
             return;
         }
         
-        // pending 상태의 이슈만 카운트
-        const pendingIssues = allIssues.filter(issue => issue.status === 'pending');
-        const publishedIssues = allIssues.filter(issue => issue.status === 'published');
+        // 이슈 데이터를 Base64로 인코딩
+        const issuesJson = JSON.stringify(adminIssues);
+        const base64Issues = btoa(unescape(encodeURIComponent(issuesJson)));
         
-        if (pendingIssues.length === 0) {
-            alert(
-                `ℹ️ 대기 중인 이슈가 없습니다.\n\n` +
-                `이미 공개된 이슈: ${publishedIssues.length}개\n` +
-                `전체 이슈: ${allIssues.length}개`
-            );
-            return;
-        }
+        // 메인 페이지 URL + 이슈 데이터
+        const mainPageUrl = window.location.origin;
+        const shareUrl = `${mainPageUrl}/?loadissues=${base64Issues}`;
         
         // 확인 모달 표시
         const confirmed = confirm(
             `📢 메인 사이트에 반영하기\n\n` +
-            `대기 중인 ${pendingIssues.length}개의 이슈를 공개합니다.\n` +
-            `(이미 공개된 이슈: ${publishedIssues.length}개)\n\n` +
+            `현재 등록된 ${adminIssues.length}개의 이슈를 공유합니다.\n\n` +
             `진행하시겠습니까?`
         );
         
@@ -1405,44 +1391,77 @@ async function syncIssuesToMainSite() {
             return;
         }
         
-        // 모든 pending 이슈를 published로 변경
-        const updatedIssues = allIssues.map(issue => {
-            if (issue.status === 'pending') {
-                return { ...issue, status: 'published', publishedAt: new Date().toISOString() };
-            }
-            return issue;
-        });
+        // localStorage 강제 업데이트 트리거 (같은 기기의 다른 탭용)
+        localStorage.setItem('admin_issues_sync_trigger', Date.now().toString());
         
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            updatedIssues,
-            `${pendingIssues.length}개의 이슈를 메인 사이트에 공개`
-        );
+        // QR 코드 모달 생성
+        const qrModal = document.createElement('div');
+        qrModal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
         
-        // 메인 페이지 URL
-        const mainPageUrl = window.location.origin;
+        qrModal.innerHTML = `
+            <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; text-align: center;">
+                <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1d1d1f;">
+                    📱 모바일에서 스캔하세요
+                </h3>
+                <p style="color: #666; margin-bottom: 24px;">
+                    모바일 기기로 QR 코드를 스캔하면<br>
+                    ${adminIssues.length}개의 이슈가 자동으로 추가됩니다.
+                </p>
+                <div id="qrcode" style="display: flex; justify-content: center; margin: 24px 0;"></div>
+                <p style="font-size: 12px; color: #999; margin-bottom: 16px;">
+                    또는 아래 링크를 모바일에서 직접 열어주세요
+                </p>
+                <input 
+                    type="text" 
+                    value="${shareUrl}" 
+                    readonly 
+                    onclick="this.select()"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; margin-bottom: 16px;"
+                >
+                <div style="display: flex; gap: 8px;">
+                    <button 
+                        onclick="navigator.clipboard.writeText('${shareUrl}').then(() => alert('링크가 복사되었습니다!'));"
+                        style="flex: 1; background: #007aff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;"
+                    >
+                        📋 링크 복사
+                    </button>
+                    <button 
+                        onclick="this.closest('div').parentElement.parentElement.remove()"
+                        style="flex: 1; background: #f5f5f7; color: #1d1d1f; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;"
+                    >
+                        닫기
+                    </button>
+                </div>
+            </div>
+        `;
         
-        // 성공 메시지
-        alert(
-            `✅ ${pendingIssues.length}개의 이슈가 메인 사이트에 공개되었습니다!\n\n` +
-            `💡 메인 페이지에서 "최근등록순" 필터를 클릭하여 확인하세요:\n${mainPageUrl}\n\n` +
-            `📌 즉시 공개된 이슈는 "최근등록순" 정렬에서 맨 위에 표시됩니다.\n\n` +
-            `(GitHub Pages 반영까지 1-2분 소요)`
-        );
+        document.body.appendChild(qrModal);
         
-        // 메인 페이지 자동 열기 옵션
-        const openMainPage = confirm('메인 페이지를 새 탭으로 열까요?');
-        if (openMainPage) {
-            window.open(mainPageUrl, '_blank');
-        }
-        
-        // 이슈 목록 새로고침
-        loadAdminIssues();
+        // QR 코드 생성 (QRCode.js 라이브러리 사용)
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        script.onload = () => {
+            new QRCode(document.getElementById('qrcode'), {
+                text: shareUrl,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff'
+            });
+        };
+        document.head.appendChild(script);
         
     } catch (error) {
         console.error('Failed to sync issues:', error);
-        alert('❌ 이슈 동기화에 실패했습니다: ' + error.message);
+        alert('❌ 이슈 동기화에 실패했습니다.');
     }
 }
 
