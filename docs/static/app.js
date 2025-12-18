@@ -596,6 +596,56 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUITexts()
     renderCategories()
     
+    // URL 파라미터로 테스트 이슈 자동 생성 (모바일 테스트용)
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('testissues') === 'true') {
+        console.log('EventBET: Creating test issues...')
+        const testIssues = [
+            {
+                id: Date.now() + 1,
+                category_id: 1,
+                category_slug: 'politics',
+                title_ko: '한국 주식 코스피 5000 가능?',
+                title_en: 'KOSPI 5,000 achievable or not?',
+                title_zh: '韩国股市KOSPI指数是否会达到5000？',
+                title_ja: '韓国株式KOSPI指数5000は？',
+                description_ko: '한국 주식 코스피 5000 가능?에 대한 예측 마켓입니다.',
+                description_en: 'Prediction market for KOSPI 5,000 achievable or not?.',
+                description_zh: '关于韩国股市KOSPI指数是否会达到5000？的预测市场。',
+                description_ja: '韓国株式KOSPI指数5000は？についての予測市場です。',
+                resolve_date: '2026-06-30',
+                total_volume: 100000,
+                status: 'published',
+                outcomes: [
+                    { name: '예', probability: 0.56 },
+                    { name: '아니오', probability: 0.44 }
+                ],
+                createdAt: new Date().toISOString(),
+                publishedAt: new Date().toISOString()
+            },
+            {
+                id: Date.now() + 2,
+                category_id: 1,
+                category_slug: 'politics',
+                title_ko: '성국유 일본돈 1000가치?',
+                title_en: 'Is KOSPI 5,000 achievable or not? (By June 30, 2026)',
+                title_zh: '韩国股市KOSPI指数在5000之前还会上涨吗？（截至2026年6月30日）',
+                title_ja: 'KOSPIは$150K突破？',
+                resolve_date: '2026-06-30',
+                total_volume: 80000,
+                status: 'published',
+                outcomes: [
+                    { name: '예', probability: 0.65 },
+                    { name: '아니오', probability: 0.35 }
+                ],
+                createdAt: new Date().toISOString(),
+                publishedAt: new Date().toISOString()
+            }
+        ]
+        localStorage.setItem('admin_issues', JSON.stringify(testIssues))
+        console.log('EventBET: ✅ Test issues created!')
+    }
+    
     // 관리자 이슈 로드 (DOM 준비 후)
     console.log('EventBET: Loading admin issues from localStorage...')
     const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
