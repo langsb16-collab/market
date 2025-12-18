@@ -478,18 +478,17 @@ if (events.length > 0) {
     console.log('EventBET: Available categories:', categories.map(c => c.id))
 }
 
-// 관리자가 등록한 이슈 병합 (GitHub JSON 파일에서 로드)
-async function loadAdminIssuesFromGitHub() {
+// 관리자가 등록한 이슈 병합 (localStorage에서 로드)
+function loadAdminIssuesFromStorage() {
     try {
-        console.log('EventBET: Loading admin issues from GitHub...')
-        const response = await fetch('/data/issues.json?_=' + Date.now())
+        console.log('EventBET: Loading admin issues from localStorage...')
+        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
+        console.log('EventBET: Admin issues loaded from localStorage:', adminIssues.length, 'total issues')
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+        if (adminIssues.length === 0) {
+            console.log('EventBET: No admin issues found in localStorage')
+            return
         }
-        
-        const adminIssues = await response.json()
-        console.log('EventBET: Admin issues loaded from GitHub:', adminIssues.length, 'total issues')
         
         // 각 이슈의 status 확인
         adminIssues.forEach((issue, idx) => {
@@ -498,7 +497,7 @@ async function loadAdminIssuesFromGitHub() {
         
         // published 상태의 이슈만 표시
         const publishedIssues = adminIssues.filter(issue => issue.status === 'published')
-        const pendingIssues = adminIssues.filter(issue => issue.status === 'pending')
+        const pendingIssues = adminIssues.filter(issue => issue.status !== 'published')
         
         console.log(`EventBET: Published issues: ${publishedIssues.length}, Pending issues: ${pendingIssues.length}`)
         
@@ -548,9 +547,9 @@ async function loadAdminIssuesFromGitHub() {
 console.log('EventBET: Loading admin issues from localStorage...')
 const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
 console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
-loadAdminIssuesFromGitHub()
+loadAdminIssuesFromStorage()
 
-console.log(`Generated ${events.length} events (including ${adminIssuesCount} admin issues)`)
+console.log(`EventBET: Generated ${events.length} events (including admin issues)`)
 
 // localStorage 변경 감지 (관리자 페이지에서 이슈 등록 시)
 // storage 이벤트는 다른 탭/창에서만 발생하므로, 추가로 focus 이벤트도 감지
