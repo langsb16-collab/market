@@ -757,13 +757,38 @@ function clearIssueFormInputs() {
     }
 }
 
-function clearAllIssues() {
-    localStorage.removeItem('admin_issues');
-    console.log('✅ All issues cleared from localStorage');
-    location.reload();
+async function clearAllIssues() {
+    if (!confirm('정말로 모든 이슈를 삭제하시겠습니까?\n\n※ 이 작업은 되돌릴 수 없습니다!')) {
+        return;
+    }
+    
+    // GitHub API 확인
+    if (!window.githubAPI || !window.githubAPI.isConfigured()) {
+        alert('GitHub API가 설정되지 않았습니다.\n\n설정 → GitHub 연동에서 먼저 설정해주세요.');
+        return;
+    }
+    
+    try {
+        // GitHub에 빈 배열로 저장
+        const result = await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            JSON.stringify([], null, 2),
+            `Clear all issues - ${new Date().toLocaleString('ko-KR')}`
+        );
+        
+        if (result.success) {
+            alert('✅ 모든 이슈가 삭제되었습니다!');
+            location.reload();
+        } else {
+            throw new Error(result.error || 'GitHub 저장 실패');
+        }
+    } catch (error) {
+        console.error('❌ Failed to clear issues:', error);
+        alert('❌ 이슈 삭제 실패: ' + error.message);
+    }
 }
 
-function submitBulkIssues(event) {
+async function submitBulkIssues(event) {
     event.preventDefault();
     
     if (issueFormCount === 0) {
@@ -790,7 +815,7 @@ function submitBulkIssues(event) {
             const selectedCategory = CATEGORIES.find(c => c.slug === category);
             
             issues.push({
-                id: Date.now() + i, // 고유 ID 생성
+                id: Date.now() + i,
                 category_id: selectedCategory.id,
                 category_slug: category,
                 title_ko: titleKo,
@@ -803,7 +828,7 @@ function submitBulkIssues(event) {
                 description_ja: description || `${titleJa}についての予測市場です。`,
                 resolve_date: resolveDate,
                 total_volume: totalVolume,
-                status: 'published', // 항상 즉시 공개
+                status: 'published',
                 outcomes: [
                     { name: '예', probability: yesProb },
                     { name: '아니오', probability: 1 - yesProb }
@@ -819,31 +844,42 @@ function submitBulkIssues(event) {
         return;
     }
     
-    // localStorage에 저장 (기존 이슈와 병합)
     try {
-        // 현재 이슈 목록 가져오기
-        const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        // GitHub API 확인
+        if (!window.githubAPI || !window.githubAPI.isConfigured()) {
+            alert('GitHub API가 설정되지 않았습니다.\n\n설정 → GitHub 연동에서 먼저 설정해주세요.');
+            return;
+        }
         
-        // 기존 이슈와 병합
+        // 기존 issues.json 파일 읽기
+        let existingIssues = [];
+        try {
+            const response = await fetch('/data/issues.json?_=' + Date.now());
+            if (response.ok) {
+                existingIssues = await response.json();
+            }
+        } catch (e) {
+            console.log('No existing issues file, creating new one');
+        }
+        
+        // 새 이슈 병합
         const mergedIssues = [...existingIssues, ...issues];
         
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(mergedIssues));
-        
-        // 메인 페이지 새로고침 트리거
-        window.dispatchEvent(new CustomEvent('adminIssuesUpdated', { 
-            detail: { count: mergedIssues.length } 
-        }));
-        
-        closeBulkIssueModal();
-        loadAdminIssues();
-        
-        // 성공 메시지
-        alert(
-            `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
-            `💡 메인 페이지(cashiq.my)를 새로고침하면 바로 확인할 수 있습니다.\n\n` +
-            `📌 등록된 이슈는 "인기 마켓" 섹션에 표시됩니다.`
+        // GitHub에 자동 저장
+        const result = await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            JSON.stringify(mergedIssues, null, 2),
+            `Add ${issues.length} new issue(s) - ${new Date().toLocaleString('ko-KR')}`
         );
+        
+        if (result.success) {
+            alert(`✅ ${issues.length}개 이슈가 등록되었습니다!\n\n1-2분 후 PC와 모바일 모두에서 확인하세요:\nhttps://cashiq.my\n\n※ GitHub Pages 반영까지 시간이 걸릴 수 있습니다.`);
+            closeBulkIssueModal();
+            loadAdminIssues();
+        } else {
+            throw new Error(result.error || 'GitHub 저장 실패');
+        }
+        
     } catch (error) {
         console.error('Failed to save issues:', error);
         alert('❌ 이슈 저장에 실패했습니다: ' + error.message);
@@ -854,11 +890,19 @@ function submitBulkIssues(event) {
 let filteredIssues = [];
 let selectedIssueIndices = new Set();
 
-function loadAdminIssues() {
+async function loadAdminIssues() {
     console.log('🔄 loadAdminIssues() started');
     try {
-        // localStorage에서 이슈 목록 가져오기
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        // /data/issues.json 파일에서 이슈 목록 가져오기
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        let issues = [];
+        
+        if (response.ok) {
+            issues = await response.json();
+            console.log('📥 Loaded issues from /data/issues.json');
+        } else {
+            console.log('⚠️ No issues.json file found, using empty array');
+        }
         
         // 전역 변수에 저장
         window.adminIssues = issues;
@@ -1177,7 +1221,7 @@ function updateSelectedCount() {
     }
 }
 
-function bulkDeleteIssues() {
+async function bulkDeleteIssues() {
     console.log('🗑️ bulkDeleteIssues() called');
     console.log('Selected indices:', Array.from(selectedIssueIndices));
     
@@ -1191,8 +1235,21 @@ function bulkDeleteIssues() {
         return;
     }
     
+    // GitHub API 확인
+    if (!window.githubAPI || !window.githubAPI.isConfigured()) {
+        alert('GitHub API가 설정되지 않았습니다.\n\n설정 → GitHub 연동에서 먼저 설정해주세요.');
+        return;
+    }
+    
     try {
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        // 현재 issues.json 파일 읽기
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        let issues = [];
+        
+        if (response.ok) {
+            issues = await response.json();
+        }
+        
         console.log('Before deletion:', issues.length);
         
         // 선택된 인덱스를 내림차순으로 정렬하여 삭제 (뒤에서부터 삭제해야 인덱스가 안 꼬임)
@@ -1206,24 +1263,44 @@ function bulkDeleteIssues() {
         
         console.log('After deletion:', issues.length);
         
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
+        // GitHub에 저장
+        const result = await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            JSON.stringify(issues, null, 2),
+            `Delete ${sortedIndices.length} issue(s) - ${new Date().toLocaleString('ko-KR')}`
+        );
         
-        selectedIssueIndices.clear();
-        
-        alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
-        loadAdminIssues();
+        if (result.success) {
+            selectedIssueIndices.clear();
+            alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
+            loadAdminIssues();
+        } else {
+            throw new Error(result.error || 'GitHub 저장 실패');
+        }
     } catch (error) {
         console.error('❌ Failed to delete issues:', error);
-        alert('❌ 이슈 삭제에 실패했습니다.');
+        alert('❌ 이슈 삭제에 실패했습니다: ' + error.message);
     }
 }
 
-function deleteAdminIssue(index) {
+async function deleteAdminIssue(index) {
     console.log('🗑️ deleteAdminIssue() called with index:', index);
     
+    // GitHub API 확인
+    if (!window.githubAPI || !window.githubAPI.isConfigured()) {
+        alert('GitHub API가 설정되지 않았습니다.\n\n설정 → GitHub 연동에서 먼저 설정해주세요.');
+        return;
+    }
+    
     try {
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        // 현재 issues.json 파일 읽기
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        let issues = [];
+        
+        if (response.ok) {
+            issues = await response.json();
+        }
+        
         console.log('Total issues before deletion:', issues.length);
         
         if (!issues[index]) {
@@ -1242,11 +1319,16 @@ function deleteAdminIssue(index) {
         
         issues.splice(index, 1);
         
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
-        console.log('✅ Issue deleted. Remaining:', issues.length);
+        // GitHub에 저장
+        const result = await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            JSON.stringify(issues, null, 2),
+            `Delete issue: ${issueToDelete.title_ko} - ${new Date().toLocaleString('ko-KR')}`
+        );
         
-        alert(`✅ 이슈 "${issueToDelete.title_ko}"가 삭제되었습니다.`);
+        if (result.success) {
+            console.log('✅ Issue deleted. Remaining:', issues.length);
+            alert(`✅ 이슈 "${issueToDelete.title_ko}"가 삭제되었습니다.`);
         loadAdminIssues();
     } catch (error) {
         console.error('❌ Failed to delete issue:', error);
@@ -1303,12 +1385,25 @@ function closeEditIssueModal() {
     document.getElementById('edit-issue-modal').style.display = 'none';
 }
 
-function saveEditedIssue(event) {
+async function saveEditedIssue(event) {
     event.preventDefault();
+    
+    // GitHub API 확인
+    if (!window.githubAPI || !window.githubAPI.isConfigured()) {
+        alert('GitHub API가 설정되지 않았습니다.\n\n설정 → GitHub 연동에서 먼저 설정해주세요.');
+        return;
+    }
     
     try {
         const index = parseInt(document.getElementById('edit-issue-index').value);
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
+        
+        // 현재 issues.json 파일 읽기
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        let issues = [];
+        
+        if (response.ok) {
+            issues = await response.json();
+        }
         
         if (!issues[index]) {
             alert('이슈를 찾을 수 없습니다.');
@@ -1351,38 +1446,28 @@ function saveEditedIssue(event) {
         // 배열에서 업데이트
         issues[index] = updatedIssue;
         
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
+        // GitHub에 저장
+        const result = await window.githubAPI.updateFile(
+            'docs/data/issues.json',
+            JSON.stringify(issues, null, 2),
+            `Edit issue: ${updatedIssue.title_ko} - ${new Date().toLocaleString('ko-KR')}`
+        );
         
-        alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다.`);
-        closeEditIssueModal();
-        loadAdminIssues();
+        if (result.success) {
+            alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다.`);
+            closeEditIssueModal();
+            loadAdminIssues();
+        } else {
+            throw new Error(result.error || 'GitHub 저장 실패');
+        }
     } catch (error) {
         console.error('Failed to save issue:', error);
-        alert('❌ 이슈 저장에 실패했습니다.');
+        alert('❌ 이슈 저장에 실패했습니다: ' + error.message);
     }
 }
 
 function syncIssuesToMainSite() {
-    try {
-        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        
-        if (adminIssues.length === 0) {
-            alert('반영할 이슈가 없습니다.');
-            return;
-        }
-        
-        // 이슈 데이터를 Base64로 인코딩
-        const issuesJson = JSON.stringify(adminIssues);
-        const base64Issues = btoa(unescape(encodeURIComponent(issuesJson)));
-        
-        // 메인 페이지 URL + 이슈 데이터
-        const mainPageUrl = window.location.origin;
-        const shareUrl = `${mainPageUrl}/?loadissues=${base64Issues}`;
-        
-        // 확인 모달 표시
-        const confirmed = confirm(
-            `📢 메인 사이트에 반영하기\n\n` +
+    alert('✅ 이슈가 GitHub에 자동으로 반영됩니다!\n\n1-2분 후 PC와 모바일 모두에서 확인하세요:\nhttps://cashiq.my\n\n※ GitHub Pages 반영까지 시간이 걸릴 수 있습니다.'); +
             `현재 등록된 ${adminIssues.length}개의 이슈를 공유합니다.\n\n` +
             `진행하시겠습니까?`
         );
