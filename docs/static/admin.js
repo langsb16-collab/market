@@ -890,12 +890,11 @@ async function submitBulkIssues(event) {
 let filteredIssues = [];
 let selectedIssueIndices = new Set();
 
-async function loadAdminIssues() {
+function loadAdminIssues() {
     console.log('🔄 loadAdminIssues() started');
     try {
-        // GitHub JSON 파일에서 이슈 목록 가져오기
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        const issues = await response.json();
+        // localStorage에서 이슈 목록 가져오기
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         
         // 전역 변수에 저장
         window.adminIssues = issues;
@@ -936,6 +935,7 @@ async function loadAdminIssues() {
         console.log('✅ loadAdminIssues() completed');
     } catch (error) {
         console.error('❌ Failed to load issues:', error);
+        alert('이슈 로드 실패: ' + error.message);
     }
 }
 
@@ -1026,16 +1026,23 @@ function renderIssuesList() {
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     ${filteredIssues.map((issue, displayIndex) => {
-                        // 더 유연한 인덱스 찾기 (다양한 필드명 지원)
-                        const originalIndex = allIssues.findIndex(i => {
-                            const titleMatch = (i.title_ko || i.title) === (issue.title_ko || issue.title);
-                            const categoryMatch = i.category_slug === issue.category_slug;
-                            const dateMatch = (i.resolve_date || i.end_date) === (issue.resolve_date || issue.end_date);
-                            return titleMatch && categoryMatch && dateMatch;
-                        });
-                        const category = CATEGORIES.find(c => c.slug === issue.category_slug);
-                        const isChecked = selectedIssueIndices.has(originalIndex);
-                        return `
+                        try {
+                            // 더 유연한 인덱스 찾기 (다양한 필드명 지원)
+                            const originalIndex = allIssues.findIndex(i => {
+                                const titleMatch = (i.title_ko || i.title) === (issue.title_ko || issue.title);
+                                const categoryMatch = i.category_slug === issue.category_slug;
+                                const dateMatch = (i.resolve_date || i.end_date) === (issue.resolve_date || issue.end_date);
+                                return titleMatch && categoryMatch && dateMatch;
+                            });
+                            
+                            if (originalIndex === -1) {
+                                console.warn('⚠️ Could not find original index for issue:', issue);
+                                return '';
+                            }
+                            
+                            const category = CATEGORIES.find(c => c.slug === issue.category_slug);
+                            const isChecked = selectedIssueIndices.has(originalIndex);
+                            return `
                             <tr class="hover:bg-gray-50 ${isChecked ? 'bg-blue-50' : ''}">
                                 <td class="px-4 py-3 text-center">
                                     <input 
@@ -1065,7 +1072,11 @@ function renderIssuesList() {
                                 </td>
                             </tr>
                         `;
-                    }).join('')}
+                        } catch (error) {
+                            console.error('❌ Error rendering issue at index', displayIndex, error);
+                            return '';
+                        }
+                    }).filter(html => html !== '').join('')}
                 </tbody>
             </table>
         </div>
