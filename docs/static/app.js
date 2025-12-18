@@ -529,9 +529,7 @@ function loadAdminIssuesFromStorage() {
             console.log(`EventBET: ✅ Total events after merge: ${events.length}`)
             console.log(`EventBET: Events array now contains ${publishedIssues.length} admin issues`)
             
-            // 이슈 로드 후 화면 갱신
-            renderMarkets()
-            updateMarketCount()
+            // DOMContentLoaded에서 렌더링을 처리하므로 여기서는 호출하지 않음
         } else {
             console.log('EventBET: ⚠️ No published admin issues found')
             if (pendingIssues.length > 0) {
@@ -542,14 +540,6 @@ function loadAdminIssuesFromStorage() {
         console.error('EventBET: ❌ Failed to load admin issues:', error)
     }
 }
-
-// 관리자 이슈 로드
-console.log('EventBET: Loading admin issues from localStorage...')
-const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
-console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
-loadAdminIssuesFromStorage()
-
-console.log(`EventBET: Generated ${events.length} events (including admin issues)`)
 
 // localStorage 변경 감지 (관리자 페이지에서 이슈 등록 시)
 // storage 이벤트는 다른 탭/창에서만 발생하므로, 추가로 focus 이벤트도 감지
@@ -606,17 +596,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUITexts()
     renderCategories()
     
+    // 관리자 이슈 로드 (DOM 준비 후)
+    console.log('EventBET: Loading admin issues from localStorage...')
+    const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+    console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
+    loadAdminIssuesFromStorage()
+    
     // 관리자 이슈 업데이트 이벤트 리스너
     window.addEventListener('adminIssuesUpdated', () => {
         console.log('Admin issues updated, reloading...')
-        loadAdminIssuesFromGitHub()
-        renderCategories()
-        renderMarkets()
+        location.reload()
     })
     
-    // DOM이 완전히 준비될 때까지 약간 지연
+    // DOM이 완전히 준비될 때까지 약간 지연 후 렌더링
     setTimeout(() => {
         renderMarkets()
+        console.log(`EventBET: ✅ Initial render complete. Total events: ${events.length}`)
     }, 100)
 })
 
