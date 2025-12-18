@@ -478,12 +478,19 @@ if (events.length > 0) {
     console.log('EventBET: Available categories:', categories.map(c => c.id))
 }
 
-// 관리자가 등록한 이슈 병합 (localStorage에서 로드)
-function loadAdminIssuesFromStorage() {
+// 관리자가 등록한 이슈 병합 (JSON 파일에서 로드)
+async function loadAdminIssuesFromFile() {
     try {
-        console.log('EventBET: Loading admin issues from localStorage...')
-        const adminIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
-        console.log('EventBET: Admin issues loaded from localStorage:', adminIssues.length, 'total issues')
+        console.log('EventBET: Loading admin issues from /data/issues.json...')
+        const response = await fetch('/data/issues.json?_=' + Date.now())
+        
+        if (!response.ok) {
+            console.log('EventBET: No issues.json file found')
+            return
+        }
+        
+        const adminIssues = await response.json()
+        console.log('EventBET: Admin issues loaded from file:', adminIssues.length, 'total issues')
         
         if (adminIssues.length === 0) {
             console.log('EventBET: No admin issues found in localStorage')
@@ -541,42 +548,45 @@ function loadAdminIssuesFromStorage() {
     }
 }
 
-// localStorage 변경 감지 (관리자 페이지에서 이슈 등록 시)
-// storage 이벤트는 다른 탭/창에서만 발생하므로, 추가로 focus 이벤트도 감지
-let lastAdminIssuesLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
+// 페이지에 포커스가 돌아올 때 issues.json 새로고침
+let lastIssuesHash = '';
 
-window.addEventListener('storage', (e) => {
-    if (e.key === 'admin_issues' && e.newValue !== e.oldValue) {
-        console.log('🔄 Admin issues updated in storage (storage event), reloading page...')
-        location.reload()
+window.addEventListener('focus', async () => {
+    try {
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        if (response.ok) {
+            const text = await response.text();
+            const currentHash = text.length; // 간단한 해시로 길이 사용
+            
+            if (lastIssuesHash && lastIssuesHash !== currentHash) {
+                console.log('🔄 Issues.json file changed (focus event), reloading page...');
+                location.reload();
+            }
+            lastIssuesHash = currentHash;
+        }
+    } catch (error) {
+        console.log('Failed to check issues.json:', error);
     }
-    
-    // "메인 사이트에 반영" 버튼 트리거 감지
-    if (e.key === 'admin_issues_sync_trigger') {
-        console.log('🔄 Admin issues sync triggered, reloading page...')
-        location.reload()
-    }
-})
+});
 
-// 페이지에 포커스가 돌아올 때 체크
-window.addEventListener('focus', () => {
-    const currentLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
-    if (currentLength !== lastAdminIssuesLength) {
-        console.log('🔄 Admin issues count changed (focus event), reloading page...')
-        console.log(`Previous: ${lastAdminIssuesLength}, Current: ${currentLength}`)
-        location.reload()
+// 주기적으로 issues.json 변경 체크 (5초마다)
+setInterval(async () => {
+    try {
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        if (response.ok) {
+            const text = await response.text();
+            const currentHash = text.length;
+            
+            if (lastIssuesHash && lastIssuesHash !== currentHash) {
+                console.log('🔄 Issues.json file changed (interval check), reloading page...');
+                location.reload();
+            }
+            lastIssuesHash = currentHash;
+        }
+    } catch (error) {
+        console.log('Failed to check issues.json:', error);
     }
-})
-
-// 주기적으로 체크 (5초마다)
-setInterval(() => {
-    const currentLength = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
-    if (currentLength !== lastAdminIssuesLength) {
-        console.log('🔄 Admin issues count changed (interval check), reloading page...')
-        console.log(`Previous: ${lastAdminIssuesLength}, Current: ${currentLength}`)
-        location.reload()
-    }
-}, 5000)
+}, 5000);
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
@@ -596,35 +606,16 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUITexts()
     renderCategories()
     
-    // URL 파라미터로 이슈 로드 (PC→모바일 공유용)
+    // URL 파라미터 체크 (testissues=true 인 경우 테스트 이슈 생성)
     const urlParams = new URLSearchParams(window.location.search)
-    const loadIssuesParam = urlParams.get('loadissues')
+    const testIssues = urlParams.get('testissues')
     
-    if (loadIssuesParam) {
+    if (testIssues === 'true') {
         try {
-            console.log('EventBET: Loading issues from URL parameter...')
-            const issuesJson = decodeURIComponent(escape(atob(loadIssuesParam)))
-            const sharedIssues = JSON.parse(issuesJson)
-            
-            // 기존 이슈와 병합
-            const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]')
-            const mergedIssues = [...existingIssues, ...sharedIssues]
-            
-            // 중복 제거 (title_ko 기준)
-            const uniqueIssues = mergedIssues.filter((issue, index, self) =>
-                index === self.findIndex((t) => t.title_ko === issue.title_ko)
-            )
-            
-            localStorage.setItem('admin_issues', JSON.stringify(uniqueIssues))
-            console.log(`EventBET: ✅ Loaded ${sharedIssues.length} issues from URL`)
-            
-            // URL 파라미터 제거하고 리다이렉트
-            window.history.replaceState({}, document.title, window.location.origin + window.location.pathname)
-            alert(`✅ ${sharedIssues.length}개의 이슈가 성공적으로 로드되었습니다!\n\n페이지를 새로고침합니다.`)
-            location.reload()
-            return
+            console.log('EventBET: Test mode - Generating sample issues...')
+            // 이 기능은 제거됨 - 더 이상 테스트 이슈를 생성하지 않음
         } catch (error) {
-            console.error('EventBET: Failed to load issues from URL:', error)
+            console.error('EventBET: Failed to generate test issues:', error)
             alert('❌ 이슈 로드에 실패했습니다.')
         }
     }
@@ -679,10 +670,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 관리자 이슈 로드 (DOM 준비 후)
-    console.log('EventBET: Loading admin issues from localStorage...')
-    const adminIssuesCount = JSON.parse(localStorage.getItem('admin_issues') || '[]').length
-    console.log(`EventBET: Found ${adminIssuesCount} admin issues in localStorage`)
-    loadAdminIssuesFromStorage()
+    console.log('EventBET: Loading admin issues from file...')
+    loadAdminIssuesFromFile()
     
     // 관리자 이슈 업데이트 이벤트 리스너
     window.addEventListener('adminIssuesUpdated', () => {
