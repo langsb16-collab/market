@@ -749,12 +749,18 @@ function removeIssueForm(formId) {
     }
 }
 
-function clearAllIssues() {
+function clearIssueFormInputs() {
     if (confirm('모든 입력 내용을 초기화하시겠습니까?')) {
         issueFormCount = 0;
         document.getElementById('issues-container').innerHTML = '';
         addIssueForm();
     }
+}
+
+function clearAllIssues() {
+    localStorage.removeItem('admin_issues');
+    console.log('✅ All issues cleared from localStorage');
+    location.reload();
 }
 
 async function submitBulkIssues(event) {
