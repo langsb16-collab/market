@@ -763,14 +763,8 @@ function clearAllIssues() {
     location.reload();
 }
 
-async function submitBulkIssues(event) {
+function submitBulkIssues(event) {
     event.preventDefault();
-    
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
     
     if (issueFormCount === 0) {
         alert('등록할 이슈가 없습니다.');
@@ -809,12 +803,13 @@ async function submitBulkIssues(event) {
                 description_ja: description || `${titleJa}についての予測市場です。`,
                 resolve_date: resolveDate,
                 total_volume: totalVolume,
-                status: 'pending', // pending, published
+                status: 'published', // 항상 즉시 공개
                 outcomes: [
                     { name: '예', probability: yesProb },
                     { name: '아니오', probability: 1 - yesProb }
                 ],
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                publishedAt: new Date().toISOString()
             });
         }
     }
@@ -824,62 +819,31 @@ async function submitBulkIssues(event) {
         return;
     }
     
-    // GitHub JSON 파일에 저장 (기존 이슈와 병합)
+    // localStorage에 저장 (기존 이슈와 병합)
     try {
         // 현재 이슈 목록 가져오기
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        const existingIssues = await response.json();
+        const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         
         // 기존 이슈와 병합
         const mergedIssues = [...existingIssues, ...issues];
         
-        // "즉시 공개" 체크박스 확인
-        const publishImmediately = document.getElementById('publish-immediately')?.checked;
+        // localStorage에 저장
+        localStorage.setItem('admin_issues', JSON.stringify(mergedIssues));
         
-        // 즉시 공개인 경우 상태를 published로 변경
-        if (publishImmediately) {
-            mergedIssues.forEach(issue => {
-                // 새로 추가된 이슈만 published로 변경
-                const isNewIssue = issues.some(newIssue => 
-                    newIssue.title_ko === issue.title_ko && 
-                    issue.status === 'pending'
-                );
-                if (isNewIssue) {
-                    issue.status = 'published';
-                    issue.publishedAt = new Date().toISOString();
-                }
-            });
-        }
-        
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            mergedIssues,
-            publishImmediately 
-                ? `${issues.length}개의 새 이슈 추가 (즉시 공개)`
-                : `${issues.length}개의 새 이슈 추가`
-        );
+        // 메인 페이지 새로고침 트리거
+        window.dispatchEvent(new CustomEvent('adminIssuesUpdated', { 
+            detail: { count: mergedIssues.length } 
+        }));
         
         closeBulkIssueModal();
         loadAdminIssues();
         
         // 성공 메시지
-        if (publishImmediately) {
-            alert(
-                `✅ ${issues.length}개의 이슈가 메인 사이트에 공개되었습니다!\n\n` +
-                `💡 메인 페이지에서 "최근등록순" 필터를 클릭하여 확인하세요:\n` +
-                `https://cashiq.my\n\n` +
-                `📌 즉시 공개된 이슈는 "최근등록순" 정렬에서 맨 위에 표시됩니다.\n\n` +
-                `(GitHub Pages 반영까지 1-2분 소요)`
-            );
-        } else {
-            alert(
-                `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
-                `💡 이슈가 pending 상태로 저장되었습니다.\n` +
-                `"메인 사이트에 반영" 버튼을 클릭하여 공개하세요.\n\n` +
-                `(GitHub Pages 반영까지 1-2분 소요)`
-            );
-        }
+        alert(
+            `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
+            `💡 메인 페이지(cashiq.my)를 새로고침하면 바로 확인할 수 있습니다.\n\n` +
+            `📌 등록된 이슈는 "인기 마켓" 섹션에 표시됩니다.`
+        );
     } catch (error) {
         console.error('Failed to save issues:', error);
         alert('❌ 이슈 저장에 실패했습니다: ' + error.message);
