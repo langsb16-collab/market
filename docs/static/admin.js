@@ -1177,15 +1177,9 @@ function updateSelectedCount() {
     }
 }
 
-async function bulkDeleteIssues() {
+function bulkDeleteIssues() {
     console.log('🗑️ bulkDeleteIssues() called');
     console.log('Selected indices:', Array.from(selectedIssueIndices));
-    
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
     
     if (selectedIssueIndices.size === 0) {
         alert('삭제할 이슈를 선택해주세요.');
@@ -1198,7 +1192,7 @@ async function bulkDeleteIssues() {
     }
     
     try {
-        const issues = window.adminIssues || [];
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         console.log('Before deletion:', issues.length);
         
         // 선택된 인덱스를 내림차순으로 정렬하여 삭제 (뒤에서부터 삭제해야 인덱스가 안 꼬임)
@@ -1212,16 +1206,12 @@ async function bulkDeleteIssues() {
         
         console.log('After deletion:', issues.length);
         
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            issues,
-            `${sortedIndices.length}개의 이슈 삭제`
-        );
+        // localStorage에 저장
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
         
         selectedIssueIndices.clear();
         
-        alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다. (GitHub Pages 반영까지 1-2분 소요)`);
+        alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
         loadAdminIssues();
     } catch (error) {
         console.error('❌ Failed to delete issues:', error);
@@ -1229,17 +1219,11 @@ async function bulkDeleteIssues() {
     }
 }
 
-async function deleteAdminIssue(index) {
+function deleteAdminIssue(index) {
     console.log('🗑️ deleteAdminIssue() called with index:', index);
     
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
-    
     try {
-        const issues = window.adminIssues || [];
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         console.log('Total issues before deletion:', issues.length);
         
         if (!issues[index]) {
@@ -1258,12 +1242,8 @@ async function deleteAdminIssue(index) {
         
         issues.splice(index, 1);
         
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            issues,
-            `이슈 삭제: ${issueToDelete.title_ko}`
-        );
+        // localStorage에 저장
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
         console.log('✅ Issue deleted. Remaining:', issues.length);
         
         alert(`✅ 이슈 "${issueToDelete.title_ko}"가 삭제되었습니다.`);
@@ -1323,18 +1303,12 @@ function closeEditIssueModal() {
     document.getElementById('edit-issue-modal').style.display = 'none';
 }
 
-async function saveEditedIssue(event) {
+function saveEditedIssue(event) {
     event.preventDefault();
-    
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
     
     try {
         const index = parseInt(document.getElementById('edit-issue-index').value);
-        const issues = window.adminIssues || [];
+        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
         
         if (!issues[index]) {
             alert('이슈를 찾을 수 없습니다.');
@@ -1352,10 +1326,15 @@ async function saveEditedIssue(event) {
             return;
         }
         
+        // category_id도 업데이트
+        const categorySlug = document.getElementById('edit-category').value;
+        const selectedCategory = CATEGORIES.find(c => c.slug === categorySlug);
+        
         // 수정된 데이터 가져오기
         const updatedIssue = {
             ...issues[index], // 기존 데이터 유지
-            category_slug: document.getElementById('edit-category').value,
+            category_id: selectedCategory.id,
+            category_slug: categorySlug,
             title_ko: document.getElementById('edit-title-ko').value,
             title_en: document.getElementById('edit-title-en').value,
             title_zh: document.getElementById('edit-title-zh').value,
@@ -1369,19 +1348,13 @@ async function saveEditedIssue(event) {
             updatedAt: new Date().toISOString()
         };
         
-        // outcomes는 이미 위에서 설정했으므로 이 부분 제거
-        
         // 배열에서 업데이트
         issues[index] = updatedIssue;
         
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            issues,
-            `이슈 수정: ${updatedIssue.title_ko}`
-        );
+        // localStorage에 저장
+        localStorage.setItem('admin_issues', JSON.stringify(issues));
         
-        alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다. (GitHub Pages 반영까지 1-2분 소요)`);
+        alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다.`);
         closeEditIssueModal();
         loadAdminIssues();
     } catch (error) {
