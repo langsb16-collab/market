@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>localStorage Test</title>
+</head>
+<body>
+    <h1>localStorage Test</h1>
+    <button onclick="checkStorage()">Check localStorage</button>
+    <button onclick="addTestIssue()">Add Test Issue</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function checkStorage() {
+            const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+            document.getElementById('output').textContent = 
+                'Found ' + issues.length + ' issues:\n' + 
+                JSON.stringify(issues, null, 2);
+        }
+        
+        function addTestIssue() {
+            const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+            issues.unshift({
+                id: Date.now().toString(),
+                title: 'Test Issue - ' + new Date().toISOString(),
+                category: 'crypto',
+                status: 'active',
+                yesBet: 30,
+                noBet: 30,
+                initialUsdt: 60,
+                expireDate: new Date(Date.now() + 7*24*60*60*1000).toISOString(),
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+            checkStorage();
+        }
+        
+        checkStorage();
+    </script>
+</body>
+</html>

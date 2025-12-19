@@ -1152,7 +1152,12 @@ function saveBatchIssues() {
     
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
     
-    alert(`총 ${addedCount}개의 이슈가 성공적으로 등록되었습니다!`);
+    // 저장 확인
+    const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('✅ Issues saved to localStorage:', saved.length);
+    console.log('✅ First 3 issues:', saved.slice(0, 3));
+    
+    alert(`총 ${addedCount}개의 이슈가 성공적으로 등록되었습니다!\n\nlocalStorage에 ${saved.length}개 저장 확인됨`);
     
     // 폼 초기화
     languages.forEach(lang => {
