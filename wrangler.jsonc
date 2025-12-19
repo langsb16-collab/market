@@ -6,11 +6,7 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "webapp-production",
-      "database_id": "placeholder-will-create"
-    }
-  ]
+  "vars": {
+    "GIST_ID": "PLEASE_CREATE_GIST_MANUALLY"
+  }
 }
