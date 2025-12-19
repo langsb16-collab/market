@@ -83,20 +83,36 @@
     </div>
 
     <script>
-        const API_BASE = '/api'
+        // Use localStorage for issue management
+        const STORAGE_KEY = 'eventbet_custom_issues'
+        
+        // Get issues from localStorage
+        function getIssues() {
+            const stored = localStorage.getItem(STORAGE_KEY)
+            return stored ? JSON.parse(stored) : []
+        }
+        
+        // Save issues to localStorage
+        function saveIssues(issues) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(issues))
+            // Trigger storage event for cross-tab communication
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: STORAGE_KEY,
+                newValue: JSON.stringify(issues)
+            }))
+        }
         
         // Load issues
-        async function loadIssues() {
-            const res = await fetch(`${API_BASE}/issues`)
-            const data = await res.json()
-            
+        function loadIssues() {
+            const issues = getIssues()
             const list = document.getElementById('issuesList')
-            if (data.issues.length === 0) {
+            
+            if (issues.length === 0) {
                 list.innerHTML = '<p class="text-gray-500">등록된 이슈가 없습니다.</p>'
                 return
             }
             
-            list.innerHTML = data.issues.map(issue => `
+            list.innerHTML = issues.map((issue, index) => `
                 <div class="border rounded p-4 mb-4">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex-1">
@@ -106,10 +122,10 @@
                             <p class="text-sm text-gray-600">${issue.title_ja}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editIssue(${issue.id})" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">
+                            <button onclick="editIssue(${index})" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">
                                 <i class="fas fa-edit"></i> 편집
                             </button>
-                            <button onclick="deleteIssue(${issue.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                            <button onclick="deleteIssue(${index})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
                                 <i class="fas fa-trash"></i> 삭제
                             </button>
                         </div>
@@ -124,11 +140,14 @@
         }
         
         // Submit form
-        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+        document.getElementById('issueForm').addEventListener('submit', (e) => {
             e.preventDefault()
             
             const editId = document.getElementById('edit_id').value
-            const data = {
+            const issues = getIssues()
+            
+            const newIssue = {
+                id: Date.now(),
                 title_ko: document.getElementById('title_ko').value,
                 title_en: document.getElementById('title_en').value,
                 title_zh: document.getElementById('title_zh').value,
@@ -136,26 +155,25 @@
                 category: document.getElementById('category').value,
                 initial_usdt: parseFloat(document.getElementById('initial_usdt').value),
                 expire_days: parseInt(document.getElementById('expire_days').value),
+                yes_bet: Math.floor(parseFloat(document.getElementById('initial_usdt').value) * 0.5),
+                no_bet: Math.floor(parseFloat(document.getElementById('initial_usdt').value) * 0.5),
+                created_at: new Date().toISOString(),
+                expire_date: new Date(Date.now() + parseInt(document.getElementById('expire_days').value) * 24 * 60 * 60 * 1000).toISOString(),
                 status: 'active'
             }
             
             if (editId) {
-                // Update
-                await fetch(`${API_BASE}/issues/${editId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                })
+                // Update existing issue
+                const index = parseInt(editId)
+                issues[index] = { ...issues[index], ...newIssue, id: issues[index].id, created_at: issues[index].created_at }
                 alert('수정되었습니다!')
             } else {
-                // Create
-                await fetch(`${API_BASE}/issues`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                })
-                alert('등록되었습니다!')
+                // Add new issue to beginning
+                issues.unshift(newIssue)
+                alert('등록되었습니다! 메인 페이지를 새로고침하면 즉시 표시됩니다.')
             }
+            
+            saveIssues(issues)
             
             document.getElementById('issueForm').reset()
             document.getElementById('edit_id').value = ''
@@ -165,20 +183,20 @@
         })
         
         // Edit issue
-        async function editIssue(id) {
-            const res = await fetch(`${API_BASE}/issues`)
-            const data = await res.json()
-            const issue = data.issues.find(i => i.id === id)
+        function editIssue(index) {
+            const issues = getIssues()
+            const issue = issues[index]
             
             if (!issue) return
             
-            document.getElementById('edit_id').value = id
+            document.getElementById('edit_id').value = index
             document.getElementById('title_ko').value = issue.title_ko
             document.getElementById('title_en').value = issue.title_en
             document.getElementById('title_zh').value = issue.title_zh
             document.getElementById('title_ja').value = issue.title_ja
             document.getElementById('category').value = issue.category
             document.getElementById('initial_usdt').value = issue.initial_usdt
+            document.getElementById('expire_days').value = issue.expire_days || 7
             document.getElementById('submitText').textContent = '수정'
             document.getElementById('cancelBtn').classList.remove('hidden')
             
@@ -194,10 +212,13 @@
         }
         
         // Delete issue
-        async function deleteIssue(id) {
+        function deleteIssue(index) {
             if (!confirm('정말 삭제하시겠습니까?')) return
             
-            await fetch(`${API_BASE}/issues/${id}`, { method: 'DELETE' })
+            const issues = getIssues()
+            issues.splice(index, 1)
+            saveIssues(issues)
+            
             alert('삭제되었습니다!')
             loadIssues()
         }
