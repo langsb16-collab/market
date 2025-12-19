@@ -255,9 +255,67 @@ const generateEvents = () => {
 }
 
 console.log('EventBET: About to call generateEvents()')
-const events = generateEvents()
+let events = generateEvents()
 
 console.log(`Generated ${events.length} events`)
+
+// Load issues from localStorage (admin panel)
+try {
+    const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+    console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
+    
+    if (storedIssues.length > 0) {
+        // Convert admin issues to event format
+        const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
+            // Determine category
+            const categoryMap = {
+                'crypto': 'crypto',
+                'politics': 'politics',
+                'sports': 'sports',
+                'entertainment': 'entertainment',
+                'economy': 'economy',
+                'science': 'science',
+                'climate': 'climate',
+                'other': 'other'
+            }
+            const categorySlug = categoryMap[issue.category] || 'other'
+            const category = categories.find(c => c.slug === categorySlug) || categories[0]
+            
+            // Generate random probability and volume
+            const probYes = 0.3 + Math.random() * 0.4
+            const volume = Math.floor(Math.random() * 20000000) + 1000000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500)
+            
+            return {
+                id: issue.id || Date.now(),
+                category_id: category.id,
+                category_slug: categorySlug,
+                title_ko: issue.title,
+                title_en: issue.title,
+                title_zh: issue.title,
+                title_ja: issue.title,
+                description_ko: issue.description || issue.title,
+                description_en: issue.description || issue.title,
+                description_zh: issue.description || issue.title,
+                description_ja: issue.description || issue.title,
+                resolve_date: issue.expireDate || getRandomDateWithinMonth(),
+                total_volume: volume,
+                participants: participants,
+                outcomes: [
+                    { id: `${issue.id}-yes`, name: '예', probability: probYes },
+                    { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
+                ],
+                isAdminIssue: true
+            }
+        })
+        
+        // Add admin events at the beginning
+        events = [...adminEvents, ...events]
+        console.log(`EventBET: Added ${adminEvents.length} admin issues, total events: ${events.length}`)
+    }
+} catch (error) {
+    console.error('EventBET: Error loading issues from localStorage:', error)
+}
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')

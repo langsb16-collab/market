@@ -4,21 +4,14 @@
 console.log('EventBET: Script loaded')
 
 let currentLang = 'ko'
-window.currentLang = currentLang // 챗봇과 auth에서 접근 가능하도록 전역 노출
 let currentWallet = null
 let isDarkMode = false
 let currentCategory = 'all'
 let displayedMarkets = 12
 const MARKETS_PER_PAGE = 12
-let currentSortBy = 'recent' // 'recent', 'date', 'volume', 'participants' - 기본값을 'recent'로 변경
+let currentSortBy = 'date' // 'date', 'volume', 'participants'
 
 console.log('EventBET: Variables initialized')
-
-// Outcome label translations
-const outcomeTranslations = {
-    '예': { ko: '예', en: 'YES', zh: '是', ja: 'はい' },
-    '아니오': { ko: '아니오', en: 'NO', zh: '不是', ja: 'いいえ' }
-}
 
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
@@ -47,54 +40,6 @@ const translations = {
         showingMarkets: '개 마켓 표시 중',
         totalMarkets: '전체',
         individual: '개',
-        onlyCrypto: '유일하게 지원되는 암호화폐',
-        // 로그인 모달 메시지
-        loginRequired: '로그인이 필요합니다',
-        loginRequiredDesc: '마켓 상세 정보를 보려면 로그인이 필요합니다.',
-        submitIssueLoginRequired: '이슈를 등록하려면 로그인이 필요합니다.',
-        loginButton: '로그인',
-        signupButton: '회원가입',
-        closeButton: '닫기',
-        noticeButton: '공지',
-        submitIssueButton: '이슈 등록',
-        // 로그인 모달
-        loginTitle: '로그인',
-        emailLabel: '이메일',
-        passwordLabel: '비밀번호',
-        passwordPlaceholder: '비밀번호를 입력하세요',
-        noAccount: '계정이 없으신가요?',
-        // 회원가입 모달
-        registerTitle: '회원가입',
-        nameLabel: '이름',
-        namePlaceholder: '홍길동',
-        phoneLabel: '전화번호',
-        phonePlaceholder: '010-1234-5678',
-        walletLabel: 'USDT 지갑주소',
-        walletHint: '(배당 받을 주소)',
-        walletPlaceholder: '0x...',
-        confirmPasswordLabel: '비밀번호 확인',
-        passwordMinLength: '최소 6자 이상',
-        confirmPasswordPlaceholder: '비밀번호 재입력',
-        memberBenefits: '회원 전용 혜택',
-        benefit1: '모든 마켓 상세 정보 조회',
-        benefit2: '베팅 및 이슈 등록 권한',
-        benefit3: '신규 이벤트 알림 서비스',
-        benefit4: '배당 내역 관리',
-        hasAccount: '이미 계정이 있으신가요?',
-        // Alert messages
-        accountSuspended: '정지된 계정입니다. 관리자에게 문의하세요.',
-        loginSuccess: '로그인 성공!',
-        loginFailed: '이메일 또는 비밀번호가 올바르지 않습니다.',
-        passwordMismatch: '비밀번호가 일치하지 않습니다.',
-        passwordTooShort: '비밀번호는 최소 6자 이상이어야 합니다.',
-        emailExists: '이미 등록된 이메일입니다.',
-        registerSuccess: '회원가입이 완료되었습니다! 로그인해주세요.',
-        logoutConfirm: '로그아웃 하시겠습니까?',
-        logoutSuccess: '로그아웃 되었습니다.',
-        // 공지사항 모달
-        noticeModalTitle: '공지사항',
-        noticeEmpty: '등록된 공지사항이 없습니다.',
-        noticeBackToList: '목록으로',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -113,54 +58,6 @@ const translations = {
         showingMarkets: 'markets shown',
         totalMarkets: 'Total',
         individual: '',
-        onlyCrypto: 'Only Supported Cryptocurrency',
-        // Login modal messages
-        loginRequired: 'Login Required',
-        loginRequiredDesc: 'You need to login to view market details.',
-        submitIssueLoginRequired: 'You need to login to submit an issue.',
-        loginButton: 'Login',
-        signupButton: 'Sign Up',
-        closeButton: 'Close',
-        noticeButton: 'Notice',
-        submitIssueButton: 'Submit Issue',
-        // Login modal
-        loginTitle: 'Login',
-        emailLabel: 'Email',
-        passwordLabel: 'Password',
-        passwordPlaceholder: 'Enter password',
-        noAccount: "Don't have an account?",
-        // Register modal
-        registerTitle: 'Sign Up',
-        nameLabel: 'Name',
-        namePlaceholder: 'John Doe',
-        phoneLabel: 'Phone',
-        phonePlaceholder: '010-1234-5678',
-        walletLabel: 'USDT Wallet Address',
-        walletHint: '(for receiving payouts)',
-        walletPlaceholder: '0x...',
-        confirmPasswordLabel: 'Confirm Password',
-        passwordMinLength: 'Min 6 characters',
-        confirmPasswordPlaceholder: 'Re-enter password',
-        memberBenefits: 'Member Benefits',
-        benefit1: 'View all market details',
-        benefit2: 'Betting and issue submission',
-        benefit3: 'New event notifications',
-        benefit4: 'Payout history management',
-        hasAccount: 'Already have an account?',
-        // Alert messages
-        accountSuspended: 'Account suspended. Please contact administrator.',
-        loginSuccess: 'Login successful!',
-        loginFailed: 'Email or password is incorrect.',
-        passwordMismatch: 'Passwords do not match.',
-        passwordTooShort: 'Password must be at least 6 characters.',
-        emailExists: 'Email already registered.',
-        registerSuccess: 'Registration complete! Please login.',
-        logoutConfirm: 'Are you sure you want to logout?',
-        logoutSuccess: 'Logged out successfully.',
-        // Notice modal
-        noticeModalTitle: 'Notices',
-        noticeEmpty: 'No notices available.',
-        noticeBackToList: 'Back to List',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -179,54 +76,6 @@ const translations = {
         showingMarkets: '个市场',
         totalMarkets: '总计',
         individual: '个',
-        onlyCrypto: '唯一支持的加密货币',
-        // 登录模态框消息
-        loginRequired: '需要登录',
-        loginRequiredDesc: '您需要登录才能查看市场详情。',
-        submitIssueLoginRequired: '您需要登录才能提交问题。',
-        loginButton: '登录',
-        signupButton: '注册',
-        closeButton: '关闭',
-        noticeButton: '公告',
-        submitIssueButton: '提交问题',
-        // 登录模态框
-        loginTitle: '登录',
-        emailLabel: '邮箱',
-        passwordLabel: '密码',
-        passwordPlaceholder: '请输入密码',
-        noAccount: '还没有账户？',
-        // 注册模态框
-        registerTitle: '注册',
-        nameLabel: '姓名',
-        namePlaceholder: '张三',
-        phoneLabel: '电话',
-        phonePlaceholder: '010-1234-5678',
-        walletLabel: 'USDT 钱包地址',
-        walletHint: '(用于接收分红)',
-        walletPlaceholder: '0x...',
-        confirmPasswordLabel: '确认密码',
-        passwordMinLength: '最少6个字符',
-        confirmPasswordPlaceholder: '重新输入密码',
-        memberBenefits: '会员专属福利',
-        benefit1: '查看所有市场详情',
-        benefit2: '投注和提交问题权限',
-        benefit3: '新活动通知服务',
-        benefit4: '分红记录管理',
-        hasAccount: '已有账户？',
-        // 提示消息
-        accountSuspended: '账户已停用。请联系管理员。',
-        loginSuccess: '登录成功！',
-        loginFailed: '邮箱或密码不正确。',
-        passwordMismatch: '密码不匹配。',
-        passwordTooShort: '密码至少须为6个字符。',
-        emailExists: '邮箱已注册。',
-        registerSuccess: '注册完成！请登录。',
-        logoutConfirm: '确定要退出登录吗？',
-        logoutSuccess: '退出成功。',
-        // 公告模态框
-        noticeModalTitle: '公告',
-        noticeEmpty: '暂无公告。',
-        noticeBackToList: '返回列表',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -245,59 +94,8 @@ const translations = {
         showingMarkets: '件のマーケット',
         totalMarkets: '合計',
         individual: '件',
-        onlyCrypto: '唯一サポートされている暗号通貨',
-        // ログインモーダルメッセージ
-        loginRequired: 'ログインが必要です',
-        loginRequiredDesc: 'マーケットの詳細を表示するにはログインが必要です。',
-        submitIssueLoginRequired: '問題を提出するにはログインが必要です。',
-        loginButton: 'ログイン',
-        signupButton: '会員登録',
-        closeButton: '閉じる',
-        noticeButton: 'お知らせ',
-        submitIssueButton: '問題を提出',
-        // ログインモーダル
-        loginTitle: 'ログイン',
-        emailLabel: 'メール',
-        passwordLabel: 'パスワード',
-        passwordPlaceholder: 'パスワードを入力',
-        noAccount: 'アカウントをお持ちでないですか？',
-        // 会員登録モーダル
-        registerTitle: '会員登録',
-        nameLabel: '名前',
-        namePlaceholder: '山田太郎',
-        phoneLabel: '電話番号',
-        phonePlaceholder: '010-1234-5678',
-        walletLabel: 'USDT ウォレットアドレス',
-        walletHint: '(配当受取用)',
-        walletPlaceholder: '0x...',
-        confirmPasswordLabel: 'パスワード確認',
-        passwordMinLength: '最低6文字以上',
-        confirmPasswordPlaceholder: 'パスワード再入力',
-        memberBenefits: '会員限定特典',
-        benefit1: 'すべてのマーケット詳細閲覧',
-        benefit2: 'ベット及び問題提出権限',
-        benefit3: '新規イベント通知サービス',
-        benefit4: '配当履歴管理',
-        hasAccount: 'すでにアカウントをお持ちですか？',
-        // アラートメッセージ
-        accountSuspended: 'アカウントが停止されています。管理者にお問い合わせください。',
-        loginSuccess: 'ログイン成功！',
-        loginFailed: 'メールまたはパスワードが正しくありません。',
-        passwordMismatch: 'パスワードが一致しません。',
-        passwordTooShort: 'パスワードは最低6文字以上必要です。',
-        emailExists: 'メールはすでに登録されています。',
-        registerSuccess: '会員登録完了！ログインしてください。',
-        logoutConfirm: 'ログアウトしますか？',
-        logoutSuccess: 'ログアウトしました。',
-        // お知らせモーダル
-        noticeModalTitle: 'お知らせ',
-        noticeEmpty: 'お知らせはありません。',
-        noticeBackToList: 'リストに戻る',
     }
 }
-
-// 전역으로 translations 노출 (auth.js에서 사용)
-window.translations = translations
 
 // Categories
 const categories = [
@@ -314,16 +112,16 @@ const categories = [
 // Event templates for each category
 const eventTemplates = {
     politics: [
-        { ko: '조태용 전 국가정보원장 구속영장 발부. 실형 5년 이상, 이하', en: 'Arrest Warrant Issued for Former NIS Director Cho Tae-yong. Prison Sentence 5+ Years or Less', zh: '前国情院院长赵太庸逮捕令签发。实刑5年以上或以下', ja: '趙太庸前国情院長逮捕令状発付。実刑5年以上または以下' },
-        { ko: '대장동 개발사업 관련 검찰 항소 포기 및 해당 검사 징계 여부', en: 'Prosecutor Appeal Abandonment in Daejang-dong Case and Disciplinary Action Against Prosecutor', zh: '大庄洞开发案相关检方放弃上诉及对该检察官的纪律处分', ja: '大壮洞開発事業関連検察控訴放棄および当該検事懲戒の有無' },
-        { ko: '서울시장 민주당 승리? 국민의힘 승리?', en: 'Seoul Mayor Election: Democratic Party Victory or People Power Party Victory?', zh: '首尔市长选举：民主党获胜还是国民力量党获胜？', ja: 'ソウル市長選挙：民主党勝利？国民の力勝利？' },
-        { ko: '부산시장 민주당 승리? 국민의힘 승리?', en: 'Busan Mayor Election: Democratic Party Victory or People Power Party Victory?', zh: '釜山市长选举：民主党获胜还是国民力量党获胜？', ja: '釜山市長選挙：民主党勝利？国民の力勝利？' },
-        { ko: '종묘 건축물 142m 개발 진행? 중단?', en: 'Jongmyo 142m Building Development: Proceed or Halt?', zh: '宗庙建筑142米开发项目：继续还是中断？', ja: '宗廟建築物142m開発：進行？中止？' },
         { ko: '한국 국회 법안 통과 여부', en: 'Korean Parliament Bill Passage', zh: '韩国国会法案通过', ja: '韓国国会法案通過' },
         { ko: '미국 대통령 정책 발표', en: 'US President Policy Announcement', zh: '美国总统政策宣布', ja: '米大統領政策発表' },
         { ko: '유럽 선거 결과 예측', en: 'European Election Results', zh: '欧洲选举结果', ja: '欧州選挙結果' },
         { ko: '일본 내각 개각 여부', en: 'Japan Cabinet Reshuffle', zh: '日本内阁改组', ja: '日本内閣改造' },
         { ko: '중국 정책 변화 발표', en: 'China Policy Change', zh: '中国政策变化', ja: '中国政策変更' },
+        { ko: '아시아 외교 회담 성사', en: 'Asian Diplomatic Meeting', zh: '亚洲外交会议', ja: 'アジア外交会議' },
+        { ko: '글로벌 정상회담 개최', en: 'Global Summit Meeting', zh: '全球峰会', ja: 'グローバルサミット' },
+        { ko: '국제 조약 체결 여부', en: 'International Treaty Signing', zh: '国际条约签署', ja: '国際条約締結' },
+        { ko: '신임 장관 임명 여부', en: 'New Minister Appointment', zh: '新部长任命', ja: '新大臣任命' },
+        { ko: '정치 개혁안 통과', en: 'Political Reform Passage', zh: '政治改革通过', ja: '政治改革通過' },
     ],
     sports: [
         { ko: '프리미어리그 경기 결과', en: 'Premier League Match Result', zh: '英超比赛结果', ja: 'プレミアリーグ試合結果' },
@@ -453,148 +251,71 @@ const generateEvents = () => {
     })
     
     // Shuffle to mix categories
-    const shuffled = allEvents.sort(() => Math.random() - 0.5)
-    console.log('EventBET: Generated events count:', shuffled.length)
-    return shuffled
+    return allEvents.sort(() => Math.random() - 0.5)
 }
 
 console.log('EventBET: About to call generateEvents()')
 let events = generateEvents()
-console.log('EventBET: Events generated successfully:', events.length, 'events')
 
-// 카테고리 ID 검증
-if (events.length > 0) {
-    const firstEvent = events[0]
-    console.log('EventBET: First event sample:', {
-        id: firstEvent.id,
-        category_id: firstEvent.category_id,
-        category_slug: firstEvent.category_slug,
-        title_ko: firstEvent.title_ko
-    })
+console.log(`Generated ${events.length} events`)
+
+// Load issues from localStorage (admin panel)
+try {
+    const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+    console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
     
-    const categoryIds = events.map(e => e.category_id)
-    const uniqueCategoryIds = [...new Set(categoryIds)]
-    console.log('EventBET: Unique category IDs in events:', uniqueCategoryIds)
-    console.log('EventBET: Available categories:', categories.map(c => c.id))
-}
-
-// 관리자가 등록한 이슈 병합 (JSON 파일에서 로드)
-async function loadAdminIssuesFromFile() {
-    try {
-        console.log('EventBET: Loading admin issues from /data/issues.json...')
-        const response = await fetch('/data/issues.json?_=' + Date.now())
-        
-        if (!response.ok) {
-            console.log('EventBET: No issues.json file found')
-            return
-        }
-        
-        const adminIssues = await response.json()
-        console.log('EventBET: Admin issues loaded from file:', adminIssues.length, 'total issues')
-        
-        if (adminIssues.length === 0) {
-            console.log('EventBET: No admin issues found in localStorage')
-            return
-        }
-        
-        // 각 이슈의 status 확인
-        adminIssues.forEach((issue, idx) => {
-            console.log(`EventBET: Issue ${idx + 1} - status: ${issue.status}, title: ${issue.title_ko}`)
+    if (storedIssues.length > 0) {
+        // Convert admin issues to event format
+        const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
+            // Determine category
+            const categoryMap = {
+                'crypto': 'crypto',
+                'politics': 'politics',
+                'sports': 'sports',
+                'entertainment': 'entertainment',
+                'economy': 'economy',
+                'science': 'science',
+                'climate': 'climate',
+                'other': 'other'
+            }
+            const categorySlug = categoryMap[issue.category] || 'other'
+            const category = categories.find(c => c.slug === categorySlug) || categories[0]
+            
+            // Generate random probability and volume
+            const probYes = 0.3 + Math.random() * 0.4
+            const volume = Math.floor(Math.random() * 20000000) + 1000000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500)
+            
+            return {
+                id: issue.id || Date.now(),
+                category_id: category.id,
+                category_slug: categorySlug,
+                title_ko: issue.title,
+                title_en: issue.title,
+                title_zh: issue.title,
+                title_ja: issue.title,
+                description_ko: issue.description || issue.title,
+                description_en: issue.description || issue.title,
+                description_zh: issue.description || issue.title,
+                description_ja: issue.description || issue.title,
+                resolve_date: issue.expireDate || getRandomDateWithinMonth(),
+                total_volume: volume,
+                participants: participants,
+                outcomes: [
+                    { id: `${issue.id}-yes`, name: '예', probability: probYes },
+                    { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
+                ],
+                isAdminIssue: true
+            }
         })
         
-        // published 상태의 이슈만 표시
-        const publishedIssues = adminIssues.filter(issue => issue.status === 'published')
-        const pendingIssues = adminIssues.filter(issue => issue.status !== 'published')
-        
-        console.log(`EventBET: Published issues: ${publishedIssues.length}, Pending issues: ${pendingIssues.length}`)
-        
-        if (publishedIssues.length > 0) {
-            console.log(`EventBET: Adding ${publishedIssues.length} published issues to events array...`)
-            
-            // 최신순으로 정렬 (createdAt 기준 내림차순)
-            publishedIssues.sort((a, b) => {
-                const dateA = new Date(a.createdAt || a.publishedAt || 0);
-                const dateB = new Date(b.createdAt || b.publishedAt || 0);
-                return dateB - dateA; // 최신순
-            });
-            
-            // 관리자 이슈에 ID 및 participants 추가
-            publishedIssues.forEach((issue, index) => {
-                const newId = events.length + index + 1
-                const enhancedIssue = {
-                    ...issue,
-                    id: newId,
-                    participants: Math.floor(issue.total_volume / 1000) + Math.floor(Math.random() * 500),
-                    outcomes: issue.outcomes.map((outcome, oIndex) => ({
-                        id: newId * 2 + oIndex - 1,
-                        name: outcome.name,
-                        probability: outcome.probability
-                    }))
-                }
-                console.log(`EventBET: Adding issue ${index + 1}:`, {
-                    id: enhancedIssue.id,
-                    title: enhancedIssue.title_ko,
-                    status: enhancedIssue.status,
-                    category: enhancedIssue.category_slug,
-                    createdAt: enhancedIssue.createdAt
-                })
-                events.push(enhancedIssue)
-            })
-            
-            console.log(`EventBET: ✅ Total events after merge: ${events.length}`)
-            console.log(`EventBET: Events array now contains ${publishedIssues.length} admin issues (sorted by latest)`)
-            
-            // DOMContentLoaded에서 렌더링을 처리하므로 여기서는 호출하지 않음
-        } else {
-            console.log('EventBET: ⚠️ No published admin issues found')
-            if (pendingIssues.length > 0) {
-                console.log(`EventBET: ℹ️ There are ${pendingIssues.length} pending issues waiting to be published`)
-            }
-        }
-    } catch (error) {
-        console.error('EventBET: ❌ Failed to load admin issues:', error)
+        // Add admin events at the beginning
+        events = [...adminEvents, ...events]
+        console.log(`EventBET: Added ${adminEvents.length} admin issues, total events: ${events.length}`)
     }
+} catch (error) {
+    console.error('EventBET: Error loading issues from localStorage:', error)
 }
-
-// 페이지에 포커스가 돌아올 때 issues.json 새로고침
-let lastIssuesHash = '';
-
-window.addEventListener('focus', async () => {
-    try {
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        if (response.ok) {
-            const text = await response.text();
-            const currentHash = text.length; // 간단한 해시로 길이 사용
-            
-            if (lastIssuesHash && lastIssuesHash !== currentHash) {
-                console.log('🔄 Issues.json file changed (focus event), reloading page...');
-                location.reload();
-            }
-            lastIssuesHash = currentHash;
-        }
-    } catch (error) {
-        console.log('Failed to check issues.json:', error);
-    }
-});
-
-// 주기적으로 issues.json 변경 체크 (2초마다 - 빠른 동기화)
-setInterval(async () => {
-    try {
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        if (response.ok) {
-            const text = await response.text();
-            const currentHash = text.length;
-            
-            if (lastIssuesHash && lastIssuesHash !== currentHash) {
-                console.log('🔄 Issues.json file changed (interval check), reloading page...');
-                location.reload();
-            }
-            lastIssuesHash = currentHash;
-        }
-    } catch (error) {
-        console.log('Failed to check issues.json:', error);
-    }
-}, 2000);
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
@@ -606,92 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const savedLang = localStorage.getItem('preferred_language') || 'ko'
     currentLang = savedLang
-    window.currentLang = currentLang // 전역 변수도 업데이트
     const langSelector = document.getElementById('language-selector')
     if (langSelector) langSelector.value = savedLang
     
     setupEventListeners()
     updateUITexts()
     renderCategories()
-    
-    // URL 파라미터 체크 (testissues=true 인 경우 테스트 이슈 생성)
-    const urlParams = new URLSearchParams(window.location.search)
-    const testIssues = urlParams.get('testissues')
-    
-    if (testIssues === 'true') {
-        try {
-            console.log('EventBET: Test mode - Generating sample issues...')
-            // 이 기능은 제거됨 - 더 이상 테스트 이슈를 생성하지 않음
-        } catch (error) {
-            console.error('EventBET: Failed to generate test issues:', error)
-            alert('❌ 이슈 로드에 실패했습니다.')
-        }
-    }
-    
-    // URL 파라미터로 테스트 이슈 자동 생성 (모바일 테스트용)
-    if (urlParams.get('testissues') === 'true') {
-        console.log('EventBET: Creating test issues...')
-        const testIssues = [
-            {
-                id: Date.now() + 1,
-                category_id: 1,
-                category_slug: 'politics',
-                title_ko: '한국 주식 코스피 5000 가능?',
-                title_en: 'KOSPI 5,000 achievable or not?',
-                title_zh: '韩国股市KOSPI指数是否会达到5000？',
-                title_ja: '韓国株式KOSPI指数5000は？',
-                description_ko: '한국 주식 코스피 5000 가능?에 대한 예측 마켓입니다.',
-                description_en: 'Prediction market for KOSPI 5,000 achievable or not?.',
-                description_zh: '关于韩国股市KOSPI指数是否会达到5000？的预测市场。',
-                description_ja: '韓国株式KOSPI指数5000は？についての予測市場です。',
-                resolve_date: '2026-06-30',
-                total_volume: 100000,
-                status: 'published',
-                outcomes: [
-                    { name: '예', probability: 0.56 },
-                    { name: '아니오', probability: 0.44 }
-                ],
-                createdAt: new Date().toISOString(),
-                publishedAt: new Date().toISOString()
-            },
-            {
-                id: Date.now() + 2,
-                category_id: 1,
-                category_slug: 'politics',
-                title_ko: '성국유 일본돈 1000가치?',
-                title_en: 'Is KOSPI 5,000 achievable or not? (By June 30, 2026)',
-                title_zh: '韩国股市KOSPI指数在5000之前还会上涨吗？（截至2026年6月30日）',
-                title_ja: 'KOSPIは$150K突破？',
-                resolve_date: '2026-06-30',
-                total_volume: 80000,
-                status: 'published',
-                outcomes: [
-                    { name: '예', probability: 0.65 },
-                    { name: '아니오', probability: 0.35 }
-                ],
-                createdAt: new Date().toISOString(),
-                publishedAt: new Date().toISOString()
-            }
-        ]
-        localStorage.setItem('admin_issues', JSON.stringify(testIssues))
-        console.log('EventBET: ✅ Test issues created!')
-    }
-    
-    // 관리자 이슈 로드 (DOM 준비 후)
-    console.log('EventBET: Loading admin issues from file...')
-    loadAdminIssuesFromFile()
-    
-    // 관리자 이슈 업데이트 이벤트 리스너
-    window.addEventListener('adminIssuesUpdated', () => {
-        console.log('Admin issues updated, reloading...')
-        location.reload()
-    })
-    
-    // DOM이 완전히 준비될 때까지 약간 지연 후 렌더링
-    setTimeout(() => {
-        renderMarkets()
-        console.log(`EventBET: ✅ Initial render complete. Total events: ${events.length}`)
-    }, 100)
+    renderMarkets()
 })
 
 // Setup event listeners
@@ -700,16 +342,9 @@ function setupEventListeners() {
     if (langSelector) {
         langSelector.addEventListener('change', (e) => {
             currentLang = e.target.value
-            window.currentLang = currentLang // 전역 변수도 업데이트
             localStorage.setItem('preferred_language', currentLang)
             updateUITexts()
-            renderCategories()
             renderMarkets()
-            
-            // 챗봇 언어 업데이트
-            if (window.chatbotInstance && typeof window.chatbotInstance.updateLanguage === 'function') {
-                window.chatbotInstance.updateLanguage()
-            }
         })
     }
     
@@ -810,66 +445,25 @@ function updateUITexts() {
     const searchInput = document.getElementById('search-input')
     if (searchInput) searchInput.placeholder = t.searchPlaceholder
     
-    // Update login and register button texts
-    const loginBtnText = document.getElementById('login-btn-text')
-    if (loginBtnText) loginBtnText.textContent = t.loginButton
-    
-    const registerBtnText = document.getElementById('register-btn-text')
-    if (registerBtnText) registerBtnText.textContent = t.signupButton
-    
-    // Update "Only supported cryptocurrency" texts
-    const cryptoTexts = document.querySelectorAll('.crypto-support-text')
-    cryptoTexts.forEach(el => {
-        el.textContent = t.onlyCrypto
-    })
-    
-    // Update notice button text
-    const noticeBtnText = document.getElementById('notice-btn-text')
-    if (noticeBtnText) noticeBtnText.textContent = t.noticeButton
-    
-    // Update submit issue button text
-    const submitIssueBtnText = document.getElementById('submit-issue-btn-text')
-    if (submitIssueBtnText) submitIssueBtnText.textContent = t.submitIssueButton
-    
-    // Update notice modal texts
-    const noticeModalTitle = document.getElementById('notice-modal-title')
-    if (noticeModalTitle) noticeModalTitle.textContent = t.noticeModalTitle
-    
-    const noticeEmptyText = document.getElementById('notice-empty-text')
-    if (noticeEmptyText) noticeEmptyText.textContent = t.noticeEmpty
-    
-    const noticeBackText = document.getElementById('notice-back-text')
-    if (noticeBackText) noticeBackText.textContent = t.noticeBackToList
-    
-    // Update all elements with data-ko, data-en, data-zh, data-ja attributes
-    document.querySelectorAll('[data-ko]').forEach(element => {
-        const langKey = `data-${currentLang}`
-        if (element.hasAttribute(langKey)) {
-            element.textContent = element.getAttribute(langKey)
-        }
-    })
-    
     updateMarketCount()
 }
 
-// Update market count (removed from UI but kept for compatibility)
+// Update market count
 function updateMarketCount() {
-    // Market count display has been removed from UI
-    // Function kept for compatibility with existing code
-    return
+    const t = translations[currentLang] || translations.ko
+    const marketCount = document.getElementById('market-count')
+    const filteredEvents = getFilteredEvents()
+    if (marketCount) {
+        marketCount.textContent = `${t.showingMarkets}: ${Math.min(displayedMarkets, filteredEvents.length)}${t.individual} / ${t.totalMarkets} ${filteredEvents.length}${t.individual}`
+    }
 }
 
 // Get filtered events
 function getFilteredEvents() {
-    console.log('EventBET: getFilteredEvents() called')
-    console.log('EventBET: events array exists:', !!events)
-    console.log('EventBET: events length:', events ? events.length : 0)
-    
     let filtered = events
     
     if (currentCategory !== 'all') {
         filtered = filtered.filter(e => e.category_slug === currentCategory)
-        console.log('EventBET: After category filter:', filtered.length, 'category:', currentCategory)
     }
     
     const searchInput = document.getElementById('search-input')
@@ -881,50 +475,20 @@ function getFilteredEvents() {
             e.title_zh.toLowerCase().includes(query) ||
             e.title_ja.toLowerCase().includes(query)
         )
-        console.log('EventBET: After search filter:', filtered.length)
     }
     
-    // 정렬 함수 정의
-    const sortFunction = (a, b) => {
-        if (currentSortBy === 'recent') {
-            // 최근 등록순: publishedAt 또는 createdAt 기준
-            const dateA = new Date(a.publishedAt || a.createdAt || 0)
-            const dateB = new Date(b.publishedAt || b.createdAt || 0)
-            return dateB - dateA // 최신순 (내림차순)
-        } else if (currentSortBy === 'date') {
-            // 결과발표일순
-            return new Date(a.resolve_date) - new Date(b.resolve_date)
-        } else if (currentSortBy === 'volume') {
-            // 배팅규모순
-            return b.total_volume - a.total_volume
-        } else if (currentSortBy === 'participants') {
-            // 이용객 숫자순
-            return b.participants - a.participants
-        }
-        return 0
+    // Apply sorting
+    if (currentSortBy === 'date') {
+        // Sort by resolve_date (earliest first)
+        filtered.sort((a, b) => new Date(a.resolve_date) - new Date(b.resolve_date))
+    } else if (currentSortBy === 'volume') {
+        // Sort by total_volume (highest first)
+        filtered.sort((a, b) => b.total_volume - a.total_volume)
+    } else if (currentSortBy === 'participants') {
+        // Sort by participants (highest first) - 이용객 숫자
+        filtered.sort((a, b) => b.participants - a.participants)
     }
     
-    // "최근등록순"에만 admin issues를 먼저 표시
-    if (currentSortBy === 'recent') {
-        // 관리자 이슈와 일반 이슈 분리
-        const adminIssues = filtered.filter(e => e.status === 'published' && e.publishedAt)
-        const regularIssues = filtered.filter(e => !e.status || e.status !== 'published' || !e.publishedAt)
-        
-        console.log('EventBET: Admin issues:', adminIssues.length, 'Regular issues:', regularIssues.length)
-        
-        // 각 그룹을 선택된 정렬 기준으로 정렬
-        adminIssues.sort(sortFunction)
-        regularIssues.sort(sortFunction)
-        
-        // 합치기: 관리자 이슈 먼저, 그 다음 일반 이슈
-        filtered = [...adminIssues, ...regularIssues]
-    } else {
-        // 다른 정렬 기준에서는 모든 이슈를 동일하게 정렬 (admin 우선 없음)
-        filtered.sort(sortFunction)
-    }
-    
-    console.log('EventBET: Sorted by:', currentSortBy)
-    console.log('EventBET: Final filtered events:', filtered.length, '(admin issues first)')
     return filtered
 }
 
@@ -934,7 +498,6 @@ function sortMarkets(sortBy) {
     displayedMarkets = MARKETS_PER_PAGE
     
     // Update button states
-    document.getElementById('sort-recent')?.classList.remove('active')
     document.getElementById('sort-date')?.classList.remove('active')
     document.getElementById('sort-volume')?.classList.remove('active')
     document.getElementById('sort-participants')?.classList.remove('active')
@@ -944,7 +507,6 @@ function sortMarkets(sortBy) {
         activeBtn.classList.add('active')
     }
     
-    console.log('EventBET: Sorting by:', sortBy)
     renderMarkets()
 }
 
@@ -979,12 +541,14 @@ function renderCategories() {
     
     container.innerHTML = allCategories.map(category => {
         const isActive = currentCategory === category.slug
+        const categoryCount = category.slug === 'all' ? events.length : events.filter(e => e.category_slug === category.slug).length
         return `
         <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
              onclick="filterByCategory('${category.slug}')">
             <div class="text-center">
                 <div class="text-xl sm:text-2xl mb-1">${category.icon}</div>
                 <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${getCategoryName(category)}</h4>
+                <span class="text-xs text-gray-500">${categoryCount}</span>
             </div>
         </div>
         `
@@ -1001,10 +565,6 @@ function filterByCategory(categorySlug) {
 
 // Get category name
 const getCategoryName = (category) => {
-    if (!category) {
-        console.error('EventBET: getCategoryName called with undefined category')
-        return 'Unknown'
-    }
     return category[`name_${currentLang}`] || category.name_en
 }
 
@@ -1016,16 +576,6 @@ const getEventTitle = (event) => {
 // Get event description
 const getEventDescription = (event) => {
     return event[`description_${currentLang}`] || event.description_en
-}
-
-// Translate outcome label based on current language
-const translateOutcome = (outcomeName) => {
-    // Check if it's a Korean outcome that needs translation
-    if (outcomeTranslations[outcomeName]) {
-        return outcomeTranslations[outcomeName][currentLang] || outcomeName
-    }
-    // Return original name if not found in translations
-    return outcomeName
 }
 
 // Get event image with category-specific variety
@@ -1056,8 +606,6 @@ const formatNumber = (num) => {
 // Render markets
 function renderMarkets() {
     console.log('EventBET: renderMarkets() called')
-    console.log('EventBET: Total events available:', events ? events.length : 0)
-    
     const container = document.getElementById('markets-container')
     if (!container) {
         console.error('EventBET: markets-container not found!')
@@ -1066,43 +614,14 @@ function renderMarkets() {
     console.log('EventBET: markets-container found, rendering...')
     
     const filteredEvents = getFilteredEvents()
-    console.log('EventBET: Filtered events:', filteredEvents.length)
-    console.log('EventBET: displayedMarkets:', displayedMarkets)
-    
     const eventsToShow = filteredEvents.slice(0, displayedMarkets)
-    console.log('EventBET: Events to show:', eventsToShow.length)
-    console.log('EventBET: eventsToShow is array:', Array.isArray(eventsToShow))
     
-    // 첫 번째 이벤트 샘플 출력
-    if (eventsToShow.length > 0) {
-        console.log('EventBET: First event to render:', {
-            id: eventsToShow[0].id,
-            category_id: eventsToShow[0].category_id,
-            title_ko: eventsToShow[0].title_ko
-        })
-    } else {
-        console.warn('EventBET: No events to show!')
-        container.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500">표시할 마켓이 없습니다.</p></div>'
-        return
-    }
-    
-    console.log('EventBET: Starting to map events...')
-    
-    const html = eventsToShow.map((event, index) => {
-        try {
-            console.log(`EventBET: Rendering event ${index}/${eventsToShow.length}`, event.id)
-            const category = categories.find(c => c.id === event.category_id)
-            
-            // 카테고리를 찾지 못한 경우 에러 로그 및 스킵
-            if (!category) {
-                console.error('EventBET: Category not found for event:', event.id, 'category_id:', event.category_id)
-                return '' // 빈 문자열 반환하여 스킵
-            }
-        
+    const html = eventsToShow.map(event => {
+        const category = categories.find(c => c.id === event.category_id)
         const eventImage = getEventImage(event.category_slug, event.id)
         const hasOutcomes = event.outcomes && event.outcomes.length > 0
         
-        let card = '<div class="card market-card cursor-pointer" onclick="openBetModal(' + event.id + ')">'
+        let card = '<div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(' + event.id + ')">'
         card += '<div class="flex p-2 sm:p-3">'
         card += '<div class="flex-shrink-0 mr-2">'
         card += '<img src="' + eventImage + '" alt="' + getCategoryName(category) + '" class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E' + category.icon + '%3C/text%3E%3C/svg%3E\'">'
@@ -1112,7 +631,7 @@ function renderMarkets() {
         card += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">'
         card += category.icon + ' ' + getCategoryName(category)
         card += '</span>'
-        card += '<span class="text-xs font-bold text-green-600">' + formatNumber(event.total_volume) + ' USDT</span>'
+        card += '<span class="text-xs font-bold text-green-600">$' + formatNumber(event.total_volume) + '</span>'
         card += '</div>'
         card += '<h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-1 line-clamp-2">' + getEventTitle(event) + '</h3>'
         card += '<div class="flex items-center text-xs text-gray-500 mb-2">'
@@ -1123,7 +642,6 @@ function renderMarkets() {
         if (hasOutcomes) {
             card += '<div class="grid grid-cols-2 gap-1.5">'
             event.outcomes.slice(0, 2).forEach(outcome => {
-                const translatedName = translateOutcome(outcome.name)
                 const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                 const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                 const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
@@ -1133,8 +651,8 @@ function renderMarkets() {
                 
                 card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
                 card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
-                card += '<div class="relative z-10 flex flex-col items-center justify-center p-2">'
-                card += '<span class="font-bold text-xs ' + textColor + ' mb-0.5">' + translatedName + '</span>'
+                card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
+                card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
                 card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
                 card += '</div>'
                 card += '</div>'
@@ -1144,19 +662,9 @@ function renderMarkets() {
         
         card += '</div></div></div>'
         return card
-        } catch (error) {
-            console.error('EventBET: Error rendering event', index, event.id, error)
-            return '' // 에러 발생 시 빈 문자열 반환
-        }
     }).join('')
     
-    console.log('EventBET: Generated HTML length:', html.length)
-    console.log('EventBET: HTML preview (first 500 chars):', html.substring(0, 500))
-    
     container.innerHTML = html
-    
-    console.log('EventBET: HTML injected into container')
-    console.log('EventBET: Container children count:', container.children.length)
     
     // Show/hide load more button
     const loadMoreBtn = document.getElementById('load-more-btn')
@@ -1175,8 +683,7 @@ function renderMarkets() {
 function openBetModal(eventId) {
     // Check if user is logged in
     if (window.EventBETAuth && !window.EventBETAuth.isLoggedIn()) {
-        const t = translations[currentLang] || translations.ko
-        window.EventBETAuth.showAuthRequiredModal(t.loginRequiredDesc)
+        window.EventBETAuth.showAuthRequiredModal('마켓 상세 정보를 보려면 로그인이 필요합니다.')
         return
     }
     
@@ -1209,7 +716,7 @@ function openBetModal(eventId) {
             
             <div class="flex items-center text-sm text-gray-600">
                 <i class="fas fa-chart-line mr-2"></i>
-                <span>${translations[currentLang].volume}: ${formatNumber(event.total_volume)} USDT</span>
+                <span>${translations[currentLang].volume}: $${formatNumber(event.total_volume)}</span>
             </div>
             
             ${event.outcomes && event.outcomes.length > 0 ? `
@@ -1225,7 +732,6 @@ function openBetModal(eventId) {
                 ` : ''}
                 <div class="grid grid-cols-1 gap-3">
                     ${event.outcomes.map(outcome => {
-                        const translatedName = translateOutcome(outcome.name)
                         const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                         const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
@@ -1233,8 +739,8 @@ function openBetModal(eventId) {
                         return `
                         <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
                                 ${!currentWallet ? 'disabled' : ''}>
-                            <div class="flex flex-col items-center justify-center">
-                                <span class="font-bold text-lg ${textColor} mb-2">${translatedName}</span>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold ${textColor}">${outcome.name}</span>
                                 <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                         </button>
@@ -1311,14 +817,7 @@ function openSubmitIssueModal() {
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">카테고리 *</label>
-                    <select id="issue-category" required ${!currentWallet ? 'disabled' : ''}
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        ${categories.map(cat => `<option value="${cat.slug}">${cat.icon} ${getCategoryName(cat)}</option>`).join('')}
-                    </select>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">결과 옵션 *</label>
                     <select required ${!currentWallet ? 'disabled' : ''}
@@ -1390,45 +889,6 @@ function openSubmitIssueModal() {
     if (form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault()
-            
-            // 폼 데이터 수집
-            const formData = new FormData(form)
-            const inputs = form.querySelectorAll('input[type="text"], textarea, input[type="email"], input[type="number"], select')
-            
-            // 카테고리 선택 값 가져오기
-            const categorySelect = document.getElementById('issue-category')
-            const selectedCategorySlug = categorySelect ? categorySelect.value : 'politics'
-            const selectedCategory = categories.find(c => c.slug === selectedCategorySlug) || categories[0]
-            
-            // 새 이슈 생성
-            const newIssue = {
-                id: events.length + 1,
-                category_id: selectedCategory.id,
-                category_slug: selectedCategory.slug,
-                title_ko: inputs[0].value,
-                title_en: inputs[1].value,
-                title_zh: inputs[2].value,
-                title_ja: inputs[3].value,
-                description_ko: inputs[4].value || `${inputs[0].value}에 대한 예측 마켓입니다.`,
-                description_en: inputs[4].value || `Prediction market for ${inputs[1].value}.`,
-                description_zh: inputs[4].value || `关于${inputs[2].value}的预测市场。`,
-                description_ja: inputs[4].value || `${inputs[3].value}についての予測市場です。`,
-                resolve_date: getRandomDateWithinMonth(),
-                total_volume: Math.floor(Math.random() * 1000000) + 100000,
-                participants: Math.floor(Math.random() * 100) + 10,
-                outcomes: [
-                    { id: (events.length + 1) * 2 - 1, name: '예', probability: 0.5 },
-                    { id: (events.length + 1) * 2, name: '아니오', probability: 0.5 }
-                ]
-            }
-            
-            // events 배열에 추가
-            events.push(newIssue)
-            
-            // UI 업데이트
-            renderCategories() // 카테고리 개수 업데이트
-            renderMarkets()    // 마켓 목록 업데이트
-            
             alert('이슈가 성공적으로 제출되었습니다!')
             closeSubmitIssueModal()
         })
@@ -1459,79 +919,3 @@ document.addEventListener('click', (e) => {
         closeSubmitIssueModal()
     }
 })
-
-// Copy wallet address to clipboard
-window.copyWalletAddress = function() {
-    // Try to get address from hero section first, then from modal
-    const heroAddress = document.getElementById('wallet-address')
-    const modalAddress = document.getElementById('wallet-address-modal')
-    const walletAddress = (heroAddress ? heroAddress.textContent : modalAddress.textContent).trim()
-    
-    // Modern clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(walletAddress).then(() => {
-            showCopyNotification('success')
-        }).catch(err => {
-            console.error('Failed to copy:', err)
-            fallbackCopy(walletAddress)
-        })
-    } else {
-        fallbackCopy(walletAddress)
-    }
-}
-
-// Fallback copy method for older browsers
-function fallbackCopy(text) {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-    textArea.style.position = 'fixed'
-    textArea.style.left = '-999999px'
-    document.body.appendChild(textArea)
-    textArea.select()
-    
-    try {
-        document.execCommand('copy')
-        showCopyNotification('success')
-    } catch (err) {
-        console.error('Fallback copy failed:', err)
-        showCopyNotification('error')
-    }
-    
-    document.body.removeChild(textArea)
-}
-
-// Show copy notification
-function showCopyNotification(type) {
-    const message = type === 'success' 
-        ? '✅ 지갑 주소가 복사되었습니다!' 
-        : '❌ 복사에 실패했습니다. 수동으로 복사해주세요.'
-    
-    // Create notification element
-    const notification = document.createElement('div')
-    notification.className = `fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-2xl font-semibold text-white transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    }`
-    notification.innerHTML = `
-        <div class="flex items-center gap-2">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `
-    
-    document.body.appendChild(notification)
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.opacity = '1'
-        notification.style.transform = 'translate(-50%, 0)'
-    }, 100)
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.style.opacity = '0'
-        notification.style.transform = 'translate(-50%, -20px)'
-        setTimeout(() => {
-            document.body.removeChild(notification)
-        }, 300)
-    }, 3000)
-}
