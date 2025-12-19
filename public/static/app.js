@@ -215,61 +215,19 @@ const generateEvents = () => {
     const allEvents = []
     let id = 1
     
-    console.log('EventBET: Categories count:', categories.length)
-    categories.forEach(category => {
-        const templates = eventTemplates[category.slug]
-        
-        for (let i = 0; i < 50; i++) {
-            const template = templates[i % templates.length]
-            const variation = Math.floor(i / templates.length) + 1
-            const probYes = 0.3 + Math.random() * 0.4 // 30-70%
-            
-            const volume = Math.floor(Math.random() * 20000000) + 1000000
-            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500) // 이용객 수
-            
-            allEvents.push({
-                id: id++,
-                category_id: category.id,
-                category_slug: category.slug,
-                title_ko: `${template.ko} #${variation}`,
-                title_en: `${template.en} #${variation}`,
-                title_zh: `${template.zh} #${variation}`,
-                title_ja: `${template.ja} #${variation}`,
-                description_ko: `${template.ko} #${variation}에 대한 예측 마켓입니다.`,
-                description_en: `Prediction market for ${template.en} #${variation}.`,
-                description_zh: `关于${template.zh} #${variation}的预测市场。`,
-                description_ja: `${template.ja} #${variation}についての予測市場です。`,
-                resolve_date: getRandomDateWithinMonth(),
-                total_volume: volume,
-                participants: participants,
-                outcomes: [
-                    { id: id * 2 - 1, name: '예', probability: probYes },
-                    { id: id * 2, name: '아니오', probability: 1 - probYes }
-                ]
-            })
-        }
-    })
-    
-    // Shuffle to mix categories
-    return allEvents.sort(() => Math.random() - 0.5)
-}
-
-// ✅ Events will be generated in DOMContentLoaded
-let events = []
-
-console.log('EventBET: Events array initialized')
-
-// Load issues from localStorage
-const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
-console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
-
-if (storedIssues.length > 0) {
-    console.log('EventBET: First issue:', storedIssues[0])
-    
+    // ✅ 먼저 localStorage에서 관리자 등록 이슈를 읽어옴
+    let storedIssues = []
     try {
-        // Convert admin issues to event format
-        const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
-            // Determine category
+        storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+        console.log('EventBET: Found', storedIssues.length, 'issues in localStorage')
+    } catch (error) {
+        console.error('EventBET: Error reading localStorage:', error)
+    }
+    
+    // ✅ 활성 이슈를 이벤트 형식으로 변환하여 추가
+    if (storedIssues.length > 0) {
+        console.log('EventBET: Converting admin issues to events...')
+        storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
             const categoryMap = {
                 'crypto': 'crypto',
                 'politics': 'politics',
@@ -283,21 +241,16 @@ if (storedIssues.length > 0) {
             const categorySlug = categoryMap[issue.category] || 'other'
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            // Use admin-defined betting amounts or generate random
             const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
             const yesBet = issue.yesBet || 0
             const noBet = issue.noBet || 0
             const totalBet = yesBet + noBet
-            
-            // Calculate probability from betting amounts
             const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
-            
-            // Volume in larger scale for display (multiply by 10000 for realistic numbers)
             const volume = totalUsdt * 10000
             const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
             
-            return {
-                id: issue.id || Date.now(),
+            allEvents.push({
+                id: issue.id || id++,
                 category_id: category.id,
                 category_slug: categorySlug,
                 title_ko: issue.title,
@@ -308,15 +261,25 @@ if (storedIssues.length > 0) {
                 description_en: issue.description || issue.title,
                 description_zh: issue.description || issue.title,
                 description_ja: issue.description || issue.title,
-                resolve_date: issue.expireDate || getRandomDateWithinMonth(),
+                resolve_date: issue.expireDate,
                 total_volume: volume,
                 participants: participants,
                 outcomes: [
-                    { id: `${issue.id}-yes`, name: '예', probability: probYes },
-                    { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
+                    { id: id * 2 - 1, name: '예', probability: probYes },
+                    { id: id * 2, name: '아니오', probability: 1 - probYes }
                 ],
-                isAdminIssue: true,
-                initialUsdt: totalUsdt
+                isAdminIssue: true
+            })
+        })
+        console.log('EventBET: Added', allEvents.length, 'admin issues')
+    }
+    
+    // Shuffle to mix categories
+    return allEvents.sort(() => Math.random() - 0.5)
+}
+
+// ✅ Events will be generated in DOMContentLoaded
+let events = []
             }
         })
         
@@ -334,6 +297,19 @@ if (storedIssues.length > 0) {
 console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
     console.log('EventBET: DOMContentLoaded fired!')
+    
+    // ✅ localStorage에서 이슈를 먼저 읽어온 후 이벤트 생성
+    console.log('EventBET: Checking localStorage for issues...')
+    let storedIssues = []
+    try {
+        storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+        console.log('EventBET: Found', storedIssues.length, 'issues in localStorage')
+        if (storedIssues.length > 0) {
+            console.log('EventBET: First stored issue:', storedIssues[0])
+        }
+    } catch (e) {
+        console.error('EventBET: localStorage error:', e)
+    }
     
     // ✅ DOM이 준비된 후에 이벤트 생성
     events = generateEvents()
