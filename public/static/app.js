@@ -259,33 +259,14 @@ let events = generateEvents()
 
 console.log(`Generated ${events.length} events`)
 
-// Load issues from localStorage AND server
-async function loadAdminIssues() {
-let storedIssues = []
-try {
-    // 먼저 localStorage 시도
-    storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
-    console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
-} catch (error) {
-    console.log('EventBET: localStorage read error:', error)
-}
+// Load issues from localStorage
+const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
 
-// 서버에서도 로드 시도
-try {
-    const response = await fetch('/data/issues.json?_=' + Date.now())
-    const serverIssues = await response.json()
-    console.log(`EventBET: Found ${serverIssues.length} issues on server`)
-    if (serverIssues.length > 0) {
-        storedIssues = serverIssues
-    }
-} catch (error) {
-    console.log('EventBET: Server issues not available, using localStorage')
-}
-
-console.log(`EventBET: Total ${storedIssues.length} issues to load`)
-
-try {
-    if (storedIssues.length > 0) {
+if (storedIssues.length > 0) {
+    console.log('EventBET: First issue:', storedIssues[0])
+    
+    try {
         // Convert admin issues to event format
         const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
             // Determine category
@@ -341,17 +322,13 @@ try {
         
         // Add admin events at the beginning
         events = [...adminEvents, ...events]
-        console.log(`EventBET: Added ${adminEvents.length} admin issues, total events: ${events.length}`)
+        console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
+    } catch (error) {
+        console.error('EventBET: Error converting issues:', error)
     }
-} catch (error) {
-    console.error('EventBET: Error loading issues:', error)
+} else {
+    console.log('EventBET: No admin issues found in localStorage')
 }
-}
-
-// Call async function
-loadAdminIssues().then(() => {
-    console.log('EventBET: Admin issues loaded, total events:', events.length)
-})
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')

@@ -1109,15 +1109,9 @@ async function saveBatchIssues() {
         'ja': '日本語'
     };
     
-    // 기존 이슈 불러오기
-    let issues = [];
-    try {
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        issues = await response.json();
-    } catch (error) {
-        console.log('No existing issues, starting fresh');
-        issues = [];
-    }
+    // 기존 이슈 불러오기 (localStorage에서)
+    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('Loaded', issues.length, 'existing issues from localStorage');
     
     let addedCount = 0;
     
@@ -1166,21 +1160,16 @@ async function saveBatchIssues() {
     // 새 이슈를 앞에 추가
     issues = [...newIssues, ...issues];
     
-    // localStorage에도 저장 (백업)
+    // localStorage에 저장
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
     
-    // 서버에 저장 (GitHub API 사용)
-    try {
-        const blob = new Blob([JSON.stringify(issues, null, 2)], { type: 'application/json' });
-        console.log('✅ Issues prepared for save:', issues.length);
-        console.log('✅ New issues added:', newIssues.length);
-        console.log('✅ First 3 issues:', issues.slice(0, 3));
-        
-        alert(`총 ${addedCount}개의 이슈가 등록되었습니다!\n\n전체 ${issues.length}개 이슈 저장됨\n\n메인 페이지를 새로고침하면 표시됩니다.`);
-    } catch (error) {
-        console.error('Save error:', error);
-        alert(`경고: ${addedCount}개 이슈는 브라우저에만 저장되었습니다.\n같은 브라우저에서만 보입니다.`);
-    }
+    // 저장 확인
+    const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('✅ Saved to localStorage:', saved.length, 'issues');
+    console.log('✅ New issues added:', newIssues.length);
+    console.log('✅ First issue:', saved[0]);
+    
+    alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n같은 브라우저 메인 페이지에서 확인하세요!`);
     
     // 폼 초기화
     languages.forEach(lang => {
