@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventBET 관리자</title>
-    
-    <!-- 캐시 방지 메타 태그 (강력한 캐시 무효화) -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="cache-control" content="no-cache">
-    <meta name="expires" content="0">
-    <meta name="pragma" content="no-cache">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -25,29 +15,21 @@
         .sidebar {
             background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
             min-height: 100vh;
-            width: 200px;
+            width: 250px;
             position: fixed;
             left: 0;
             top: 0;
             box-shadow: 4px 0 16px rgba(0, 0, 0, 0.1);
-            z-index: 100;
         }
         
         .sidebar-item {
             color: rgba(255, 255, 255, 0.8);
-            padding: 10px 16px;
+            padding: 12px 24px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .sidebar-item i {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
+            gap: 12px;
         }
         
         .sidebar-item:hover {
@@ -58,88 +40,12 @@
         .sidebar-item.active {
             background: rgba(255, 255, 255, 0.2);
             color: #ffffff;
-            border-left: 3px solid #ffffff;
+            border-left: 4px solid #ffffff;
         }
         
         .main-content {
-            margin-left: 200px;
-            padding: 16px;
-            max-width: 1400px;
-        }
-        
-        /* 모바일 최적화 */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 60px;
-                overflow: hidden;
-            }
-            
-            .sidebar-logo-text {
-                display: none;
-            }
-            
-            .sidebar-logo-icon {
-                padding: 6px !important;
-            }
-            
-            .sidebar-logo-icon i {
-                font-size: 16px !important;
-            }
-            
-            .sidebar-item {
-                padding: 12px 8px;
-                justify-content: center;
-                font-size: 0;
-            }
-            
-            .sidebar-item i {
-                font-size: 20px;
-                margin: 0;
-            }
-            
-            .sidebar-item span {
-                display: none;
-            }
-            
-            .main-content {
-                margin-left: 60px;
-                padding: 8px;
-            }
-            
-            .card {
-                padding: 12px;
-                margin-bottom: 12px;
-                border-radius: 8px;
-            }
-            
-            h2 {
-                font-size: 1.25rem !important;
-            }
-            
-            button {
-                font-size: 0.875rem;
-                padding: 8px 12px !important;
-            }
-            
-            input, select, textarea {
-                font-size: 14px;
-                padding: 8px !important;
-            }
-            
-            table {
-                font-size: 0.75rem;
-            }
-            
-            th, td {
-                padding: 6px 4px !important;
-            }
-        }
-        
-        /* 태블릿 */
-        @media (max-width: 1024px) {
-            .main-content {
-                padding: 16px;
-            }
+            margin-left: 250px;
+            padding: 24px;
         }
         
         .card {
@@ -252,40 +158,12 @@
         
         .modal-content {
             background: #ffffff;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
             width: 90%;
-            max-height: 85vh;
+            max-height: 80vh;
             overflow-y: auto;
-        }
-        
-        @media (max-width: 768px) {
-            .modal-content {
-                padding: 20px;
-                max-width: 95%;
-                width: 95%;
-                max-height: 80vh;
-            }
-        }
-        
-        /* 스크롤바 스타일링 */
-        .modal-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .modal-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .modal-content::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        
-        .modal-content::-webkit-scrollbar-thumb:hover {
-            background: #555;
         }
         
         .preview-image {
@@ -304,75 +182,16 @@
     </style>
 </head>
 <body>
-    <!-- 로그인 화면 -->
-    <div id="admin-login-screen" class="fixed inset-0 bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-            <div class="text-center mb-8">
-                <div class="inline-block bg-blue-100 rounded-full p-4 mb-4">
-                    <i class="fas fa-shield-alt text-blue-600 text-4xl"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">관리자 로그인</h2>
-                <p class="text-gray-600">EventBET Admin Panel</p>
-            </div>
-            
-            <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-user mr-2"></i>아이디
-                    </label>
-                    <input 
-                        type="text" 
-                        id="admin-username" 
-                        placeholder="관리자 아이디를 입력하세요"
-                        required
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition"
-                    >
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-lock mr-2"></i>비밀번호
-                    </label>
-                    <input 
-                        type="password" 
-                        id="admin-password" 
-                        placeholder="비밀번호를 입력하세요"
-                        required
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition"
-                    >
-                </div>
-                
-                <div id="login-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span id="login-error-text">아이디 또는 비밀번호가 올바르지 않습니다.</span>
-                </div>
-                
-                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition transform hover:scale-105 shadow-lg">
-                    <i class="fas fa-sign-in-alt mr-2"></i>로그인
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center text-sm text-gray-600">
-                <p><i class="fas fa-info-circle mr-1"></i>기본 로그인 정보:</p>
-                <p class="mt-2 font-mono bg-gray-100 p-2 rounded">
-                    ID: <strong>admin</strong> / PW: <strong>admin123</strong>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 관리자 페이지 (로그인 후 표시) -->
-    <div id="admin-main-content" class="hidden">
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="p-4 border-b border-white border-opacity-20">
-            <div class="flex items-center space-x-2">
-                <div class="bg-white rounded-full p-2 sidebar-logo-icon">
-                    <i class="fas fa-user-shield text-blue-600 text-lg"></i>
+        <div class="p-6 border-b border-white border-opacity-20">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white rounded-full p-2">
+                    <i class="fas fa-user-shield text-blue-600 text-xl"></i>
                 </div>
-                <div class="sidebar-logo-text">
-                    <h3 class="text-white font-bold text-base">관리자</h3>
-                    <p class="text-white text-opacity-70 text-xs">Admin</p>
+                <div>
+                    <h3 class="text-white font-bold text-lg">관리자</h3>
+                    <p class="text-white text-opacity-70 text-sm">Admin</p>
                 </div>
             </div>
         </div>
@@ -390,10 +209,6 @@
                 <i class="fas fa-window-maximize"></i>
                 <span>팝업 관리</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('issues')">
-                <i class="fas fa-clipboard-list"></i>
-                <span>이슈 관리</span>
-            </div>
             <div class="sidebar-item" onclick="showSection('members')">
                 <i class="fas fa-users"></i>
                 <span>회원 관리</span>
@@ -402,21 +217,13 @@
                 <i class="fas fa-calculator"></i>
                 <span>결산 페이지</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('settings')">
-                <i class="fas fa-cog"></i>
-                <span>GitHub 설정</span>
-            </div>
         </div>
         
         <div class="absolute bottom-0 w-full p-6 border-t border-white border-opacity-20">
-            <a href="/" class="text-white text-opacity-80 hover:text-opacity-100 flex items-center gap-2 mb-3">
+            <a href="/" class="text-white text-opacity-80 hover:text-opacity-100 flex items-center gap-2">
                 <i class="fas fa-home"></i>
                 <span>메인으로</span>
             </a>
-            <button onclick="adminLogout()" class="w-full text-white text-opacity-80 hover:text-opacity-100 flex items-center gap-2 bg-red-500 bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>로그아웃</span>
-            </button>
         </div>
     </div>
     
@@ -432,10 +239,10 @@
                     </button>
                 </div>
                 
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
                     <p class="text-sm text-yellow-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        최대 3개의 배너를 등록할 수 있습니다. PC에서 이미지 업로드가 가능합니다.
+                        최대 3개의 배너를 등록할 수 있습니다. 이미지 업로드 또는 유튜브 링크를 사용할 수 있습니다.
                     </p>
                 </div>
                 
@@ -458,7 +265,7 @@
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                     <p class="text-sm text-blue-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        최대 30개의 공지를 등록할 수 있습니다. PC에서 이미지 업로드가 가능합니다.
+                        최대 30개의 공지를 등록할 수 있습니다.
                     </p>
                 </div>
                 
@@ -492,105 +299,12 @@
                 <div class="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6">
                     <p class="text-sm text-purple-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        PC에서 이미지 업로드를 통해 팝업을 생성할 수 있습니다. 위치(cm)와 날짜를 지정할 수 있습니다.
+                        이미지 업로드 또는 유튜브 링크를 사용하여 팝업을 생성할 수 있습니다.
                     </p>
                 </div>
                 
                 <div id="popups-list" class="space-y-4">
                     <!-- 팝업 목록이 여기에 표시됩니다 -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- 이슈 관리 -->
-        <div id="issues-section" class="content-section" style="display: none;">
-            <div class="card">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">이슈 관리</h2>
-                    <button onclick="showBulkIssueModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
-                    </button>
-                </div>
-                
-                <!-- 검색 및 일괄 삭제 기능 -->
-                <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <!-- 검색창 -->
-                        <div class="flex-1">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search mr-2"></i>이슈 검색
-                            </label>
-                            <input 
-                                type="text" 
-                                id="issue-search-input" 
-                                placeholder="제목 검색 (한국어, 영어, 중국어, 일본어)"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                oninput="searchIssues()"
-                            >
-                        </div>
-                        
-                        <!-- 카테고리 필터 -->
-                        <div class="w-full md:w-48">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-filter mr-2"></i>카테고리
-                            </label>
-                            <select 
-                                id="category-filter" 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                onchange="searchIssues()"
-                            >
-                                <option value="">전체</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- 일괄 삭제 버튼 -->
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="text-sm text-gray-600">
-                            <span id="selected-count">0</span>개 선택됨
-                        </div>
-                        <button 
-                            onclick="bulkDeleteIssues()" 
-                            id="bulk-delete-btn"
-                            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                            disabled
-                        >
-                            <i class="fas fa-trash-alt mr-2"></i>선택 항목 삭제
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="bg-blue-50 rounded-lg p-4 mb-6">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                        <div class="flex-1">
-                            <p class="text-sm text-blue-900 font-semibold mb-1">이슈 검색 및 관리</p>
-                            <p class="text-sm text-blue-800">
-                                제목으로 이슈를 검색하고, 체크박스로 선택하여 일괄 삭제하거나 개별 편집/삭제할 수 있습니다.
-                            </p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button 
-                                onclick="createTestIssues()" 
-                                class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm whitespace-nowrap"
-                                title="테스트용 이슈 3개를 생성합니다 (pending 상태)"
-                            >
-                                <i class="fas fa-flask mr-1"></i>테스트 데이터
-                            </button>
-                            <button 
-                                onclick="clearAllIssues()" 
-                                class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm whitespace-nowrap"
-                                title="모든 이슈를 삭제합니다"
-                            >
-                                <i class="fas fa-trash-alt mr-1"></i>전체 삭제
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 등록된 이슈 목록 -->
-                <div id="issues-list">
-                    <!-- 이슈 목록이 여기에 표시됩니다 -->
                 </div>
             </div>
         </div>
@@ -703,6 +417,9 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-gray-800">등록된 이슈 목록</h3>
                         <div class="flex gap-2">
+                            <button onclick="openIssueModal()" class="btn-primary">
+                                <i class="fas fa-plus mr-2"></i>이슈 등록
+                            </button>
                             <select id="issue-status-filter" onchange="filterIssues()" class="px-4 py-2 border border-gray-300 rounded-lg">
                                 <option value="">전체 상태</option>
                                 <option value="active">진행중</option>
@@ -727,7 +444,7 @@
                                 <th>관리</th>
                             </tr>
                         </thead>
-                        <tbody id="settlement-issues-list">
+                        <tbody id="issues-list">
                             <!-- 이슈 목록이 여기에 표시됩니다 -->
                         </tbody>
                     </table>
@@ -763,111 +480,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- GitHub 설정 섹션 -->
-        <div id="settings-section" class="content-section">
-            <div class="card">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-cog mr-2 text-blue-600"></i>
-                    GitHub 설정
-                </h2>
-                
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-blue-600 text-xl mt-1 mr-3"></i>
-                        <div>
-                            <h3 class="font-bold text-blue-800 mb-2">GitHub 연동이 필요한 이유</h3>
-                            <p class="text-sm text-blue-700 mb-2">
-                                PC와 모바일 간 데이터 자동 동기화를 위해 GitHub Repository를 사용합니다.
-                            </p>
-                            <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
-                                <li>공지, 배너, 팝업 데이터가 JSON 파일로 저장됩니다</li>
-                                <li>GitHub Pages를 통해 자동으로 PC/모바일에 배포됩니다</li>
-                                <li>데이터 변경 이력이 Git으로 자동 관리됩니다</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="github-status" class="mb-6">
-                    <p class="text-gray-500">설정 확인 중...</p>
-                </div>
-                
-                <form onsubmit="saveSettings(event)" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <i class="fas fa-key mr-1"></i>
-                            GitHub Personal Access Token
-                        </label>
-                        <input 
-                            type="password" 
-                            id="github-token" 
-                            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                            required
-                        >
-                        <small class="text-gray-500 mt-1 block">
-                            <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" class="text-blue-600 hover:underline">
-                                <i class="fas fa-external-link-alt mr-1"></i>
-                                GitHub Token 생성하기
-                            </a>
-                            (repo 권한 필요)
-                        </small>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <i class="fab fa-github mr-1"></i>
-                            Repository Owner (사용자명 또는 조직명)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="github-owner" 
-                            placeholder="예: john-doe"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                            required
-                        >
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <i class="fas fa-folder mr-1"></i>
-                            Repository Name
-                        </label>
-                        <input 
-                            type="text" 
-                            id="github-repo" 
-                            placeholder="예: my-website"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg"
-                            required
-                        >
-                        <small class="text-gray-500 mt-1 block">
-                            현재 웹사이트가 배포된 GitHub Repository 이름
-                        </small>
-                    </div>
-                    
-                    <button type="submit" class="btn-success">
-                        <i class="fas fa-save mr-2"></i>
-                        GitHub 설정 저장
-                    </button>
-                </form>
-                
-                <div class="mt-8 bg-gray-50 rounded-lg p-6">
-                    <h3 class="font-bold text-gray-800 mb-4">
-                        <i class="fas fa-question-circle mr-2"></i>
-                        GitHub Token 생성 방법
-                    </h3>
-                    <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
-                        <li>GitHub 로그인 후 <a href="https://github.com/settings/tokens/new" target="_blank" class="text-blue-600 hover:underline">Token 생성 페이지</a> 접속</li>
-                        <li>Note: "EventBET Admin" 입력</li>
-                        <li>Expiration: "No expiration" 선택 (만료 없음)</li>
-                        <li>Select scopes: <strong>"repo" 체크</strong> (전체 Repository 접근 권한)</li>
-                        <li>"Generate token" 클릭</li>
-                        <li>생성된 Token 복사하여 위 입력창에 붙여넣기</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
     </div>
     
     <!-- 배너 추가/수정 모달 -->
@@ -889,9 +501,29 @@
                 </div>
                 
                 <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">콘텐츠 타입</label>
+                    <select id="banner-type" onchange="toggleBannerInputs()" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        <option value="image">이미지 업로드</option>
+                        <option value="youtube">유튜브 링크</option>
+                    </select>
+                </div>
+                
+                <div id="banner-image-input" class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">이미지 URL</label>
+                    <input type="url" id="banner-image" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewBannerUrl()">
+                    
+                    <div class="text-center text-gray-500 my-3">또는</div>
+                    
                     <label class="block text-sm font-semibold mb-2">PC에서 이미지 업로드</label>
-                    <input type="file" id="banner-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleBannerImageUpload(event)">
-                    <img id="banner-preview" class="preview-image hidden mt-2">
+                    <input type="file" id="banner-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleBannerImageUpload()">
+                    
+                    <img id="banner-preview" class="preview-image hidden">
+                </div>
+                
+                <div id="banner-youtube-input" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold mb-2">유튜브 링크</label>
+                    <input type="url" id="banner-youtube" placeholder="https://www.youtube.com/watch?v=...">
+                    <iframe id="banner-youtube-preview" class="youtube-preview hidden" frameborder="0" allowfullscreen></iframe>
                 </div>
                 
                 <div class="mb-4">
@@ -910,14 +542,11 @@
     <!-- 공지 추가/수정 모달 -->
     <div id="notice-modal" class="modal">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2 border-b">
+            <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold">공지 관리</h3>
                 <button onclick="closeNoticeModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
-            </div>
-            <div class="text-xs text-gray-500 text-center mb-4">
-                <i class="fas fa-arrow-down animate-bounce"></i> 아래로 스크롤하여 모든 옵션 확인
             </div>
             
             <form onsubmit="saveNotice(event)">
@@ -930,28 +559,82 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">내용</label>
-                    <textarea id="notice-content" rows="5" required placeholder="공지 내용을 입력하세요"></textarea>
+                    <textarea id="notice-content" rows="8" required placeholder="공지 내용을 입력하세요"></textarea>
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">이미지 업로드 (선택)</label>
-                    <input type="file" id="notice-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleNoticeImageUpload(event)">
-                    <img id="notice-image-preview" class="preview-image hidden mt-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">
-                        <i class="fab fa-youtube text-red-600"></i> 유튜브 링크 (선택)
-                    </label>
-                    <input type="url" id="notice-youtube" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                    <small class="text-gray-500 mt-1 block">
-                        유튜브 영상 URL을 입력하세요 (예: https://www.youtube.com/watch?v=VIDEO_ID)
-                    </small>
+                    <label class="block text-sm font-semibold mb-2">이미지 URL (선택)</label>
+                    <input type="url" id="notice-image" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewNoticeUrl()">
+                    
+                    <div class="text-center text-gray-500 my-3">또는</div>
+                    
+                    <label class="block text-sm font-semibold mb-2">PC에서 이미지 업로드 (선택)</label>
+                    <input type="file" id="notice-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handleNoticeImageUpload()">
+                    
+                    <img id="notice-preview" class="preview-image hidden" style="max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px;">
                 </div>
                 
                 <div class="flex space-x-3">
                     <button type="submit" class="btn-primary flex-1">저장</button>
                     <button type="button" onclick="closeNoticeModal()" class="btn-danger flex-1">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 이슈 등록 모달 -->
+    <div id="issue-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">이슈 등록</h3>
+                <button onclick="closeIssueModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="saveIssue(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">이슈 제목 *</label>
+                    <input type="text" id="issue-title" required placeholder="예: 2024년 비트코인이 10만 달러를 돌파할까?" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">이슈 설명</label>
+                    <textarea id="issue-description" rows="4" placeholder="이슈에 대한 자세한 설명을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">카테고리 *</label>
+                    <select id="issue-category" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        <option value="">카테고리 선택</option>
+                        <option value="crypto">암호화폐</option>
+                        <option value="sports">스포츠</option>
+                        <option value="politics">정치</option>
+                        <option value="entertainment">엔터테인먼트</option>
+                        <option value="economy">경제</option>
+                        <option value="science">과학/기술</option>
+                        <option value="climate">기후/환경</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">만료일 *</label>
+                    <input type="datetime-local" id="issue-expiredate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-2">이미지 URL (선택사항)</label>
+                    <input type="url" id="issue-image" placeholder="https://example.com/image.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeIssueModal()" class="btn-secondary">
+                        취소
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save mr-2"></i>등록
+                    </button>
                 </div>
             </form>
         </div>
@@ -976,27 +659,36 @@
                 </div>
                 
                 <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">콘텐츠 타입</label>
+                    <select id="popup-type" onchange="togglePopupInputs()" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        <option value="image">이미지 업로드</option>
+                        <option value="youtube">유튜브 링크</option>
+                    </select>
+                </div>
+                
+                <div id="popup-image-input" class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">이미지 URL</label>
+                    <input type="url" id="popup-image" placeholder="이미지 URL을 입력하세요" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="previewPopupUrl()">
+                    
+                    <div class="text-center text-gray-500 my-3">또는</div>
+                    
                     <label class="block text-sm font-semibold mb-2">PC에서 이미지 업로드</label>
-                    <input type="file" id="popup-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handlePopupImageUpload(event)">
-                    <img id="popup-preview" class="preview-image hidden mt-2">
+                    <input type="file" id="popup-image-file" accept="image/*" class="w-full px-4 py-3 border border-gray-300 rounded-lg" onchange="handlePopupImageUpload()">
+                    
+                    <img id="popup-preview" class="preview-image hidden">
+                </div>
+                
+                <div id="popup-youtube-input" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold mb-2">유튜브 링크</label>
+                    <input type="url" id="popup-youtube" placeholder="https://www.youtube.com/watch?v=...">
+                    <iframe id="popup-youtube-preview" class="youtube-preview hidden" frameborder="0" allowfullscreen></iframe>
                 </div>
                 
                 <div class="mb-4 bg-gray-50 rounded-lg p-4">
-                    <div class="bg-white rounded-lg p-4 mb-4">
-                        <h4 class="text-sm font-bold text-gray-700 mb-3">
-                            <i class="fas fa-calendar mr-2 text-purple-500"></i>팝업 표시 기간
-                        </h4>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold mb-2">시작일</label>
-                                <input type="date" id="popup-start-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-2">종료일</label>
-                                <input type="date" id="popup-end-date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
-                    </div>
+                    <label class="flex items-center mb-4 cursor-pointer">
+                        <input type="checkbox" id="popup-enabled" class="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mr-3">
+                        <span class="text-base font-bold text-gray-800">팝업 활성화</span>
+                    </label>
                     
                     <div class="bg-white rounded-lg p-4 mb-4">
                         <h4 class="text-sm font-bold text-gray-700 mb-3">
@@ -1045,256 +737,6 @@
         </div>
     </div>
     
-    <!-- 이슈 일괄 등록 모달 -->
-    <div id="bulk-issue-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-6xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">
-                    <i class="fas fa-clipboard-list mr-2 text-green-600"></i>
-                    이슈 일괄 등록
-                </h3>
-                <button onclick="closeBulkIssueModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="bulk-issue-form" onsubmit="submitBulkIssues(event)">
-                <div id="issues-container" class="space-y-6 mb-6">
-                    <!-- 이슈 입력 폼이 여기에 추가됩니다 -->
-                </div>
-                
-                <div class="flex gap-3 mb-6">
-                    <button type="button" onclick="addIssueForm()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
-                    </button>
-                    <button type="button" onclick="clearIssueFormInputs()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                        <i class="fas fa-trash mr-2"></i>전체 초기화
-                    </button>
-                </div>
-                
-                <!-- 안내 메시지 -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-blue-800">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <strong>등록된 이슈는 즉시 메인 사이트에 표시됩니다.</strong>
-                    </p>
-                    <p class="text-xs text-blue-700 mt-2">
-                        💡 메인 페이지를 새로고침하면 "인기 마켓" 섹션에서 확인할 수 있습니다.
-                    </p>
-                </div>
-                
-                <div class="flex space-x-3">
-                    <button type="submit" class="btn-primary flex-1">
-                        <i class="fas fa-check mr-2"></i>일괄 등록
-                    </button>
-                    <button type="button" onclick="closeBulkIssueModal()" class="btn-danger flex-1">
-                        <i class="fas fa-times mr-2"></i>취소
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- 이슈 편집 모달 -->
-    <div id="edit-issue-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">
-                    <i class="fas fa-edit mr-2"></i>이슈 편집
-                </h3>
-                <button onclick="closeEditIssueModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-            
-            <form onsubmit="saveEditedIssue(event)">
-                <input type="hidden" id="edit-issue-index">
-                
-                <!-- 카테고리 선택 -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2">
-                        <i class="fas fa-folder mr-1"></i>카테고리
-                    </label>
-                    <select id="edit-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                        <option value="">카테고리 선택</option>
-                    </select>
-                </div>
-                
-                <!-- 제목 입력 (4개 언어) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            🇰🇷 제목 (한국어)
-                        </label>
-                        <input type="text" id="edit-title-ko" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            🇺🇸 Title (English)
-                        </label>
-                        <input type="text" id="edit-title-en" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            🇨🇳 标题 (中文)
-                        </label>
-                        <input type="text" id="edit-title-zh" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            🇯🇵 タイトル (日本語)
-                        </label>
-                        <input type="text" id="edit-title-ja" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                </div>
-                
-                <!-- 결론 기간 및 배팅액 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <i class="fas fa-calendar-alt mr-1"></i>결론 기간
-                        </label>
-                        <input type="date" id="edit-resolve-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">
-                            <i class="fas fa-coins mr-1"></i>배팅액 (USDT)
-                        </label>
-                        <input type="number" id="edit-total-volume" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required min="0" step="100">
-                    </div>
-                </div>
-                
-                <!-- yes/no 확률 편집 -->
-                <div class="mb-4 bg-blue-50 rounded-lg p-4">
-                    <h4 class="text-sm font-bold text-blue-800 mb-3">
-                        <i class="fas fa-percentage mr-2"></i>yes/no 표시 비율 (%)
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">
-                                <span class="text-green-600">✓</span> 예 (Yes) %
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-probability-yes" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
-                                min="0" 
-                                max="100" 
-                                step="0.1"
-                                required
-                                oninput="updateNoProbability()"
-                            >
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">
-                                <span class="text-red-600">✗</span> 아니오 (No) %
-                            </label>
-                            <input 
-                                type="number" 
-                                id="edit-probability-no" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-100" 
-                                min="0" 
-                                max="100" 
-                                step="0.1"
-                                required
-                                readonly
-                            >
-                        </div>
-                    </div>
-                    <p class="text-xs text-blue-700 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        예(Yes) 비율을 입력하면 아니오(No) 비율은 자동으로 계산됩니다. (합계: 100%)
-                    </p>
-                </div>
-                
-                <div class="flex space-x-3">
-                    <button type="submit" class="btn-primary flex-1">
-                        <i class="fas fa-save mr-2"></i>저장
-                    </button>
-                    <button type="button" onclick="closeEditIssueModal()" class="btn-danger flex-1">
-                        <i class="fas fa-times mr-2"></i>취소
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    </div>
-    <!-- End of admin-main-content -->
-    
-    <script src="/static/github-api.js"></script>
-    <script src="/static/admin.js?v=20250121012"></script>
-    <script>
-        // 관리자 로그인 처리
-        function handleAdminLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('admin-username').value;
-            const password = document.getElementById('admin-password').value;
-            
-            // 기본 관리자 계정
-            const ADMIN_USERNAME = 'admin';
-            const ADMIN_PASSWORD = 'admin123';
-            
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                // 로그인 성공
-                sessionStorage.setItem('admin_logged_in', 'true');
-                document.getElementById('admin-login-screen').classList.add('hidden');
-                document.getElementById('admin-main-content').classList.remove('hidden');
-                document.getElementById('login-error').classList.add('hidden');
-            } else {
-                // 로그인 실패
-                document.getElementById('login-error').classList.remove('hidden');
-                document.getElementById('admin-password').value = '';
-                document.getElementById('admin-password').focus();
-                
-                // 3초 후 에러 메시지 숨김
-                setTimeout(() => {
-                    document.getElementById('login-error').classList.add('hidden');
-                }, 3000);
-            }
-        }
-        
-        // 페이지 로드 시 로그인 상태 확인
-        window.addEventListener('DOMContentLoaded', () => {
-            const isLoggedIn = sessionStorage.getItem('admin_logged_in');
-            
-            if (isLoggedIn === 'true') {
-                // 이미 로그인된 경우
-                document.getElementById('admin-login-screen').classList.add('hidden');
-                document.getElementById('admin-main-content').classList.remove('hidden');
-            }
-        });
-        
-        // 로그아웃 함수 추가
-        window.adminLogout = function() {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                sessionStorage.removeItem('admin_logged_in');
-                location.reload();
-            }
-        };
-        
-        // yes/no 확률 자동 계산 함수
-        window.updateNoProbability = function() {
-            const yesInput = document.getElementById('edit-probability-yes');
-            const noInput = document.getElementById('edit-probability-no');
-            
-            if (yesInput && noInput) {
-                const yesProb = parseFloat(yesInput.value) || 0;
-                const noProb = 100 - yesProb;
-                
-                // 범위 검증
-                if (yesProb < 0) {
-                    yesInput.value = 0;
-                    noInput.value = 100;
-                } else if (yesProb > 100) {
-                    yesInput.value = 100;
-                    noInput.value = 0;
-                } else {
-                    noInput.value = noProb.toFixed(1);
-                }
-            }
-        };
-    </script>
+    <script src="/static/admin.js"></script>
 </body>
 </html>
