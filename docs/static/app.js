@@ -259,84 +259,64 @@ let events = generateEvents()
 
 console.log(`Generated ${events.length} events`)
 
-// Load issues from localStorage
-const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
-console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
-
-if (storedIssues.length > 0) {
-    console.log('EventBET: First issue:', storedIssues[0])
-    
+// Load issues from API and merge with generated events
+async function loadIssuesFromAPI() {
     try {
-        // Convert admin issues to event format
-        const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
-            // Determine category
-            const categoryMap = {
-                'crypto': 'crypto',
-                'politics': 'politics',
-                'sports': 'sports',
-                'entertainment': 'entertainment',
-                'economy': 'economy',
-                'science': 'science',
-                'climate': 'climate',
-                'other': 'other'
-            }
-            const categorySlug = categoryMap[issue.category] || 'other'
-            const category = categories.find(c => c.slug === categorySlug) || categories[0]
-            
-            // Use admin-defined betting amounts or generate random
-            const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
-            const yesBet = issue.yesBet || 0
-            const noBet = issue.noBet || 0
-            const totalBet = yesBet + noBet
-            
-            // Calculate probability from betting amounts
-            const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
-            
-            // Volume in larger scale for display (multiply by 10000 for realistic numbers)
-            const volume = totalUsdt * 10000
-            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
-            
-            return {
-                id: issue.id || Date.now(),
-                category_id: category.id,
-                category_slug: categorySlug,
-                title_ko: issue.title,
-                title_en: issue.title,
-                title_zh: issue.title,
-                title_ja: issue.title,
-                description_ko: issue.description || issue.title,
-                description_en: issue.description || issue.title,
-                description_zh: issue.description || issue.title,
-                description_ja: issue.description || issue.title,
-                resolve_date: issue.expireDate || getRandomDateWithinMonth(),
-                total_volume: volume,
-                participants: participants,
-                outcomes: [
-                    { id: `${issue.id}-yes`, name: '예', probability: probYes },
-                    { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
-                ],
-                isAdminIssue: true,
-                initialUsdt: totalUsdt
-            }
-        })
+        console.log('EventBET: Loading issues from API...')
+        const response = await fetch('/api/issues')
+        const data = await response.json()
         
-        // Add admin events at the beginning
-        events = [...adminEvents, ...events]
-        console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
+        if (data.success && data.issues && data.issues.length > 0) {
+            console.log(`EventBET: Loaded ${data.issues.length} issues from API`)
+            
+            // Convert API issues to event format
+            const apiEvents = data.issues.map(issue => {
+                // Find matching category
+                const category = categories.find(cat => cat.slug === issue.category) || categories[0]
+                
+                // Calculate probability from yes_bet and no_bet
+                const total = (issue.yes_bet || 0) + (issue.no_bet || 0)
+                const probYes = total > 0 ? (issue.yes_bet || 0) / total : 0.5
+                
+                return {
+                    id: `api-${issue.id}`,
+                    category_id: category.id,
+                    category_slug: category.slug,
+                    title_ko: issue.title_ko || '제목 없음',
+                    title_en: issue.title_en || 'No title',
+                    title_zh: issue.title_zh || '无标题',
+                    title_ja: issue.title_ja || 'タイトルなし',
+                    description_ko: `${issue.title_ko}에 대한 예측 마켓입니다.`,
+                    description_en: `Prediction market for ${issue.title_en}.`,
+                    description_zh: `关于${issue.title_zh}的预测市场。`,
+                    description_ja: `${issue.title_ja}についての予測市場です。`,
+                    resolve_date: issue.expire_date ? issue.expire_date.split('T')[0] : getRandomDateWithinMonth(),
+                    total_volume: issue.initial_usdt || 100,
+                    participants: Math.floor((issue.yes_bet + issue.no_bet) / 10) || 10,
+                    outcomes: [
+                        { id: `${issue.id}-yes`, name: '예', probability: probYes },
+                        { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
+                    ],
+                    isFromAPI: true // Mark as API-sourced
+                }
+            })
+            
+            // Prepend API events to the beginning of the list
+            events = [...apiEvents, ...events]
+            console.log(`EventBET: Total events after merge: ${events.length}`)
+            
+            // Re-render markets
+            renderMarkets()
+        }
     } catch (error) {
-        console.error('EventBET: Error converting issues:', error)
+        console.error('EventBET: Failed to load issues from API:', error)
     }
-} else {
-    console.log('EventBET: No admin issues found in localStorage')
 }
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('EventBET: DOMContentLoaded fired!')
-    console.log('EventBET: Total events available:', events.length)
-    console.log('EventBET: First 3 events:', events.slice(0, 3))
-    
     const savedTheme = localStorage.getItem('theme') || 'light'
     isDarkMode = savedTheme === 'dark'
     applyTheme()
@@ -349,14 +329,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners()
     updateUITexts()
     renderCategories()
+    renderMarkets()
     
-    console.log('EventBET: About to call renderMarkets()')
-    try {
-        renderMarkets()
-        console.log('EventBET: renderMarkets() completed successfully')
-    } catch (error) {
-        console.error('EventBET: Error in renderMarkets():', error)
-    }
+    // Load issues from API after initial render
+    await loadIssuesFromAPI()
 })
 
 // Setup event listeners
