@@ -511,6 +511,13 @@ async function loadAdminIssuesFromFile() {
         if (publishedIssues.length > 0) {
             console.log(`EventBET: Adding ${publishedIssues.length} published issues to events array...`)
             
+            // 최신순으로 정렬 (createdAt 기준 내림차순)
+            publishedIssues.sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.publishedAt || 0);
+                const dateB = new Date(b.createdAt || b.publishedAt || 0);
+                return dateB - dateA; // 최신순
+            });
+            
             // 관리자 이슈에 ID 및 participants 추가
             publishedIssues.forEach((issue, index) => {
                 const newId = events.length + index + 1
@@ -528,13 +535,14 @@ async function loadAdminIssuesFromFile() {
                     id: enhancedIssue.id,
                     title: enhancedIssue.title_ko,
                     status: enhancedIssue.status,
-                    category: enhancedIssue.category_slug
+                    category: enhancedIssue.category_slug,
+                    createdAt: enhancedIssue.createdAt
                 })
                 events.push(enhancedIssue)
             })
             
             console.log(`EventBET: ✅ Total events after merge: ${events.length}`)
-            console.log(`EventBET: Events array now contains ${publishedIssues.length} admin issues`)
+            console.log(`EventBET: Events array now contains ${publishedIssues.length} admin issues (sorted by latest)`)
             
             // DOMContentLoaded에서 렌더링을 처리하므로 여기서는 호출하지 않음
         } else {
