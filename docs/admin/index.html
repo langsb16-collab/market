@@ -496,7 +496,7 @@
                 <!-- 공통 설정 -->
                 <div class="bg-gray-50 rounded-lg p-6 mb-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">공통 설정</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-semibold mb-2">카테고리</label>
                             <select id="issue-batch-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
@@ -513,6 +513,11 @@
                         <div>
                             <label class="block text-sm font-semibold mb-2">만료일 (일 후)</label>
                             <input type="number" id="issue-batch-days" value="7" min="1" max="365" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">초기 테더 수량 (USDT)</label>
+                            <input type="number" id="issue-batch-usdt" value="60" min="0" max="10000" step="10" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="60">
+                            <p class="text-xs text-gray-500 mt-1">각 이슈의 초기 베팅 테더 수량</p>
                         </div>
                     </div>
                 </div>
