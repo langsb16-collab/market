@@ -569,7 +569,7 @@ window.addEventListener('focus', async () => {
     }
 });
 
-// 주기적으로 issues.json 변경 체크 (5초마다)
+// 주기적으로 issues.json 변경 체크 (2초마다 - 빠른 동기화)
 setInterval(async () => {
     try {
         const response = await fetch('/data/issues.json?_=' + Date.now());
@@ -586,7 +586,7 @@ setInterval(async () => {
     } catch (error) {
         console.log('Failed to check issues.json:', error);
     }
-}, 5000);
+}, 2000);
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
