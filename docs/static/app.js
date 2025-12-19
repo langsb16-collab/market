@@ -1,7 +1,28 @@
 // EventBET - Static Frontend Application
 // Enhanced with 450 markets (50 per category, all within 1 month)
 
-console.log('EventBET: Script loaded')
+// =========================
+// Global error diagnostics
+// =========================
+if (!window.__GLOBAL_ERROR_HOOKED__) {
+  window.__GLOBAL_ERROR_HOOKED__ = true;
+  window.addEventListener("unhandledrejection", (ev) => {
+    console.error("[GLOBAL] Unhandled Promise Rejection:", ev.reason);
+    ev.preventDefault();
+  });
+  window.addEventListener("error", (ev) => {
+    console.error("[GLOBAL] Window Error:", ev.error || ev.message);
+  });
+}
+
+// =========================
+// Page type detection
+// =========================
+const __IS_ADMIN__ =
+  window.__IS_ADMIN__ === true ||
+  location.pathname.startsWith("/admin");
+
+console.log('EventBET: Script loaded', { isAdmin: __IS_ADMIN__ })
 
 let currentLang = 'ko'
 let currentWallet = null

@@ -26,15 +26,21 @@ async function fetchJsonOrThrow(url, options = {}) {
 }
 
 // ========== Mapify 초기화 가드 (관리자에서는 스킵) ==========
-if (typeof initMapify === 'function' && !window.__IS_ADMIN__) {
-    const mapifyEl = document.querySelector('#mapify-window') || document.querySelector('mapify-window');
-    if (mapifyEl) {
-        try {
+const __IS_ADMIN__ = window.__IS_ADMIN__ === true || location.pathname.startsWith("/admin");
+
+if (!__IS_ADMIN__ && typeof initMapify === 'function') {
+    try {
+        const mapifyEl = document.querySelector('#mapify-window') || document.querySelector('mapify-window');
+        if (mapifyEl) {
             initMapify();
-        } catch (e) {
-            console.error('[ADMIN] initMapify failed:', e);
+        } else {
+            console.debug('[Mapify] Element not found, skipping initialization');
         }
+    } catch (e) {
+        console.error('[Mapify] Initialization failed:', e);
     }
+} else if (__IS_ADMIN__) {
+    console.debug('[ADMIN] Mapify initialization skipped');
 }
 
 // 섹션 전환
@@ -874,8 +880,13 @@ window.savePopup = function(event) {
 };
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    loadBanners();
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        loadBanners();
+    } catch (e) {
+        console.error('[ADMIN] DOMContentLoaded initialization failed:', e);
+        alert('관리자 페이지 초기화 실패: ' + e.message);
+    }
     
     // 섹션 전환 함수 업데이트
     const originalShowSection = window.showSection;
@@ -888,12 +899,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`${section}-section`).classList.add('active');
         event.target.closest('.sidebar-item').classList.add('active');
         
-        // 데이터 로드
-        if (section === 'banners') loadBanners();
-        if (section === 'notices') loadNotices();
-        if (section === 'popups') loadPopups();
-        if (section === 'members') loadMembers();
-        if (section === 'settlement') loadSettlement();
+        // 데이터 로드 (에러 핸들링 포함)
+        try {
+            if (section === 'banners') loadBanners();
+            if (section === 'notices') loadNotices();
+            if (section === 'popups') loadPopups();
+            if (section === 'members') loadMembers();
+            if (section === 'settlement') loadSettlement();
+        } catch (e) {
+            console.error(`[ADMIN] Failed to load section: ${section}`, e);
+            alert(`섹션 로드 실패: ${section} - ${e.message}`);
+        }
     };
 });
 
