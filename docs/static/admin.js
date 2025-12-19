@@ -1099,6 +1099,7 @@ function loadBatchIssuesForm() {
 function saveBatchIssues() {
     const category = document.getElementById('issue-batch-category').value;
     const daysToExpire = parseInt(document.getElementById('issue-batch-days').value);
+    const initialUsdt = parseFloat(document.getElementById('issue-batch-usdt')?.value || 60);
     
     const languages = ['en', 'ko', 'zh', 'ja'];
     const languageNames = {
@@ -1123,6 +1124,11 @@ function saveBatchIssues() {
             const title = document.getElementById(inputId)?.value.trim();
             
             if (title) {
+                // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
+                const yesRatio = 0.3 + Math.random() * 0.4; // 30-70%
+                const yesBet = Math.floor(initialUsdt * yesRatio);
+                const noBet = initialUsdt - yesBet;
+                
                 const newIssue = {
                     id: `${Date.now()}-${lang}-${i}`,
                     title: title,
@@ -1131,8 +1137,9 @@ function saveBatchIssues() {
                     image: 'https://via.placeholder.com/400x200?text=EventBET',
                     expireDate: expireDateISO,
                     status: 'active',
-                    yesBet: 0,
-                    noBet: 0,
+                    yesBet: yesBet,
+                    noBet: noBet,
+                    initialUsdt: initialUsdt,
                     language: lang,
                     createdAt: new Date().toISOString()
                 };

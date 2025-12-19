@@ -281,10 +281,18 @@ try {
             const categorySlug = categoryMap[issue.category] || 'other'
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            // Generate random probability and volume
-            const probYes = 0.3 + Math.random() * 0.4
-            const volume = Math.floor(Math.random() * 20000000) + 1000000
-            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 500)
+            // Use admin-defined betting amounts or generate random
+            const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
+            const yesBet = issue.yesBet || 0
+            const noBet = issue.noBet || 0
+            const totalBet = yesBet + noBet
+            
+            // Calculate probability from betting amounts
+            const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
+            
+            // Volume in larger scale for display (multiply by 10000 for realistic numbers)
+            const volume = totalUsdt * 10000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
             
             return {
                 id: issue.id || Date.now(),
@@ -305,7 +313,8 @@ try {
                     { id: `${issue.id}-yes`, name: '예', probability: probYes },
                     { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
                 ],
-                isAdminIssue: true
+                isAdminIssue: true,
+                initialUsdt: totalUsdt
             }
         })
         
