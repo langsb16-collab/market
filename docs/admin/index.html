@@ -771,7 +771,9 @@
                 </button>
             </div>
             
-            <form onsubmit="saveIssue(event)">
+            <form id="issue-form" onsubmit="saveIssue(event)">
+                <input type="hidden" id="issue-id">
+                
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">이슈 제목 *</label>
                     <input type="text" id="issue-title" required placeholder="예: 2024년 비트코인이 10만 달러를 돌파할까?" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
@@ -785,7 +787,6 @@
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">카테고리 *</label>
                     <select id="issue-category" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                        <option value="">카테고리 선택</option>
                         <option value="crypto">암호화폐</option>
                         <option value="sports">스포츠</option>
                         <option value="politics">정치</option>
@@ -799,7 +800,7 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">만료일 *</label>
-                    <input type="datetime-local" id="issue-expiredate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="date" id="issue-expire-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                 </div>
                 
                 <div class="mb-6">
@@ -931,6 +932,6 @@
             console.error("[ADMIN] Window Error:", ev.error || ev.message);
         });
     </script>
-    <script src="/static/admin.js?v=20250120"></script>
+    <script src="/static/admin.js?v=20250120b"></script>
 </body>
 </html>

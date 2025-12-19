@@ -77,6 +77,9 @@ function showSection(section) {
         if (section === 'issues') {
             console.log('[ADMIN] Issues section loaded - ready for batch registration');
         }
+        if (section === 'settlement') {
+            loadIssues();
+        }
     } catch (error) {
         console.error('[ADMIN] showSection failed:', error);
         alert('섹션 전환 실패: ' + error.message);
@@ -1181,6 +1184,278 @@ function saveBatchIssues() {
     }
 }
 
+// ========== 이슈 관리 (등록된 이슈 조회/편집/삭제) ==========
+function loadIssues() {
+    try {
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const container = document.getElementById('issues-list');
+        
+        if (!container) {
+            console.error('[ADMIN] issues-list container not found');
+            return;
+        }
+        
+        if (issues.length === 0) {
+            container.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+            return;
+        }
+        
+        const statusFilter = document.getElementById('issue-status-filter')?.value || '';
+        const filteredIssues = statusFilter ? issues.filter(issue => issue.status === statusFilter) : issues;
+        
+        container.innerHTML = filteredIssues.map((issue, index) => {
+            const total = (issue.yesBet || 0) + (issue.noBet || 0);
+            const statusBadge = issue.status === 'active' 
+                ? '<span class="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">진행중</span>'
+                : '<span class="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">종료됨</span>';
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="text-left max-w-xs">
+                        <div class="font-semibold">${issue.title}</div>
+                        <div class="text-xs text-gray-500">${issue.category || 'crypto'}</div>
+                    </td>
+                    <td class="font-bold text-blue-600">${total} USDT</td>
+                    <td class="text-green-600">${issue.yesBet || 0} USDT</td>
+                    <td class="text-red-600">${issue.noBet || 0} USDT</td>
+                    <td class="text-sm">${issue.expireDate ? new Date(issue.expireDate).toLocaleDateString('ko-KR') : '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="editIssue('${issue.id}')" class="text-blue-600 hover:text-blue-800" title="수정">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteIssue('${issue.id}')" class="text-red-600 hover:text-red-800" title="삭제">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ${issue.status === 'active' ? `
+                                <button onclick="settleIssue('${issue.id}', 'yes')" class="text-green-600 hover:text-green-800" title="YES 승리로 결산">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                                <button onclick="settleIssue('${issue.id}', 'no')" class="text-gray-600 hover:text-gray-800" title="NO 승리로 결산">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        console.log('[ADMIN] Loaded', filteredIssues.length, 'issues');
+    } catch (error) {
+        console.error('[ADMIN] loadIssues failed:', error);
+    }
+}
+
+function openIssueModal(issueId = null) {
+    const modal = document.getElementById('issue-modal');
+    const form = document.getElementById('issue-form');
+    
+    if (!modal || !form) {
+        console.error('[ADMIN] Issue modal not found');
+        return;
+    }
+    
+    // Reset form
+    form.reset();
+    
+    if (issueId) {
+        // Edit mode
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const issue = issues.find(i => i.id === issueId);
+        
+        if (issue) {
+            document.getElementById('issue-id').value = issue.id;
+            document.getElementById('issue-title').value = issue.title;
+            document.getElementById('issue-description').value = issue.description || '';
+            document.getElementById('issue-category').value = issue.category || 'crypto';
+            document.getElementById('issue-expire-date').value = issue.expireDate ? issue.expireDate.split('T')[0] : '';
+            document.getElementById('issue-image').value = issue.image || '';
+        }
+    } else {
+        // New issue mode
+        document.getElementById('issue-id').value = '';
+    }
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeIssueModal() {
+    const modal = document.getElementById('issue-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function saveIssue(event) {
+    event.preventDefault();
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const issueId = document.getElementById('issue-id').value;
+        const title = document.getElementById('issue-title').value.trim();
+        const description = document.getElementById('issue-description').value.trim();
+        const category = document.getElementById('issue-category').value;
+        const expireDate = document.getElementById('issue-expire-date').value;
+        const image = document.getElementById('issue-image').value.trim();
+        
+        if (!title) {
+            alert('이슈 제목을 입력해주세요.');
+            return;
+        }
+        
+        if (!expireDate) {
+            alert('만료일을 선택해주세요.');
+            return;
+        }
+        
+        const initialUsdt = 60;
+        const yesRatio = 0.3 + Math.random() * 0.4;
+        const yesBet = Math.floor(initialUsdt * yesRatio);
+        const noBet = initialUsdt - yesBet;
+        
+        if (issueId) {
+            // Update existing issue
+            const index = issues.findIndex(i => i.id === issueId);
+            if (index !== -1) {
+                issues[index] = {
+                    ...issues[index],
+                    title,
+                    description,
+                    category,
+                    expireDate: new Date(expireDate).toISOString(),
+                    image: image || 'https://via.placeholder.com/400x200?text=EventBET'
+                };
+                console.log('[ADMIN] Updated issue:', issues[index]);
+            }
+        } else {
+            // Create new issue
+            const newIssue = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                title,
+                description,
+                category,
+                image: image || 'https://via.placeholder.com/400x200?text=EventBET',
+                expireDate: new Date(expireDate).toISOString(),
+                status: 'active',
+                yesBet,
+                noBet,
+                initialUsdt,
+                createdAt: new Date().toISOString()
+            };
+            issues.unshift(newIssue);
+            console.log('[ADMIN] Created new issue:', newIssue);
+        }
+        
+        localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+        
+        alert(issueId ? '✅ 이슈가 수정되었습니다!' : '✅ 이슈가 등록되었습니다!');
+        closeIssueModal();
+        loadIssues();
+        
+    } catch (error) {
+        console.error('[ADMIN] saveIssue failed:', error);
+        alert('❌ 이슈 저장 실패: ' + error.message);
+    }
+}
+
+function editIssue(issueId) {
+    openIssueModal(issueId);
+}
+
+function deleteIssue(issueId) {
+    if (!confirm('정말 이 이슈를 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const filteredIssues = issues.filter(i => i.id !== issueId);
+        
+        localStorage.setItem('eventbet_issues', JSON.stringify(filteredIssues));
+        
+        alert('✅ 이슈가 삭제되었습니다!');
+        loadIssues();
+        
+        console.log('[ADMIN] Deleted issue:', issueId);
+    } catch (error) {
+        console.error('[ADMIN] deleteIssue failed:', error);
+        alert('❌ 이슈 삭제 실패: ' + error.message);
+    }
+}
+
+function settleIssue(issueId, result) {
+    if (!confirm(`이 이슈를 "${result === 'yes' ? 'YES' : 'NO'}" 승리로 결산하시겠습니까?`)) {
+        return;
+    }
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const issue = issues.find(i => i.id === issueId);
+        
+        if (issue) {
+            issue.status = 'settled';
+            issue.result = result;
+            issue.settledAt = new Date().toISOString();
+            
+            localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+            
+            alert(`✅ 이슈가 "${result === 'yes' ? 'YES' : 'NO'}" 승리로 결산되었습니다!`);
+            loadIssues();
+            
+            console.log('[ADMIN] Settled issue:', issueId, 'Result:', result);
+        }
+    } catch (error) {
+        console.error('[ADMIN] settleIssue failed:', error);
+        alert('❌ 이슈 결산 실패: ' + error.message);
+    }
+}
+
+function settleAllExpiredIssues() {
+    if (!confirm('만료된 모든 이슈를 종료하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        const now = new Date();
+        let settledCount = 0;
+        
+        issues.forEach(issue => {
+            if (issue.status === 'active' && issue.expireDate) {
+                const expireDate = new Date(issue.expireDate);
+                if (expireDate <= now) {
+                    issue.status = 'settled';
+                    issue.result = Math.random() > 0.5 ? 'yes' : 'no'; // Random result
+                    issue.settledAt = new Date().toISOString();
+                    settledCount++;
+                }
+            }
+        });
+        
+        if (settledCount > 0) {
+            localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+            alert(`✅ ${settledCount}개의 만료된 이슈가 종료되었습니다!`);
+            loadIssues();
+        } else {
+            alert('만료된 이슈가 없습니다.');
+        }
+        
+        console.log('[ADMIN] Settled', settledCount, 'expired issues');
+    } catch (error) {
+        console.error('[ADMIN] settleAllExpiredIssues failed:', error);
+        alert('❌ 일괄 종료 실패: ' + error.message);
+    }
+}
+
+function filterIssues() {
+    loadIssues();
+}
+
 // ========== 전역 함수 노출 (HTML onclick에서 사용) ==========
 window.showSection = showSection;
 window.loadBanners = loadBanners;
@@ -1200,6 +1475,15 @@ window.suspendMember = suspendMember;
 window.activateMember = activateMember;
 window.deleteMember = deleteMember;
 window.saveBatchIssues = saveBatchIssues;
+window.loadIssues = loadIssues;
+window.openIssueModal = openIssueModal;
+window.closeIssueModal = closeIssueModal;
+window.saveIssue = saveIssue;
+window.editIssue = editIssue;
+window.deleteIssue = deleteIssue;
+window.settleIssue = settleIssue;
+window.settleAllExpiredIssues = settleAllExpiredIssues;
+window.filterIssues = filterIssues;
 window.handleBannerImageUpload = handleBannerImageUpload;
 window.uploadBannerImage = uploadBannerImage;
 window.handleNoticeImageUpload = handleNoticeImageUpload;
