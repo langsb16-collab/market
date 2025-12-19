@@ -1,7 +1,14 @@
 // EventBET Authentication System
 // Local Storage based user management
 
-let currentUser = null
+// Prevent double-execution
+if (window.__AUTH_JS_LOADED__) {
+    console.warn('[AUTH] Already loaded, skipping duplicate execution');
+} else {
+    window.__AUTH_JS_LOADED__ = true;
+
+// Use window scope to prevent redeclaration errors
+window.currentUser = window.currentUser ?? null
 
 // Initialize auth on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -268,3 +275,5 @@ window.EventBETAuth = {
     showLoginModal,
     showRegisterModal
 }
+
+} // Close the if (window.__AUTH_JS_LOADED__) block

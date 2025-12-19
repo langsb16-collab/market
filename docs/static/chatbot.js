@@ -1,7 +1,18 @@
 // AI 자동응답 봇 - EventBET (질문 목록 메뉴 방식)
 
-// 질문과 답변 데이터
-const questionList = [
+// =========================
+// 중복 실행 방지 가드
+// =========================
+if (window.__CHATBOT_LOADED__) {
+  console.warn('ChatBot: Already loaded, skipping duplicate initialization');
+  // 조기 종료를 위해 즉시 실행 함수로 래핑
+  (function() { return; })();
+}
+window.__CHATBOT_LOADED__ = true;
+
+// 질문과 답변 데이터 (전역 변수로 선언)
+if (!window.questionList) {
+  window.questionList = [
     {
         id: 1,
         question: "이 플랫폼이 무엇인가요?",
@@ -149,7 +160,8 @@ const questionList = [
         icon: "fas fa-mobile-alt",
         category: "비교분석"
     }
-];
+  ];
+}
 
 class ChatBot {
     constructor() {
@@ -453,10 +465,19 @@ class ChatBot {
 }
 
 // 페이지 로드 시 챗봇 초기화
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        new ChatBot();
-    });
-} else {
-    new ChatBot();
+if (!window.__CHATBOT_INITIALIZED__) {
+    window.__CHATBOT_INITIALIZED__ = true;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.chatbotInstance) {
+                window.chatbotInstance = new ChatBot();
+                console.log('ChatBot: Initialized via DOMContentLoaded');
+            }
+        });
+    } else {
+        if (!window.chatbotInstance) {
+            window.chatbotInstance = new ChatBot();
+            console.log('ChatBot: Initialized immediately');
+        }
+    }
 }
