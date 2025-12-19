@@ -330,6 +330,9 @@ try {
 console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
     console.log('EventBET: DOMContentLoaded fired!')
+    console.log('EventBET: Total events available:', events.length)
+    console.log('EventBET: First 3 events:', events.slice(0, 3))
+    
     const savedTheme = localStorage.getItem('theme') || 'light'
     isDarkMode = savedTheme === 'dark'
     applyTheme()
@@ -342,7 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners()
     updateUITexts()
     renderCategories()
-    renderMarkets()
+    
+    console.log('EventBET: About to call renderMarkets()')
+    try {
+        renderMarkets()
+        console.log('EventBET: renderMarkets() completed successfully')
+    } catch (error) {
+        console.error('EventBET: Error in renderMarkets():', error)
+    }
 })
 
 // Setup event listeners
