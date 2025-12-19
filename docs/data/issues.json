@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "1737278400000-test1",
+    "title": "2024년 비트코인이 10만 달러를 돌파할까?",
+    "description": "비트코인 가격 예측",
+    "category": "crypto",
+    "image": "https://via.placeholder.com/400x200?text=Bitcoin",
+    "expireDate": "2025-02-01T00:00:00.000Z",
+    "status": "active",
+    "yesBet": 35,
+    "noBet": 25,
+    "initialUsdt": 60,
+    "createdAt": "2025-01-19T10:00:00.000Z"
+  },
+  {
+    "id": "1737278400000-test2",
+    "title": "트럼프가 2024년 미국 대선에서 승리할까?",
+    "description": "미국 대선 예측",
+    "category": "politics",
+    "image": "https://via.placeholder.com/400x200?text=Election",
+    "expireDate": "2025-02-15T00:00:00.000Z",
+    "status": "active",
+    "yesBet": 40,
+    "noBet": 20,
+    "initialUsdt": 60,
+    "createdAt": "2025-01-19T10:00:00.000Z"
+  }
+]
