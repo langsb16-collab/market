@@ -254,10 +254,10 @@ const generateEvents = () => {
     return allEvents.sort(() => Math.random() - 0.5)
 }
 
-console.log('EventBET: About to call generateEvents()')
-let events = generateEvents()
+// ✅ Events will be generated in DOMContentLoaded
+let events = []
 
-console.log(`Generated ${events.length} events`)
+console.log('EventBET: Events array initialized')
 
 // Load issues from localStorage
 const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
@@ -334,6 +334,10 @@ if (storedIssues.length > 0) {
 console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
     console.log('EventBET: DOMContentLoaded fired!')
+    
+    // ✅ DOM이 준비된 후에 이벤트 생성
+    events = generateEvents()
+    
     console.log('EventBET: Total events available:', events.length)
     console.log('EventBET: First 3 events:', events.slice(0, 3))
     

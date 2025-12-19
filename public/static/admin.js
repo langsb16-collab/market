@@ -1097,9 +1097,15 @@ function loadBatchIssuesForm() {
 }
 
 async function saveBatchIssues() {
+    console.log('=== saveBatchIssues 시작 ===');
+    
     const category = document.getElementById('issue-batch-category').value;
     const daysToExpire = parseInt(document.getElementById('issue-batch-days').value);
     const initialUsdt = parseFloat(document.getElementById('issue-batch-usdt')?.value || 60);
+    
+    console.log('Category:', category);
+    console.log('Days:', daysToExpire);
+    console.log('USDT:', initialUsdt);
     
     const languages = ['en', 'ko', 'zh', 'ja'];
     const languageNames = {
@@ -1111,7 +1117,7 @@ async function saveBatchIssues() {
     
     // 기존 이슈 불러오기 (localStorage에서)
     let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    console.log('Loaded', issues.length, 'existing issues from localStorage');
+    console.log('기존 이슈:', issues.length, '개');
     
     let addedCount = 0;
     
