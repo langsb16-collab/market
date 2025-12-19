@@ -309,12 +309,12 @@ console.log(`Generated ${events.length} events`)
 // Load issues from localStorage and merge with generated events
 function loadIssuesFromLocalStorage() {
     try {
-        console.log('EventBET: Loading issues from localStorage...')
+        console.log('EventBET: ========== Loading issues from localStorage ==========')
         const storedIssues = localStorage.getItem('eventbet_issues')
         
         if (!storedIssues) {
             console.log('EventBET: No issues found in localStorage')
-            return
+            return 0
         }
         
         let issues = []
@@ -322,16 +322,16 @@ function loadIssuesFromLocalStorage() {
             issues = JSON.parse(storedIssues)
         } catch (parseError) {
             console.error('EventBET: Failed to parse localStorage issues:', parseError)
-            return
+            return 0
         }
         
         if (!Array.isArray(issues) || issues.length === 0) {
             console.log('EventBET: No valid issues in localStorage')
-            return
+            return 0
         }
         
-        console.log(`EventBET: Found ${issues.length} issues in localStorage`)
-        console.log('EventBET: First issue:', issues[0])
+        console.log(`EventBET: ✅ Found ${issues.length} issues in localStorage`)
+        console.log('EventBET: First 3 issues:', issues.slice(0, 3).map(i => ({ id: i.id, title: i.title, status: i.status })))
         
         // Convert admin issues to event format
         const adminEvents = issues
@@ -377,17 +377,25 @@ function loadIssuesFromLocalStorage() {
             })
         
         if (adminEvents.length > 0) {
-            // Prepend admin events to the beginning of the list
-            window.events = [...adminEvents, ...window.events];
-            events = window.events;
-            console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
-            console.log('EventBET: First 3 events:', events.slice(0, 3))
+            // CRITICAL: Completely replace window.events
+            const baseEvents = window.events || generateEvents();
+            window.events = [...adminEvents, ...baseEvents];
             
-            // Re-render markets
-            renderMarkets()
+            console.log(`EventBET: ✅✅✅ SUCCESS! Added ${adminEvents.length} admin issues`)
+            console.log(`EventBET: Total events in window.events: ${window.events.length}`)
+            console.log('EventBET: First 3 events:', window.events.slice(0, 3).map(e => ({
+                id: e.id,
+                title: e.title_ko,
+                isAdmin: e.isAdminIssue
+            })))
+            
+            return adminEvents.length;
         }
+        
+        return 0;
     } catch (error) {
         console.error('EventBET: Failed to load issues from localStorage:', error)
+        return 0;
     }
 }
 
@@ -395,7 +403,6 @@ function loadIssuesFromLocalStorage() {
 console.log('EventBET: Setting up DOMContentLoaded listener')
 document.addEventListener('DOMContentLoaded', () => {
     console.log('EventBET: DOMContentLoaded fired!')
-    console.log('EventBET: Initial events count:', events.length)
     
     try {
         const savedTheme = localStorage.getItem('theme') || 'light'
@@ -411,11 +418,15 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUITexts()
         renderCategories()
         
-        // Load admin issues from localStorage BEFORE rendering
+        // CRITICAL: Load admin issues FIRST, then render
         loadIssuesFromLocalStorage()
         
-        // Then render markets with all events (generated + admin)
-        renderMarkets()
+        console.log('EventBET: After loading localStorage, total events:', window.events ? window.events.length : 0)
+        
+        // Force render after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            renderMarkets()
+        }, 100)
         
         console.log('EventBET: Initialization complete, total events:', events.length)
     } catch (error) {
@@ -547,7 +558,8 @@ function updateMarketCount() {
 
 // Get filtered events
 function getFilteredEvents() {
-    let filtered = events
+    // CRITICAL: Always use window.events
+    let filtered = window.events || []
     
     if (currentCategory !== 'all') {
         filtered = filtered.filter(e => e.category_slug === currentCategory)
@@ -692,7 +704,10 @@ const formatNumber = (num) => {
 
 // Render markets
 function renderMarkets() {
-    console.log('EventBET: renderMarkets() called')
+    console.log('EventBET: ========== renderMarkets() called ==========')
+    console.log('EventBET: window.events length:', window.events ? window.events.length : 0)
+    console.log('EventBET: Admin issues in events:', window.events ? window.events.filter(e => e.isAdminIssue).length : 0)
+    
     const container = document.getElementById('markets-container')
     if (!container) {
         console.error('EventBET: markets-container not found!')
@@ -700,8 +715,12 @@ function renderMarkets() {
     }
     console.log('EventBET: markets-container found, rendering...')
     
+    // CRITICAL: Use window.events directly
+    const allEvents = window.events || [];
     const filteredEvents = getFilteredEvents()
-    const eventsToShow = filteredEvents.slice(0, displayedMarkets)
+    const eventsToShow = filteredEvents.slice(0, window.displayedMarkets || displayedMarkets)
+    
+    console.log('EventBET: Rendering', eventsToShow.length, 'events')
     
     const html = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
@@ -774,7 +793,8 @@ function openBetModal(eventId) {
         return
     }
     
-    const event = events.find(e => e.id === eventId)
+    // CRITICAL: Use window.events
+    const event = (window.events || []).find(e => e.id === eventId)
     if (!event) return
     
     const category = categories.find(c => c.id === event.category_id)
