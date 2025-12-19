@@ -1,226 +1,192 @@
-// EventBET Notices - GitHub JSON Based System
-// PC와 모바일 간 자동 동기화 (GitHub Pages를 통해 제공)
+// EventBET Notices System - 공지사항 시스템
 
-// 유튜브 URL에서 비디오 ID 추출
-function extractYoutubeVideoId(url) {
-    if (!url) return null;
-    
-    // https://www.youtube.com/watch?v=VIDEO_ID
-    const watchMatch = url.match(/[?&]v=([^&]+)/);
-    if (watchMatch) return watchMatch[1];
-    
-    // https://youtu.be/VIDEO_ID
-    const shortMatch = url.match(/youtu\.be\/([^?]+)/);
-    if (shortMatch) return shortMatch[1];
-    
-    // https://www.youtube.com/embed/VIDEO_ID
-    const embedMatch = url.match(/youtube\.com\/embed\/([^?]+)/);
-    if (embedMatch) return embedMatch[1];
-    
-    return null;
-}
-
-async function loadNotices() {
-    console.log('[NOTICE] Loading notices from GitHub JSON');
-    
-    try {
-        // GitHub Pages에서 JSON 파일 로드 (캐시 방지)
-        const response = await fetch('/data/notices.json?_=' + Date.now());
-        const notices = await response.json();
-        
-        // 공지 목록 컨테이너 찾기 (모달 안의 컨테이너)
-        const container = document.getElementById('notice-list-container');
-        const emptyMessage = document.getElementById('notice-empty');
-        
-        if (!container) {
-            console.warn('[NOTICE] Container not found');
-            return;
-        }
-        
-        if (notices.length === 0) {
-            container.innerHTML = '';
-            if (emptyMessage) {
-                emptyMessage.classList.remove('hidden');
-            }
-            return;
-        }
-        
-        // 공지가 있으면 빈 메시지 숨기기
-        if (emptyMessage) {
-            emptyMessage.classList.add('hidden');
-        }
-        
-        container.innerHTML = notices.map((notice, index) => {
-            // 유튜브 아이콘 표시
-            const youtubeIcon = notice.youtubeUrl ? '<i class="fab fa-youtube text-red-600 ml-2"></i>' : '';
-            const imageIcon = notice.imageUrl ? '<i class="fas fa-image text-blue-600 ml-2"></i>' : '';
-            
-            return `
-                <div onclick="showNoticeDetail(${index})" class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <h3 class="text-base font-bold mb-1 flex items-center">
-                                ${notice.title}
-                                ${imageIcon}
-                                ${youtubeIcon}
-                            </h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">${notice.content}</p>
-                        </div>
-                        <span class="text-xs text-gray-500 ml-4">${new Date(notice.createdAt).toLocaleDateString('ko-KR', {year: 'numeric', month: 'short', day: 'numeric'})}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        console.log(`[NOTICE] Loaded ${notices.length} notices from GitHub JSON`);
-    } catch (error) {
-        console.error('[NOTICE] Failed to load notices:', error);
-        const container = document.getElementById('notice-list-container');
-        const emptyMessage = document.getElementById('notice-empty');
-        if (container) container.innerHTML = '';
-        if (emptyMessage) emptyMessage.classList.remove('hidden');
+// 다국어 번역
+const noticeTranslations = {
+    ko: {
+        noticeBtn: '공지',
+        noticeModalTitle: '공지사항',
+        noticeEmpty: '등록된 공지사항이 없습니다.',
+        noticeBackText: '목록으로',
+        submitIssueBtn: '이슈 등록',
+        loginBtn: '로그인',
+        registerBtn: '회원가입'
+    },
+    en: {
+        noticeBtn: 'Notice',
+        noticeModalTitle: 'Announcements',
+        noticeEmpty: 'No announcements available.',
+        noticeBackText: 'Back to List',
+        submitIssueBtn: 'Submit Issue',
+        loginBtn: 'Login',
+        registerBtn: 'Register'
+    },
+    zh: {
+        noticeBtn: '公告',
+        noticeModalTitle: '公告通知',
+        noticeEmpty: '暂无公告',
+        noticeBackText: '返回列表',
+        submitIssueBtn: '提交问题',
+        loginBtn: '登录',
+        registerBtn: '注册'
+    },
+    ja: {
+        noticeBtn: 'お知らせ',
+        noticeModalTitle: 'お知らせ',
+        noticeEmpty: 'お知らせはありません',
+        noticeBackText: 'リストに戻る',
+        submitIssueBtn: '問題を報告',
+        loginBtn: 'ログイン',
+        registerBtn: '新規登録'
     }
-}
-
-// 공지 상세보기
-async function showNoticeDetail(index) {
-    try {
-        const currentLang = window.currentLang || 'ko';
-        const translations = window.translations || {};
-        const t = translations[currentLang] || translations.ko || {};
-        
-        const response = await fetch('/data/notices.json?_=' + Date.now());
-        const notices = await response.json();
-        const notice = notices[index];
-        
-        if (!notice) return;
-        
-        // 유튜브 임베드
-        let youtubeEmbed = '';
-        if (notice.youtubeUrl) {
-            const videoId = extractYoutubeVideoId(notice.youtubeUrl);
-            if (videoId) {
-                youtubeEmbed = `
-                    <div class="aspect-video mb-4">
-                        <iframe 
-                            width="100%" 
-                            height="100%" 
-                            src="https://www.youtube.com/embed/${videoId}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            class="rounded-lg"
-                        ></iframe>
-                    </div>
-                `;
-            }
-        }
-        
-        const detailView = document.getElementById('notice-detail-view');
-        const listView = document.getElementById('notice-list-view');
-        
-        // 날짜 포맷 (언어별)
-        const dateLocale = currentLang === 'ko' ? 'ko-KR' : 
-                          currentLang === 'zh' ? 'zh-CN' : 
-                          currentLang === 'ja' ? 'ja-JP' : 'en-US';
-        
-        if (detailView && listView) {
-            detailView.innerHTML = `
-                <button onclick="backToNoticeList()" class="text-blue-600 hover:underline mb-4 flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    <span id="notice-back-text">${t.noticeBackToList || '목록으로'}</span>
-                </button>
-                <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                    <h2 class="text-2xl font-bold mb-4">${notice.title}</h2>
-                    ${notice.imageUrl ? `<img src="${notice.imageUrl}" class="w-full h-64 object-cover rounded-lg mb-4">` : ''}
-                    ${youtubeEmbed}
-                    <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">${notice.content}</p>
-                    <p class="text-sm text-gray-500">${new Date(notice.createdAt).toLocaleDateString(dateLocale)}</p>
-                </div>
-            `;
-            
-            listView.classList.add('hidden');
-            detailView.classList.remove('hidden');
-        }
-    } catch (error) {
-        console.error('[NOTICE] Failed to load notice detail:', error);
-    }
-}
-
-// 공지 목록으로 돌아가기
-function backToNoticeList() {
-    const detailView = document.getElementById('notice-detail-view');
-    const listView = document.getElementById('notice-list-view');
-    
-    if (detailView && listView) {
-        detailView.classList.add('hidden');
-        listView.classList.remove('hidden');
-    }
-}
-
-// 공지 모달 텍스트 업데이트 (다국어)
-function updateNoticeModalTexts() {
-    const currentLang = window.currentLang || 'ko';
-    const translations = window.translations || {};
-    const t = translations[currentLang] || translations.ko || {};
-    
-    // 공지사항 제목
-    const noticeModalTitle = document.getElementById('notice-modal-title');
-    if (noticeModalTitle) noticeModalTitle.textContent = t.noticeModalTitle || '공지사항';
-    
-    // 빈 공지 메시지
-    const noticeEmptyText = document.getElementById('notice-empty-text');
-    if (noticeEmptyText) noticeEmptyText.textContent = t.noticeEmpty || '등록된 공지사항이 없습니다.';
-    
-    // 목록으로 버튼
-    const noticeBackText = document.getElementById('notice-back-text');
-    if (noticeBackText) noticeBackText.textContent = t.noticeBackToList || '목록으로';
-}
+};
 
 // 공지 모달 열기
 function openNoticeModal() {
-    updateNoticeModalTexts(); // 다국어 텍스트 업데이트
     const modal = document.getElementById('notice-modal');
-    if (modal) {
-        modal.classList.add('active');
-        backToNoticeList(); // 항상 목록 뷰로 시작
-        loadNotices(); // 모달 열 때마다 최신 공지 로드
-    }
+    modal.classList.add('active');
+    loadNotices();
+    showNoticeList();
 }
 
 // 공지 모달 닫기
 function closeNoticeModal() {
     const modal = document.getElementById('notice-modal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
+    modal.classList.remove('active');
 }
 
-// 함수들을 전역 스코프에 노출
-window.openNoticeModal = openNoticeModal;
-window.closeNoticeModal = closeNoticeModal;
-window.showNoticeDetail = showNoticeDetail;
-window.backToNoticeList = backToNoticeList;
+// 공지 목록 뷰 표시
+function showNoticeList() {
+    document.getElementById('notice-list-view').classList.remove('hidden');
+    document.getElementById('notice-detail-view').classList.add('hidden');
+}
 
-// 공지 버튼 클릭 이벤트 리스너 등록
-window.addEventListener('DOMContentLoaded', () => {
+// 공지 상세 뷰로 전환
+function showNoticeDetail(noticeIndex) {
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const notice = notices[noticeIndex];
+    
+    if (!notice) return;
+    
+    document.getElementById('notice-detail-title').textContent = notice.title;
+    document.getElementById('notice-detail-date').textContent = new Date(notice.createdAt).toLocaleString();
+    
+    // 이미지가 있는 경우 표시
+    const contentElement = document.getElementById('notice-detail-content');
+    if (notice.image) {
+        contentElement.innerHTML = `
+            <img src="${notice.image}" alt="Notice Image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px;">
+            <p style="white-space: pre-wrap;">${notice.content}</p>
+        `;
+    } else {
+        contentElement.textContent = notice.content;
+    }
+    
+    document.getElementById('notice-list-view').classList.add('hidden');
+    document.getElementById('notice-detail-view').classList.remove('hidden');
+}
+
+// 목록으로 돌아가기
+function backToNoticeList() {
+    showNoticeList();
+}
+
+// 공지 목록 로드
+function loadNotices() {
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const container = document.getElementById('notice-list-container');
+    const emptyMsg = document.getElementById('notice-empty');
+    
+    if (notices.length === 0) {
+        container.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+    }
+    
+    emptyMsg.classList.add('hidden');
+    
+    // 최신 공지부터 표시 (역순)
+    const sortedNotices = [...notices].reverse();
+    
+    container.innerHTML = sortedNotices.map((notice, originalIndex) => {
+        const reverseIndex = notices.length - 1 - originalIndex;
+        const date = new Date(notice.createdAt);
+        const dateStr = date.toLocaleDateString();
+        
+        return `
+            <div class="notice-list-item bg-white border border-gray-200 rounded-lg" onclick="showNoticeDetail(${reverseIndex})">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1">${notice.title}</h4>
+                        <p class="text-sm text-gray-600 truncate">${notice.content.substring(0, 100)}...</p>
+                        <p class="text-xs text-gray-400 mt-2">
+                            <i class="far fa-calendar mr-1"></i>${dateStr}
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400 ml-4"></i>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 버튼 번역 업데이트
+function updateNoticeButtonTranslations(lang) {
+    const trans = noticeTranslations[lang] || noticeTranslations.ko;
+    
+    // 공지 버튼
+    const noticeBtnText = document.getElementById('notice-btn-text');
+    if (noticeBtnText) noticeBtnText.textContent = trans.noticeBtn;
+    
+    // 이슈 등록 버튼
+    const submitIssueBtnText = document.getElementById('submit-issue-btn-text');
+    if (submitIssueBtnText) submitIssueBtnText.textContent = trans.submitIssueBtn;
+    
+    // 로그인 버튼
+    const loginBtnText = document.getElementById('login-btn-text');
+    if (loginBtnText) loginBtnText.textContent = trans.loginBtn;
+    
+    // 회원가입 버튼
+    const registerBtnText = document.getElementById('register-btn-text');
+    if (registerBtnText) registerBtnText.textContent = trans.registerBtn;
+    
+    // 모달 텍스트
+    const noticeModalTitle = document.getElementById('notice-modal-title');
+    if (noticeModalTitle) noticeModalTitle.textContent = trans.noticeModalTitle;
+    
+    const noticeEmptyText = document.getElementById('notice-empty-text');
+    if (noticeEmptyText) noticeEmptyText.textContent = trans.noticeEmpty;
+    
+    const noticeBackText = document.getElementById('notice-back-text');
+    if (noticeBackText) noticeBackText.textContent = trans.noticeBackText;
+}
+
+// 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 공지 버튼 클릭 이벤트
     const noticeBtn = document.getElementById('notice-btn');
     if (noticeBtn) {
         noticeBtn.addEventListener('click', openNoticeModal);
-        console.log('[NOTICE] Notice button event listener attached');
-    } else {
-        console.warn('[NOTICE] Notice button not found');
     }
     
-    // 모달 배경 클릭 시 닫기
-    const modal = document.getElementById('notice-modal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+    // 언어 변경 감지
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        // 초기 언어 설정
+        updateNoticeButtonTranslations(languageSelector.value);
+        
+        // 언어 변경 이벤트
+        languageSelector.addEventListener('change', (e) => {
+            updateNoticeButtonTranslations(e.target.value);
+        });
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    const noticeModal = document.getElementById('notice-modal');
+    if (noticeModal) {
+        noticeModal.addEventListener('click', (e) => {
+            if (e.target === noticeModal) {
                 closeNoticeModal();
             }
         });
     }
-    
-    loadNotices();
 });
