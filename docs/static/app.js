@@ -298,7 +298,11 @@ const generateEvents = () => {
 }
 
 console.log('EventBET: About to call generateEvents()')
-let events = generateEvents()
+// Use window.events to ensure global scope
+if (!window.events) {
+    window.events = generateEvents();
+}
+let events = window.events;
 
 console.log(`Generated ${events.length} events`)
 
@@ -374,7 +378,8 @@ function loadIssuesFromLocalStorage() {
         
         if (adminEvents.length > 0) {
             // Prepend admin events to the beginning of the list
-            events = [...adminEvents, ...events]
+            window.events = [...adminEvents, ...window.events];
+            events = window.events;
             console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
             console.log('EventBET: First 3 events:', events.slice(0, 3))
             
