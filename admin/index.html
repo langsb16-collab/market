@@ -213,6 +213,10 @@
                 <i class="fas fa-users"></i>
                 <span>회원 관리</span>
             </div>
+            <div class="sidebar-item" onclick="showSection('issues')">
+                <i class="fas fa-plus-circle"></i>
+                <span>이슈 등록</span>
+            </div>
             <div class="sidebar-item" onclick="showSection('settlement')">
                 <i class="fas fa-calculator"></i>
                 <span>결산 페이지</span>
@@ -356,6 +360,169 @@
                         <!-- 회원 목록이 여기에 표시됩니다 -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <!-- 이슈 등록 -->
+        <div id="issues-section" class="content-section">
+            <div class="card">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-plus-circle mr-2"></i>이슈 일괄 등록
+                </h2>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <p class="text-sm text-yellow-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        4개 국어별로 각 5개씩 총 20개의 이슈가 일괄 등록됩니다.
+                    </p>
+                </div>
+                
+                <!-- 영어 (English) -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-blue-500 text-white px-3 py-1 rounded-lg mr-2">🇺🇸 English</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">Issue 1</label>
+                            <input type="text" id="issue-en-1" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Will Bitcoin reach $100,000 in 2024?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">Issue 2</label>
+                            <input type="text" id="issue-en-2" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Will Trump win the 2024 US election?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">Issue 3</label>
+                            <input type="text" id="issue-en-3" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Will AI replace 50% of jobs by 2030?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">Issue 4</label>
+                            <input type="text" id="issue-en-4" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Will Ethereum surpass Bitcoin in market cap?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">Issue 5</label>
+                            <input type="text" id="issue-en-5" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Will SpaceX land humans on Mars by 2030?">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 한국어 (Korean) -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-red-500 text-white px-3 py-1 rounded-lg mr-2">🇰🇷 한국어</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">이슈 1</label>
+                            <input type="text" id="issue-ko-1" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="2024년 비트코인이 10만 달러를 돌파할까?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">이슈 2</label>
+                            <input type="text" id="issue-ko-2" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="트럼프가 2024년 미국 대선에서 승리할까?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">이슈 3</label>
+                            <input type="text" id="issue-ko-3" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="2030년까지 AI가 일자리의 50%를 대체할까?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">이슈 4</label>
+                            <input type="text" id="issue-ko-4" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="이더리움이 비트코인의 시가총액을 넘어설까?">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">이슈 5</label>
+                            <input type="text" id="issue-ko-5" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="스페이스X가 2030년까지 화성에 인간을 착륙시킬까?">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 중국어 (Chinese) -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-red-600 text-white px-3 py-1 rounded-lg mr-2">🇨🇳 中文</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">问题 1</label>
+                            <input type="text" id="issue-zh-1" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="比特币会在2024年突破10万美元吗？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">问题 2</label>
+                            <input type="text" id="issue-zh-2" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="特朗普会赢得2024年美国大选吗？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">问题 3</label>
+                            <input type="text" id="issue-zh-3" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="到2030年，人工智能会取代50%的工作吗？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">问题 4</label>
+                            <input type="text" id="issue-zh-4" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="以太坊的市值会超过比特币吗？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">问题 5</label>
+                            <input type="text" id="issue-zh-5" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="SpaceX会在2030年前将人类送上火星吗？">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 일본어 (Japanese) -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-white border-2 border-red-500 text-red-500 px-3 py-1 rounded-lg mr-2">🇯🇵 日本語</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">質問 1</label>
+                            <input type="text" id="issue-ja-1" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="ビットコインは2024年に10万ドルを突破するか？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">質問 2</label>
+                            <input type="text" id="issue-ja-2" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="トランプは2024年の米大統領選で勝利するか？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">質問 3</label>
+                            <input type="text" id="issue-ja-3" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="2030年までにAIが仕事の50%を置き換えるか？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">質問 4</label>
+                            <input type="text" id="issue-ja-4" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="イーサリアムの時価総額はビットコインを超えるか？">
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <label class="block text-sm font-semibold mb-2">質問 5</label>
+                            <input type="text" id="issue-ja-5" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="SpaceXは2030年までに火星に人類を着陸させるか？">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 공통 설정 -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">공통 설정</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">카테고리</label>
+                            <select id="issue-batch-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                <option value="crypto">암호화폐</option>
+                                <option value="politics">정치</option>
+                                <option value="sports">스포츠</option>
+                                <option value="entertainment">엔터테인먼트</option>
+                                <option value="economy">경제</option>
+                                <option value="science">과학/기술</option>
+                                <option value="climate">기후/환경</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">만료일 (일 후)</label>
+                            <input type="number" id="issue-batch-days" value="7" min="1" max="365" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 등록 버튼 -->
+                <div class="flex justify-end gap-3">
+                    <button onclick="saveBatchIssues()" class="btn-primary">
+                        <i class="fas fa-check mr-2"></i>20개 이슈 일괄 등록
+                    </button>
+                </div>
             </div>
         </div>
         

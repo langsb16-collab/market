@@ -15,6 +15,7 @@ function showSection(section) {
     if (section === 'notices') loadNotices();
     if (section === 'popups') loadPopups();
     if (section === 'members') loadMembers();
+    if (section === 'issues') loadBatchIssuesForm();
 }
 
 // ========== 배너 관리 ==========
@@ -1085,4 +1086,73 @@ function saveIssue(event) {
     alert('이슈가 성공적으로 등록되었습니다!');
     closeIssueModal();
     loadIssues();
+}
+
+// ============================================
+// 📌 이슈 일괄 등록 기능 (4개 국어 x 5개 = 20개)
+// ============================================
+
+function loadBatchIssuesForm() {
+    // 폼이 이미 로드되어 있으면 아무것도 하지 않음
+}
+
+function saveBatchIssues() {
+    const category = document.getElementById('issue-batch-category').value;
+    const daysToExpire = parseInt(document.getElementById('issue-batch-days').value);
+    
+    const languages = ['en', 'ko', 'zh', 'ja'];
+    const languageNames = {
+        'en': 'English',
+        'ko': '한국어',
+        'zh': '中文',
+        'ja': '日本語'
+    };
+    
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    let addedCount = 0;
+    
+    // 만료일 계산
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + daysToExpire);
+    const expireDateISO = expireDate.toISOString().slice(0, 16);
+    
+    // 각 언어별로 5개씩 이슈 등록
+    languages.forEach(lang => {
+        for (let i = 1; i <= 5; i++) {
+            const inputId = `issue-${lang}-${i}`;
+            const title = document.getElementById(inputId)?.value.trim();
+            
+            if (title) {
+                const newIssue = {
+                    id: `${Date.now()}-${lang}-${i}`,
+                    title: title,
+                    description: `${languageNames[lang]} - Issue ${i}`,
+                    category: category,
+                    image: 'https://via.placeholder.com/400x200?text=EventBET',
+                    expireDate: expireDateISO,
+                    status: 'active',
+                    yesBet: 0,
+                    noBet: 0,
+                    language: lang,
+                    createdAt: new Date().toISOString()
+                };
+                
+                issues.unshift(newIssue);
+                addedCount++;
+            }
+        }
+    });
+    
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert(`총 ${addedCount}개의 이슈가 성공적으로 등록되었습니다!`);
+    
+    // 폼 초기화
+    languages.forEach(lang => {
+        for (let i = 1; i <= 5; i++) {
+            const inputId = `issue-${lang}-${i}`;
+            const input = document.getElementById(inputId);
+            if (input) input.value = '';
+        }
+    });
 }
