@@ -370,13 +370,10 @@
                     <i class="fas fa-plus-circle mr-2"></i>이슈 일괄 등록
                 </h2>
                 
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-                    <p class="text-sm text-blue-800">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <p class="text-sm text-yellow-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        <strong>입력한 이슈만 등록됩니다.</strong> 1개만 입력해도 등록 가능하며, 최대 20개까지 입력할 수 있습니다.
-                    </p>
-                    <p class="text-xs text-blue-600 mt-2">
-                        💡 팁: 4개 언어(영어, 한국어, 중국어, 일본어)별로 각 5개씩 입력하면 총 20개가 등록됩니다.
+                        4개 국어별로 각 5개씩 총 20개의 이슈가 일괄 등록됩니다.
                     </p>
                 </div>
                 
@@ -527,14 +524,10 @@
                 
                 <!-- 등록 버튼 -->
                 <div class="flex justify-end gap-3">
-                    <button onclick="saveBatchIssues()" class="btn-primary px-8 py-3 text-lg">
-                        <i class="fas fa-check mr-2"></i>이슈 등록하기
+                    <button onclick="saveBatchIssues()" class="btn-primary">
+                        <i class="fas fa-check mr-2"></i>20개 이슈 일괄 등록
                     </button>
                 </div>
-                <p class="text-sm text-gray-500 text-right mt-2">
-                    <i class="fas fa-lightbulb mr-1"></i>
-                    입력한 이슈만 등록됩니다 (1개 이상 필수)
-                </p>
             </div>
         </div>
         
@@ -771,9 +764,7 @@
                 </button>
             </div>
             
-            <form id="issue-form" onsubmit="saveIssue(event)">
-                <input type="hidden" id="issue-id">
-                
+            <form onsubmit="saveIssue(event)">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">이슈 제목 *</label>
                     <input type="text" id="issue-title" required placeholder="예: 2024년 비트코인이 10만 달러를 돌파할까?" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
@@ -787,6 +778,7 @@
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">카테고리 *</label>
                     <select id="issue-category" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                        <option value="">카테고리 선택</option>
                         <option value="crypto">암호화폐</option>
                         <option value="sports">스포츠</option>
                         <option value="politics">정치</option>
@@ -800,7 +792,7 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">만료일 *</label>
-                    <input type="date" id="issue-expire-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="datetime-local" id="issue-expiredate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                 </div>
                 
                 <div class="mb-6">
@@ -917,21 +909,6 @@
         </div>
     </div>
     
-    <script>
-        // 관리자 페이지임을 명시
-        window.__IS_ADMIN__ = true;
-
-        // Promise 에러가 "Object"로만 찍히는 문제를 원문으로 출력
-        window.addEventListener("unhandledrejection", (ev) => {
-            console.error("[ADMIN] Unhandled Promise Rejection:", ev.reason);
-            ev.preventDefault(); // 콘솔 중복 방지
-        });
-
-        // 일반 JS 에러도 같이 로깅
-        window.addEventListener("error", (ev) => {
-            console.error("[ADMIN] Window Error:", ev.error || ev.message);
-        });
-    </script>
-    <script src="/static/admin.js?v=20250120g"></script>
+    <script src="/static/admin.js"></script>
 </body>
 </html>

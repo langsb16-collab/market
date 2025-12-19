@@ -1,60 +1,17 @@
 // EventBET - Static Frontend Application
 // Enhanced with 450 markets (50 per category, all within 1 month)
 
-// =========================
-// 중복 실행 방지 가드
-// =========================
-if (window.__APP_LOADED__) {
-  console.warn('EventBET: app.js already loaded, skipping duplicate initialization');
-  throw new Error('STOP_DUPLICATE_APP_EXECUTION'); // 스크립트 중단
-}
-window.__APP_LOADED__ = true;
+console.log('EventBET: Script loaded')
 
-// =========================
-// Global error diagnostics
-// =========================
-if (!window.__GLOBAL_ERROR_HOOKED__) {
-  window.__GLOBAL_ERROR_HOOKED__ = true;
-  window.addEventListener("unhandledrejection", (ev) => {
-    console.error("[GLOBAL] Unhandled Promise Rejection:", ev.reason);
-    ev.preventDefault();
-  });
-  window.addEventListener("error", (ev) => {
-    console.error("[GLOBAL] Window Error:", ev.error || ev.message);
-  });
-}
+let currentLang = 'ko'
+let currentWallet = null
+let isDarkMode = false
+let currentCategory = 'all'
+let displayedMarkets = 12
+const MARKETS_PER_PAGE = 12
+let currentSortBy = 'date' // 'date', 'volume', 'participants'
 
-// =========================
-// Page type detection
-// =========================
-if (typeof window.__IS_ADMIN__ === 'undefined') {
-  window.__IS_ADMIN__ = location.pathname.startsWith("/admin");
-}
-
-console.log('EventBET: Script loaded', { isAdmin: window.__IS_ADMIN__ })
-
-// 전역 변수 선언 (window 객체에 할당하여 중복 선언 방지)
-if (typeof window.currentLang === 'undefined') window.currentLang = 'ko';
-if (typeof window.currentWallet === 'undefined') window.currentWallet = null;
-if (typeof window.isDarkMode === 'undefined') window.isDarkMode = false;
-if (typeof window.currentCategory === 'undefined') window.currentCategory = 'all';
-if (typeof window.displayedMarkets === 'undefined') window.displayedMarkets = 12;
-if (typeof window.MARKETS_PER_PAGE === 'undefined') window.MARKETS_PER_PAGE = 12;
-if (typeof window.currentSortBy === 'undefined') window.currentSortBy = 'date'; // 'date', 'volume', 'participants'
-
-// 지역 변수 alias (호환성 유지)
-let currentLang = window.currentLang;
-let currentWallet = window.currentWallet;
-let isDarkMode = window.isDarkMode;
-let currentCategory = window.currentCategory;
-let displayedMarkets = window.displayedMarkets;
-const MARKETS_PER_PAGE = window.MARKETS_PER_PAGE;
-let currentSortBy = window.currentSortBy;
-
-console.log('EventBET: Variables initialized', {
-  currentLang: window.currentLang,
-  displayedMarkets: window.displayedMarkets
-})
+console.log('EventBET: Variables initialized')
 
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
@@ -298,165 +255,107 @@ const generateEvents = () => {
 }
 
 console.log('EventBET: About to call generateEvents()')
-// Use window.events to ensure global scope
-if (!window.events) {
-    window.events = generateEvents();
-}
-let events = window.events;
+let events = generateEvents()
 
 console.log(`Generated ${events.length} events`)
 
-// Load issues from localStorage and merge with generated events
-async function loadIssuesFromLocalStorage() {
+// Load issues from localStorage
+const storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
+console.log(`EventBET: Found ${storedIssues.length} issues in localStorage`)
+
+if (storedIssues.length > 0) {
+    console.log('EventBET: First issue:', storedIssues[0])
+    
     try {
-        console.log('EventBET: ========== Loading issues from JSON file ==========')
-        
-        let issues = []
-        
-        // Try loading from JSON file first
-        try {
-            const response = await fetch('/data/issues.json?t=' + Date.now())
-            if (response.ok) {
-                issues = await response.json()
-                console.log('EventBET: ✅ Loaded from /data/issues.json')
-            }
-        } catch (e) {
-            console.log('EventBET: File load failed, trying localStorage')
-        }
-        
-        // Fallback to localStorage
-        if (issues.length === 0) {
-            const storedIssues = localStorage.getItem('eventbet_issues')
-            if (storedIssues) {
-                try {
-                    issues = JSON.parse(storedIssues)
-                    console.log('EventBET: ✅ Loaded from localStorage')
-                } catch (parseError) {
-                    console.error('EventBET: Failed to parse localStorage issues:', parseError)
-                    return 0
-                }
-            }
-        }
-        
-        if (!Array.isArray(issues) || issues.length === 0) {
-            console.log('EventBET: No valid issues in localStorage')
-            return 0
-        }
-        
-        console.log(`EventBET: ✅ Found ${issues.length} issues in localStorage`)
-        console.log('EventBET: First 3 issues:', issues.slice(0, 3).map(i => ({ id: i.id, title: i.title, status: i.status })))
-        
         // Convert admin issues to event format
-        console.log('EventBET: Converting issues to events...')
-        console.log('EventBET: Active issues:', issues.filter(i => i.status === 'active').length)
-        
-        const adminEvents = issues
-            .filter(issue => {
-                const isValid = issue && issue.status === 'active';
-                if (!isValid && issue) {
-                    console.log('EventBET: Filtered out issue:', issue.id, 'status:', issue.status);
-                }
-                return isValid;
-            })
-            .map(issue => {
-                // Find matching category
-                const categorySlug = issue.category || 'crypto'
-                const category = categories.find(cat => cat.slug === categorySlug) || categories[0]
-                
-                // Calculate probability from yes_bet and no_bet
-                const yesBet = issue.yesBet || 0
-                const noBet = issue.noBet || 0
-                const total = yesBet + noBet
-                const probYes = total > 0 ? yesBet / total : 0.5
-                
-                // Calculate volume and participants
-                const initialUsdt = issue.initialUsdt || 60
-                const volume = initialUsdt * 10000
-                const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
-                
-                return {
-                    id: issue.id || Date.now(),
-                    category_id: category.id,
-                    category_slug: categorySlug,
-                    title_ko: issue.title || '제목 없음',
-                    title_en: issue.title || 'No title',
-                    title_zh: issue.title || '无标题',
-                    title_ja: issue.title || 'タイトルなし',
-                    description_ko: issue.description || `${issue.title}에 대한 예측 마켓입니다.`,
-                    description_en: issue.description || `Prediction market for ${issue.title}.`,
-                    description_zh: issue.description || `关于${issue.title}的预测市场。`,
-                    description_ja: issue.description || `${issue.title}についての予測市場です。`,
-                    resolve_date: issue.expireDate ? issue.expireDate.split('T')[0] : getRandomDateWithinMonth(),
-                    total_volume: volume,
-                    participants: participants,
-                    outcomes: [
-                        { id: `${issue.id}-yes`, name: '예', probability: probYes },
-                        { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
-                    ],
-                    isAdminIssue: true,
-                    initialUsdt: initialUsdt
-                }
-            })
-        
-        console.log('EventBET: Created admin events:', adminEvents.length)
-        console.log('EventBET: Admin events sample:', adminEvents.slice(0, 2))
-        
-        if (adminEvents.length > 0) {
-            // CRITICAL: Completely replace window.events
-            const baseEvents = window.events || generateEvents();
-            window.events = [...adminEvents, ...baseEvents];
+        const adminEvents = storedIssues.filter(issue => issue.status === 'active').map(issue => {
+            // Determine category
+            const categoryMap = {
+                'crypto': 'crypto',
+                'politics': 'politics',
+                'sports': 'sports',
+                'entertainment': 'entertainment',
+                'economy': 'economy',
+                'science': 'science',
+                'climate': 'climate',
+                'other': 'other'
+            }
+            const categorySlug = categoryMap[issue.category] || 'other'
+            const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            console.log(`EventBET: ✅✅✅ SUCCESS! Added ${adminEvents.length} admin issues`)
-            console.log(`EventBET: Total events in window.events: ${window.events.length}`)
-            console.log('EventBET: First 5 events:', window.events.slice(0, 5).map(e => ({
-                id: e.id,
-                title: e.title_ko,
-                isAdmin: e.isAdminIssue,
-                category: e.category_slug
-            })))
+            // Use admin-defined betting amounts or generate random
+            const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
+            const yesBet = issue.yesBet || 0
+            const noBet = issue.noBet || 0
+            const totalBet = yesBet + noBet
             
-            return adminEvents.length;
-        } else {
-            console.error('EventBET: ❌ NO admin events created! Check conversion logic');
-        }
+            // Calculate probability from betting amounts
+            const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
+            
+            // Volume in larger scale for display (multiply by 10000 for realistic numbers)
+            const volume = totalUsdt * 10000
+            const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
+            
+            return {
+                id: issue.id || Date.now(),
+                category_id: category.id,
+                category_slug: categorySlug,
+                title_ko: issue.title,
+                title_en: issue.title,
+                title_zh: issue.title,
+                title_ja: issue.title,
+                description_ko: issue.description || issue.title,
+                description_en: issue.description || issue.title,
+                description_zh: issue.description || issue.title,
+                description_ja: issue.description || issue.title,
+                resolve_date: issue.expireDate || getRandomDateWithinMonth(),
+                total_volume: volume,
+                participants: participants,
+                outcomes: [
+                    { id: `${issue.id}-yes`, name: '예', probability: probYes },
+                    { id: `${issue.id}-no`, name: '아니오', probability: 1 - probYes }
+                ],
+                isAdminIssue: true,
+                initialUsdt: totalUsdt
+            }
+        })
         
-        return 0;
+        // Add admin events at the beginning
+        events = [...adminEvents, ...events]
+        console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
     } catch (error) {
-        console.error('EventBET: Failed to load issues from localStorage:', error)
-        return 0;
+        console.error('EventBET: Error converting issues:', error)
     }
+} else {
+    console.log('EventBET: No admin issues found in localStorage')
 }
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log('EventBET: DOMContentLoaded fired!')
+    console.log('EventBET: Total events available:', events.length)
+    console.log('EventBET: First 3 events:', events.slice(0, 3))
     
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    isDarkMode = savedTheme === 'dark'
+    applyTheme()
+    
+    const savedLang = localStorage.getItem('preferred_language') || 'ko'
+    currentLang = savedLang
+    const langSelector = document.getElementById('language-selector')
+    if (langSelector) langSelector.value = savedLang
+    
+    setupEventListeners()
+    updateUITexts()
+    renderCategories()
+    
+    console.log('EventBET: About to call renderMarkets()')
     try {
-        const savedTheme = localStorage.getItem('theme') || 'light'
-        isDarkMode = savedTheme === 'dark'
-        applyTheme()
-        
-        const savedLang = localStorage.getItem('preferred_language') || 'ko'
-        currentLang = savedLang
-        const langSelector = document.getElementById('language-selector')
-        if (langSelector) langSelector.value = savedLang
-        
-        setupEventListeners()
-        updateUITexts()
-        renderCategories()
-        
-        // CRITICAL: Load admin issues FIRST (async), then render
-        await loadIssuesFromLocalStorage()
-        
-        console.log('EventBET: After loading issues, total events:', window.events ? window.events.length : 0)
-        
-        // Render immediately after loading
         renderMarkets()
-        
-        console.log('EventBET: Initialization complete, total events:', events.length)
+        console.log('EventBET: renderMarkets() completed successfully')
     } catch (error) {
-        console.error('EventBET: Initialization failed:', error)
+        console.error('EventBET: Error in renderMarkets():', error)
     }
 })
 
@@ -584,17 +483,10 @@ function updateMarketCount() {
 
 // Get filtered events
 function getFilteredEvents() {
-    // CRITICAL: Always use window.events
-    let filtered = window.events || []
-    
-    console.log('EventBET: getFilteredEvents - Total events:', filtered.length)
-    console.log('EventBET: Admin issues before filter:', filtered.filter(e => e.isAdminIssue).length)
+    let filtered = events
     
     if (currentCategory !== 'all') {
-        // CRITICAL: Admin issues should ALWAYS show regardless of category
-        const adminIssues = filtered.filter(e => e.isAdminIssue)
-        const regularEvents = filtered.filter(e => !e.isAdminIssue && e.category_slug === currentCategory)
-        filtered = [...adminIssues, ...regularEvents]
+        filtered = filtered.filter(e => e.category_slug === currentCategory)
     }
     
     const searchInput = document.getElementById('search-input')
@@ -736,10 +628,7 @@ const formatNumber = (num) => {
 
 // Render markets
 function renderMarkets() {
-    console.log('EventBET: ========== renderMarkets() called ==========')
-    console.log('EventBET: window.events length:', window.events ? window.events.length : 0)
-    console.log('EventBET: Admin issues in events:', window.events ? window.events.filter(e => e.isAdminIssue).length : 0)
-    
+    console.log('EventBET: renderMarkets() called')
     const container = document.getElementById('markets-container')
     if (!container) {
         console.error('EventBET: markets-container not found!')
@@ -747,12 +636,8 @@ function renderMarkets() {
     }
     console.log('EventBET: markets-container found, rendering...')
     
-    // CRITICAL: Use window.events directly
-    const allEvents = window.events || [];
     const filteredEvents = getFilteredEvents()
-    const eventsToShow = filteredEvents.slice(0, window.displayedMarkets || displayedMarkets)
-    
-    console.log('EventBET: Rendering', eventsToShow.length, 'events')
+    const eventsToShow = filteredEvents.slice(0, displayedMarkets)
     
     const html = eventsToShow.map(event => {
         const category = categories.find(c => c.id === event.category_id)
@@ -825,8 +710,7 @@ function openBetModal(eventId) {
         return
     }
     
-    // CRITICAL: Use window.events
-    const event = (window.events || []).find(e => e.id === eventId)
+    const event = events.find(e => e.id === eventId)
     if (!event) return
     
     const category = categories.find(c => c.id === event.category_id)
