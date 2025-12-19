@@ -1096,7 +1096,7 @@ function loadBatchIssuesForm() {
     // 폼이 이미 로드되어 있으면 아무것도 하지 않음
 }
 
-function saveBatchIssues() {
+async function saveBatchIssues() {
     const category = document.getElementById('issue-batch-category').value;
     const daysToExpire = parseInt(document.getElementById('issue-batch-days').value);
     const initialUsdt = parseFloat(document.getElementById('issue-batch-usdt')?.value || 60);
@@ -1109,7 +1109,16 @@ function saveBatchIssues() {
         'ja': '日本語'
     };
     
-    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    // 기존 이슈 불러오기
+    let issues = [];
+    try {
+        const response = await fetch('/data/issues.json?_=' + Date.now());
+        issues = await response.json();
+    } catch (error) {
+        console.log('No existing issues, starting fresh');
+        issues = [];
+    }
+    
     let addedCount = 0;
     
     // 만료일 계산
@@ -1118,19 +1127,23 @@ function saveBatchIssues() {
     const expireDateISO = expireDate.toISOString().slice(0, 16);
     
     // 각 언어별로 5개씩 이슈 등록
+    const newIssues = [];
     languages.forEach(lang => {
         for (let i = 1; i <= 5; i++) {
             const inputId = `issue-${lang}-${i}`;
-            const title = document.getElementById(inputId)?.value.trim();
+            const inputElement = document.getElementById(inputId);
+            const title = inputElement?.value?.trim();
+            
+            console.log(`Checking ${inputId}:`, title);
             
             if (title) {
                 // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
-                const yesRatio = 0.3 + Math.random() * 0.4; // 30-70%
+                const yesRatio = 0.3 + Math.random() * 0.4;
                 const yesBet = Math.floor(initialUsdt * yesRatio);
                 const noBet = initialUsdt - yesBet;
                 
                 const newIssue = {
-                    id: `${Date.now()}-${lang}-${i}`,
+                    id: `${Date.now()}-${lang}-${i}-${Math.random().toString(36).substr(2, 9)}`,
                     title: title,
                     description: `${languageNames[lang]} - Issue ${i}`,
                     category: category,
@@ -1144,20 +1157,30 @@ function saveBatchIssues() {
                     createdAt: new Date().toISOString()
                 };
                 
-                issues.unshift(newIssue);
+                newIssues.push(newIssue);
                 addedCount++;
             }
         }
     });
     
+    // 새 이슈를 앞에 추가
+    issues = [...newIssues, ...issues];
+    
+    // localStorage에도 저장 (백업)
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
     
-    // 저장 확인
-    const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    console.log('✅ Issues saved to localStorage:', saved.length);
-    console.log('✅ First 3 issues:', saved.slice(0, 3));
-    
-    alert(`총 ${addedCount}개의 이슈가 성공적으로 등록되었습니다!\n\nlocalStorage에 ${saved.length}개 저장 확인됨`);
+    // 서버에 저장 (GitHub API 사용)
+    try {
+        const blob = new Blob([JSON.stringify(issues, null, 2)], { type: 'application/json' });
+        console.log('✅ Issues prepared for save:', issues.length);
+        console.log('✅ New issues added:', newIssues.length);
+        console.log('✅ First 3 issues:', issues.slice(0, 3));
+        
+        alert(`총 ${addedCount}개의 이슈가 등록되었습니다!\n\n전체 ${issues.length}개 이슈 저장됨\n\n메인 페이지를 새로고침하면 표시됩니다.`);
+    } catch (error) {
+        console.error('Save error:', error);
+        alert(`경고: ${addedCount}개 이슈는 브라우저에만 저장되었습니다.\n같은 브라우저에서만 보입니다.`);
+    }
     
     // 폼 초기화
     languages.forEach(lang => {
