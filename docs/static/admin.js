@@ -1070,3 +1070,104 @@ function previewPopupUrl() {
         preview.classList.add('hidden');
     }
 }
+
+// ========== 이슈 일괄 등록 ==========
+function saveBatchIssues() {
+    try {
+        console.log('[ADMIN] Starting batch issue registration...');
+        
+        // 기존 이슈 가져오기
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        console.log('[ADMIN] Existing issues:', issues.length);
+        
+        // 카테고리와 만료일, 초기 USDT
+        const category = document.getElementById('issue-category').value || 'crypto';
+        const expireDays = parseInt(document.getElementById('issue-expire-days').value) || 30;
+        const initialUsdt = parseInt(document.getElementById('issue-initial-usdt').value) || 60;
+        
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + expireDays);
+        const expireDateISO = expireDate.toISOString();
+        
+        console.log('[ADMIN] Settings:', { category, expireDays, initialUsdt, expireDateISO });
+        
+        // 4개 언어
+        const languages = ['en', 'ko', 'zh', 'ja'];
+        const languageNames = {
+            'en': 'English',
+            'ko': '한국어',
+            'zh': '中文',
+            'ja': '日本語'
+        };
+        
+        const newIssues = [];
+        let addedCount = 0;
+        
+        // 각 언어별로 5개씩 총 20개 이슈 수집
+        languages.forEach(lang => {
+            for (let i = 1; i <= 5; i++) {
+                const inputId = `issue-${lang}-${i}`;
+                const input = document.getElementById(inputId);
+                const title = input ? input.value.trim() : '';
+                
+                if (title) {
+                    // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
+                    const yesRatio = 0.3 + Math.random() * 0.4;
+                    const yesBet = Math.floor(initialUsdt * yesRatio);
+                    const noBet = initialUsdt - yesBet;
+                    
+                    const newIssue = {
+                        id: `${Date.now()}-${lang}-${i}-${Math.random().toString(36).substr(2, 9)}`,
+                        title: title,
+                        description: `${languageNames[lang]} - Issue ${i}`,
+                        category: category,
+                        image: 'https://via.placeholder.com/400x200?text=EventBET',
+                        expireDate: expireDateISO,
+                        status: 'active',
+                        yesBet: yesBet,
+                        noBet: noBet,
+                        initialUsdt: initialUsdt,
+                        language: lang,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    newIssues.push(newIssue);
+                    addedCount++;
+                    console.log(`[ADMIN] Added issue ${addedCount}:`, newIssue.title);
+                }
+            }
+        });
+        
+        if (addedCount === 0) {
+            alert('⚠️ 등록할 이슈가 없습니다.\n\n각 언어별로 최소 1개 이상의 이슈 제목을 입력해주세요.');
+            return;
+        }
+        
+        // 새 이슈를 앞에 추가
+        const updatedIssues = [...newIssues, ...issues];
+        
+        // localStorage에 저장
+        localStorage.setItem('eventbet_issues', JSON.stringify(updatedIssues));
+        console.log('[ADMIN] Saved to localStorage:', updatedIssues.length, 'total issues');
+        
+        // 저장 확인
+        const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        console.log('[ADMIN] Verification - saved issues:', saved.length);
+        console.log('[ADMIN] First 3 issues:', saved.slice(0, 3));
+        
+        alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n메인 페이지(https://cashiq.my)를 새로고침하면 즉시 표시됩니다!`);
+        
+        // 폼 초기화
+        languages.forEach(lang => {
+            for (let i = 1; i <= 5; i++) {
+                const inputId = `issue-${lang}-${i}`;
+                const input = document.getElementById(inputId);
+                if (input) input.value = '';
+            }
+        });
+        
+    } catch (error) {
+        console.error('[ADMIN] saveBatchIssues failed:', error);
+        alert('❌ 이슈 등록 실패:\n\n' + error.message + '\n\n콘솔에서 자세한 오류를 확인하세요.');
+    }
+}
