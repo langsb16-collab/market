@@ -561,8 +561,14 @@ function getFilteredEvents() {
     // CRITICAL: Always use window.events
     let filtered = window.events || []
     
+    console.log('EventBET: getFilteredEvents - Total events:', filtered.length)
+    console.log('EventBET: Admin issues before filter:', filtered.filter(e => e.isAdminIssue).length)
+    
     if (currentCategory !== 'all') {
-        filtered = filtered.filter(e => e.category_slug === currentCategory)
+        // CRITICAL: Admin issues should ALWAYS show regardless of category
+        const adminIssues = filtered.filter(e => e.isAdminIssue)
+        const regularEvents = filtered.filter(e => !e.isAdminIssue && e.category_slug === currentCategory)
+        filtered = [...adminIssues, ...regularEvents]
     }
     
     const searchInput = document.getElementById('search-input')
