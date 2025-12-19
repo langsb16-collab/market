@@ -45,19 +45,42 @@ if (!__IS_ADMIN__ && typeof initMapify === 'function') {
 
 // 섹션 전환
 function showSection(section) {
-    // 모든 섹션 숨기기
-    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-    
-    // 선택된 섹션 표시
-    document.getElementById(`${section}-section`).classList.add('active');
-    event.target.closest('.sidebar-item').classList.add('active');
-    
-    // 데이터 로드
-    if (section === 'banners') loadBanners();
-    if (section === 'notices') loadNotices();
-    if (section === 'popups') loadPopups();
-    if (section === 'members') loadMembers();
+    try {
+        console.log('[ADMIN] Switching to section:', section);
+        
+        // 모든 섹션 숨기기
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        
+        // 선택된 섹션 표시
+        const sectionEl = document.getElementById(`${section}-section`);
+        if (sectionEl) {
+            sectionEl.classList.add('active');
+        } else {
+            console.error('[ADMIN] Section not found:', `${section}-section`);
+            return;
+        }
+        
+        // 사이드바 아이템 활성화
+        if (event && event.target) {
+            const sidebarItem = event.target.closest('.sidebar-item');
+            if (sidebarItem) {
+                sidebarItem.classList.add('active');
+            }
+        }
+        
+        // 데이터 로드
+        if (section === 'banners') loadBanners();
+        if (section === 'notices') loadNotices();
+        if (section === 'popups') loadPopups();
+        if (section === 'members') loadMembers();
+        if (section === 'issues') {
+            console.log('[ADMIN] Issues section loaded - ready for batch registration');
+        }
+    } catch (error) {
+        console.error('[ADMIN] showSection failed:', error);
+        alert('섹션 전환 실패: ' + error.message);
+    }
 }
 
 // ========== 배너 관리 ==========
@@ -882,35 +905,13 @@ window.savePopup = function(event) {
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log('[ADMIN] Page loaded, initializing...');
         loadBanners();
+        console.log('[ADMIN] Initialization complete');
     } catch (e) {
         console.error('[ADMIN] DOMContentLoaded initialization failed:', e);
         alert('관리자 페이지 초기화 실패: ' + e.message);
     }
-    
-    // 섹션 전환 함수 업데이트
-    const originalShowSection = window.showSection;
-    window.showSection = function(section) {
-        // 모든 섹션 숨기기
-        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        
-        // 선택된 섹션 표시
-        document.getElementById(`${section}-section`).classList.add('active');
-        event.target.closest('.sidebar-item').classList.add('active');
-        
-        // 데이터 로드 (에러 핸들링 포함)
-        try {
-            if (section === 'banners') loadBanners();
-            if (section === 'notices') loadNotices();
-            if (section === 'popups') loadPopups();
-            if (section === 'members') loadMembers();
-            if (section === 'settlement') loadSettlement();
-        } catch (e) {
-            console.error(`[ADMIN] Failed to load section: ${section}`, e);
-            alert(`섹션 로드 실패: ${section} - ${e.message}`);
-        }
-    };
 });
 
 // ========== 이미지 업로드 핸들러 ==========
