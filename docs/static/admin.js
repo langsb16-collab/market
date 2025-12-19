@@ -1185,9 +1185,18 @@ function saveBatchIssues() {
 }
 
 // ========== 이슈 관리 (등록된 이슈 조회/편집/삭제) ==========
-function loadIssues() {
+async function loadIssues() {
     try {
-        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        // Load from JSON file first, fallback to localStorage
+        let issues = [];
+        try {
+            const response = await fetch('/data/issues.json?t=' + Date.now());
+            issues = await response.json();
+        } catch (e) {
+            console.log('[ADMIN] Loading from localStorage fallback');
+            issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        }
+        
         const container = document.getElementById('issues-list');
         
         if (!container) {
@@ -1291,11 +1300,10 @@ function closeIssueModal() {
     }
 }
 
-function saveIssue(event) {
+async function saveIssue(event) {
     event.preventDefault();
     
     try {
-        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
         const issueId = document.getElementById('issue-id').value;
         const title = document.getElementById('issue-title').value.trim();
         const description = document.getElementById('issue-description').value.trim();
@@ -1312,6 +1320,10 @@ function saveIssue(event) {
             alert('만료일을 선택해주세요.');
             return;
         }
+        
+        // Load from JSON file
+        const response = await fetch('/data/issues.json');
+        const issues = await response.json();
         
         const initialUsdt = 60;
         const yesRatio = 0.3 + Math.random() * 0.4;
@@ -1330,7 +1342,6 @@ function saveIssue(event) {
                     expireDate: new Date(expireDate).toISOString(),
                     image: image || 'https://via.placeholder.com/400x200?text=EventBET'
                 };
-                console.log('[ADMIN] Updated issue:', issues[index]);
             }
         } else {
             // Create new issue
@@ -1348,12 +1359,16 @@ function saveIssue(event) {
                 createdAt: new Date().toISOString()
             };
             issues.unshift(newIssue);
-            console.log('[ADMIN] Created new issue:', newIssue);
         }
         
+        // Save to both localStorage AND file
         localStorage.setItem('eventbet_issues', JSON.stringify(issues));
         
-        alert(issueId ? '✅ 이슈가 수정되었습니다!' : '✅ 이슈가 등록되었습니다!');
+        // Copy to clipboard for manual save
+        const jsonStr = JSON.stringify(issues, null, 2);
+        await navigator.clipboard.writeText(jsonStr);
+        
+        alert(issueId ? '✅ 이슈가 수정되었습니다!\n\n📋 JSON이 클립보드에 복사되었습니다.\ndocs/data/issues.json 파일에 붙여넣기 해주세요.' : '✅ 이슈가 등록되었습니다!\n\n📋 JSON이 클립보드에 복사되었습니다.\ndocs/data/issues.json 파일에 붙여넣기 해주세요.');
         closeIssueModal();
         loadIssues();
         
