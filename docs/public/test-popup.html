@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팝업 테스트 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 EventBET 팝업 시스템 테스트</h1>
+        
+        <div class="status" id="status">
+            <strong>상태:</strong> 대기 중...
+        </div>
+
+        <h2>1. 테스트 팝업 생성</h2>
+        <button class="btn-success" onclick="createTestPopup()">✅ 테스트 팝업 생성</button>
+        <button class="btn-danger" onclick="clearAllPopups()">🗑️ 모든 팝업 삭제</button>
+
+        <h2>2. 현재 저장된 팝업</h2>
+        <button class="btn-info" onclick="showPopups()">📋 팝업 목록 보기</button>
+        <div class="code" id="popup-data">클릭하여 데이터 확인</div>
+
+        <h2>3. 팝업 표시 테스트</h2>
+        <button class="btn-primary" onclick="testPopupDisplay()">🚀 팝업 표시 테스트</button>
+        <button class="btn-info" onclick="goToMain()">🏠 메인 페이지로 이동</button>
+
+        <h2>4. 디버깅 정보</h2>
+        <div class="code" id="console-log">콘솔 로그가 여기에 표시됩니다</div>
+    </div>
+
+    <!-- Popup Container -->
+    <div id="popup-container"></div>
+
+    <script src="/static/popup.js"></script>
+    <script>
+        // 상태 업데이트 함수
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const colors = {
+                success: '#d4edda',
+                error: '#f8d7da',
+                info: '#d1ecf1'
+            };
+            status.style.background = colors[type] || colors.info;
+            status.innerHTML = `<strong>상태:</strong> ${message}`;
+        }
+
+        // 콘솔 로그 캡처
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logDiv = document.getElementById('console-log');
+            logDiv.textContent += args.join(' ') + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // 테스트 팝업 생성
+        function createTestPopup() {
+            const testPopup = {
+                id: Date.now().toString(),
+                title: '테스트 팝업',
+                type: 'image',
+                image: 'https://via.placeholder.com/600x400/667eea/ffffff?text=EventBET+Test+Popup',
+                youtube: '',
+                enabled: true,
+                top: 10,
+                left: 10,
+                width: 600,
+                height: 400,
+                createdAt: new Date().toISOString()
+            };
+
+            const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+            popups.push(testPopup);
+            localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+
+            updateStatus(`테스트 팝업이 생성되었습니다! (ID: ${testPopup.id})`, 'success');
+            showPopups();
+        }
+
+        // 모든 팝업 삭제
+        function clearAllPopups() {
+            localStorage.removeItem('eventbet_popups');
+            sessionStorage.clear();
+            updateStatus('모든 팝업이 삭제되었습니다.', 'success');
+            showPopups();
+        }
+
+        // 팝업 목록 보기
+        function showPopups() {
+            const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+            const dataDiv = document.getElementById('popup-data');
+            
+            if (popups.length === 0) {
+                dataDiv.textContent = '저장된 팝업이 없습니다.';
+                updateStatus('저장된 팝업: 0개', 'info');
+            } else {
+                dataDiv.textContent = JSON.stringify(popups, null, 2);
+                const activeCount = popups.filter(p => p.enabled).length;
+                updateStatus(`저장된 팝업: ${popups.length}개 (활성화: ${activeCount}개)`, 'success');
+            }
+        }
+
+        // 팝업 표시 테스트
+        function testPopupDisplay() {
+            updateStatus('팝업을 표시합니다...', 'info');
+            
+            // 기존 팝업 제거
+            const container = document.getElementById('popup-container');
+            container.innerHTML = '';
+            
+            // 팝업 표시
+            if (typeof displayPopups === 'function') {
+                displayPopups();
+                updateStatus('팝업 표시 함수가 실행되었습니다. 콘솔을 확인하세요.', 'success');
+            } else {
+                updateStatus('❌ 팝업 표시 함수를 찾을 수 없습니다!', 'error');
+            }
+        }
+
+        // 메인 페이지로 이동
+        function goToMain() {
+            window.location.href = '/';
+        }
+
+        // 페이지 로드 시 자동 확인
+        window.addEventListener('DOMContentLoaded', () => {
+            showPopups();
+            updateStatus('페이지가 로드되었습니다.', 'success');
+            
+            // popup.js 로드 확인
+            if (typeof displayPopups === 'function') {
+                console.log('✅ popup.js가 정상적으로 로드되었습니다.');
+            } else {
+                console.error('❌ popup.js 로드 실패!');
+            }
+        });
+    </script>
+</body>
+</html>
