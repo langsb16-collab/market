@@ -1082,9 +1082,17 @@ function saveBatchIssues() {
         console.log('[ADMIN] Existing issues:', issues.length);
         
         // 카테고리와 만료일, 초기 USDT
-        const category = document.getElementById('issue-category').value || 'crypto';
-        const expireDays = parseInt(document.getElementById('issue-expire-days').value) || 30;
-        const initialUsdt = parseInt(document.getElementById('issue-initial-usdt').value) || 60;
+        const categoryEl = document.getElementById('issue-batch-category');
+        const expireDaysEl = document.getElementById('issue-batch-days');
+        const initialUsdtEl = document.getElementById('issue-batch-usdt');
+        
+        if (!categoryEl || !expireDaysEl || !initialUsdtEl) {
+            throw new Error('필수 입력 필드를 찾을 수 없습니다. 페이지를 새로고침하세요.');
+        }
+        
+        const category = categoryEl.value || 'crypto';
+        const expireDays = parseInt(expireDaysEl.value) || 7;
+        const initialUsdt = parseInt(initialUsdtEl.value) || 60;
         
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + expireDays);
