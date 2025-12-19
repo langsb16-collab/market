@@ -1,5 +1,42 @@
 // EventBET Admin Panel JavaScript
 
+// ========== 유틸리티: fetch 래퍼 (에러 명확화) ==========
+async function fetchJsonOrThrow(url, options = {}) {
+    try {
+        const res = await fetch(url, options);
+        
+        // JSON이 아닌 에러 바디도 잡기 위해 text로 먼저 받음
+        const text = await res.text();
+        let data = null;
+        try { 
+            data = text ? JSON.parse(text) : null; 
+        } catch (parseError) { 
+            console.warn('[ADMIN] JSON parse failed, returning text');
+        }
+        
+        if (!res.ok) {
+            const detail = data ? JSON.stringify(data) : text;
+            throw new Error(`[${res.status}] ${url} :: ${detail}`);
+        }
+        return data;
+    } catch (error) {
+        console.error('[ADMIN] fetchJsonOrThrow failed:', error);
+        throw error;
+    }
+}
+
+// ========== Mapify 초기화 가드 (관리자에서는 스킵) ==========
+if (typeof initMapify === 'function' && !window.__IS_ADMIN__) {
+    const mapifyEl = document.querySelector('#mapify-window') || document.querySelector('mapify-window');
+    if (mapifyEl) {
+        try {
+            initMapify();
+        } catch (e) {
+            console.error('[ADMIN] initMapify failed:', e);
+        }
+    }
+}
+
 // 섹션 전환
 function showSection(section) {
     // 모든 섹션 숨기기

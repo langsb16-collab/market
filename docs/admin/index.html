@@ -909,6 +909,21 @@
         </div>
     </div>
     
+    <script>
+        // 관리자 페이지임을 명시
+        window.__IS_ADMIN__ = true;
+
+        // Promise 에러가 "Object"로만 찍히는 문제를 원문으로 출력
+        window.addEventListener("unhandledrejection", (ev) => {
+            console.error("[ADMIN] Unhandled Promise Rejection:", ev.reason);
+            ev.preventDefault(); // 콘솔 중복 방지
+        });
+
+        // 일반 JS 에러도 같이 로깅
+        window.addEventListener("error", (ev) => {
+            console.error("[ADMIN] Window Error:", ev.error || ev.message);
+        });
+    </script>
     <script src="/static/admin.js"></script>
 </body>
 </html>
