@@ -1017,3 +1017,72 @@ function previewPopupUrl() {
         preview.classList.add('hidden');
     }
 }
+
+// ============================================
+// 📌 이슈 등록 기능
+// ============================================
+
+function openIssueModal() {
+    const modal = document.getElementById('issue-modal');
+    modal.classList.add('active');
+    
+    // 폼 초기화
+    document.getElementById('issue-title').value = '';
+    document.getElementById('issue-description').value = '';
+    document.getElementById('issue-category').value = '';
+    document.getElementById('issue-expiredate').value = '';
+    document.getElementById('issue-image').value = '';
+    
+    // 기본 만료일을 7일 후로 설정
+    const defaultExpireDate = new Date();
+    defaultExpireDate.setDate(defaultExpireDate.getDate() + 7);
+    const formattedDate = defaultExpireDate.toISOString().slice(0, 16);
+    document.getElementById('issue-expiredate').value = formattedDate;
+}
+
+function closeIssueModal() {
+    document.getElementById('issue-modal').classList.remove('active');
+}
+
+function saveIssue(event) {
+    event.preventDefault();
+    
+    const title = document.getElementById('issue-title').value.trim();
+    const description = document.getElementById('issue-description').value.trim();
+    const category = document.getElementById('issue-category').value;
+    const expireDate = document.getElementById('issue-expiredate').value;
+    const image = document.getElementById('issue-image').value.trim();
+    
+    if (!title || !category || !expireDate) {
+        alert('필수 항목을 모두 입력해주세요.');
+        return;
+    }
+    
+    // 만료일이 현재 시간보다 이후인지 확인
+    if (new Date(expireDate) <= new Date()) {
+        alert('만료일은 현재 시간 이후여야 합니다.');
+        return;
+    }
+    
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    
+    const newIssue = {
+        id: Date.now().toString(),
+        title: title,
+        description: description,
+        category: category,
+        image: image || 'https://via.placeholder.com/400x200?text=EventBET',
+        expireDate: expireDate,
+        status: 'active',
+        yesBet: 0,
+        noBet: 0,
+        createdAt: new Date().toISOString()
+    };
+    
+    issues.unshift(newIssue);
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('이슈가 성공적으로 등록되었습니다!');
+    closeIssueModal();
+    loadIssues();
+}
