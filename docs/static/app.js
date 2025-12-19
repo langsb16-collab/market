@@ -2,6 +2,15 @@
 // Enhanced with 450 markets (50 per category, all within 1 month)
 
 // =========================
+// 중복 실행 방지 가드
+// =========================
+if (window.__APP_LOADED__) {
+  console.warn('EventBET: app.js already loaded, skipping duplicate initialization');
+  throw new Error('STOP_DUPLICATE_APP_EXECUTION'); // 스크립트 중단
+}
+window.__APP_LOADED__ = true;
+
+// =========================
 // Global error diagnostics
 // =========================
 if (!window.__GLOBAL_ERROR_HOOKED__) {
@@ -18,21 +27,34 @@ if (!window.__GLOBAL_ERROR_HOOKED__) {
 // =========================
 // Page type detection
 // =========================
-const __IS_ADMIN__ =
-  window.__IS_ADMIN__ === true ||
-  location.pathname.startsWith("/admin");
+if (typeof window.__IS_ADMIN__ === 'undefined') {
+  window.__IS_ADMIN__ = location.pathname.startsWith("/admin");
+}
 
-console.log('EventBET: Script loaded', { isAdmin: __IS_ADMIN__ })
+console.log('EventBET: Script loaded', { isAdmin: window.__IS_ADMIN__ })
 
-let currentLang = 'ko'
-let currentWallet = null
-let isDarkMode = false
-let currentCategory = 'all'
-let displayedMarkets = 12
-const MARKETS_PER_PAGE = 12
-let currentSortBy = 'date' // 'date', 'volume', 'participants'
+// 전역 변수 선언 (window 객체에 할당하여 중복 선언 방지)
+if (typeof window.currentLang === 'undefined') window.currentLang = 'ko';
+if (typeof window.currentWallet === 'undefined') window.currentWallet = null;
+if (typeof window.isDarkMode === 'undefined') window.isDarkMode = false;
+if (typeof window.currentCategory === 'undefined') window.currentCategory = 'all';
+if (typeof window.displayedMarkets === 'undefined') window.displayedMarkets = 12;
+if (typeof window.MARKETS_PER_PAGE === 'undefined') window.MARKETS_PER_PAGE = 12;
+if (typeof window.currentSortBy === 'undefined') window.currentSortBy = 'date'; // 'date', 'volume', 'participants'
 
-console.log('EventBET: Variables initialized')
+// 지역 변수 alias (호환성 유지)
+let currentLang = window.currentLang;
+let currentWallet = window.currentWallet;
+let isDarkMode = window.isDarkMode;
+let currentCategory = window.currentCategory;
+let displayedMarkets = window.displayedMarkets;
+const MARKETS_PER_PAGE = window.MARKETS_PER_PAGE;
+let currentSortBy = window.currentSortBy;
+
+console.log('EventBET: Variables initialized', {
+  currentLang: window.currentLang,
+  displayedMarkets: window.displayedMarkets
+})
 
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
