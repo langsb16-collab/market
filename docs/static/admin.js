@@ -1172,3 +1172,30 @@ function saveBatchIssues() {
         alert('❌ 이슈 등록 실패:\n\n' + error.message + '\n\n콘솔에서 자세한 오류를 확인하세요.');
     }
 }
+
+// ========== 전역 함수 노출 (HTML onclick에서 사용) ==========
+window.showSection = showSection;
+window.loadBanners = loadBanners;
+window.saveBanner = saveBanner;
+window.editBanner = editBanner;
+window.deleteBanner = deleteBanner;
+window.loadNotices = loadNotices;
+window.saveNotice = saveNotice;
+window.editNotice = editNotice;
+window.deleteNotice = deleteNotice;
+window.loadPopups = loadPopups;
+window.savePopup = savePopup;
+window.editPopup = editPopup;
+window.deletePopup = deletePopup;
+window.loadMembers = loadMembers;
+window.suspendMember = suspendMember;
+window.activateMember = activateMember;
+window.deleteMember = deleteMember;
+window.saveBatchIssues = saveBatchIssues;
+window.handleBannerImageUpload = handleBannerImageUpload;
+window.uploadBannerImage = uploadBannerImage;
+window.handleNoticeImageUpload = handleNoticeImageUpload;
+window.uploadNoticeImage = uploadNoticeImage;
+window.previewNoticeUrl = previewNoticeUrl;
+
+console.log('[ADMIN] All functions exposed to global scope');
