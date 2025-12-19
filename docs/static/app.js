@@ -307,22 +307,35 @@ let events = window.events;
 console.log(`Generated ${events.length} events`)
 
 // Load issues from localStorage and merge with generated events
-function loadIssuesFromLocalStorage() {
+async function loadIssuesFromLocalStorage() {
     try {
-        console.log('EventBET: ========== Loading issues from localStorage ==========')
-        const storedIssues = localStorage.getItem('eventbet_issues')
-        
-        if (!storedIssues) {
-            console.log('EventBET: No issues found in localStorage')
-            return 0
-        }
+        console.log('EventBET: ========== Loading issues from JSON file ==========')
         
         let issues = []
+        
+        // Try loading from JSON file first
         try {
-            issues = JSON.parse(storedIssues)
-        } catch (parseError) {
-            console.error('EventBET: Failed to parse localStorage issues:', parseError)
-            return 0
+            const response = await fetch('/data/issues.json?t=' + Date.now())
+            if (response.ok) {
+                issues = await response.json()
+                console.log('EventBET: ✅ Loaded from /data/issues.json')
+            }
+        } catch (e) {
+            console.log('EventBET: File load failed, trying localStorage')
+        }
+        
+        // Fallback to localStorage
+        if (issues.length === 0) {
+            const storedIssues = localStorage.getItem('eventbet_issues')
+            if (storedIssues) {
+                try {
+                    issues = JSON.parse(storedIssues)
+                    console.log('EventBET: ✅ Loaded from localStorage')
+                } catch (parseError) {
+                    console.error('EventBET: Failed to parse localStorage issues:', parseError)
+                    return 0
+                }
+            }
         }
         
         if (!Array.isArray(issues) || issues.length === 0) {
@@ -416,7 +429,7 @@ function loadIssuesFromLocalStorage() {
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('EventBET: DOMContentLoaded fired!')
     
     try {
@@ -433,15 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUITexts()
         renderCategories()
         
-        // CRITICAL: Load admin issues FIRST, then render
-        loadIssuesFromLocalStorage()
+        // CRITICAL: Load admin issues FIRST (async), then render
+        await loadIssuesFromLocalStorage()
         
-        console.log('EventBET: After loading localStorage, total events:', window.events ? window.events.length : 0)
+        console.log('EventBET: After loading issues, total events:', window.events ? window.events.length : 0)
         
-        // Force render after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            renderMarkets()
-        }, 100)
+        // Render immediately after loading
+        renderMarkets()
         
         console.log('EventBET: Initialization complete, total events:', events.length)
     } catch (error) {
