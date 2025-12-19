@@ -1322,8 +1322,14 @@ async function saveIssue(event) {
         }
         
         // Load from JSON file
-        const response = await fetch('/data/issues.json');
-        const issues = await response.json();
+        let issues = [];
+        try {
+            const response = await fetch('/data/issues.json?t=' + Date.now());
+            issues = await response.json();
+        } catch (e) {
+            console.log('[ADMIN] Creating new issues array');
+            issues = [];
+        }
         
         const initialUsdt = 60;
         const yesRatio = 0.3 + Math.random() * 0.4;
@@ -1339,7 +1345,7 @@ async function saveIssue(event) {
                     title,
                     description,
                     category,
-                    expireDate: new Date(expireDate).toISOString(),
+                    expireDate: new Date(expireDate + 'T23:59:59').toISOString(),
                     image: image || 'https://via.placeholder.com/400x200?text=EventBET'
                 };
             }
@@ -1351,7 +1357,7 @@ async function saveIssue(event) {
                 description,
                 category,
                 image: image || 'https://via.placeholder.com/400x200?text=EventBET',
-                expireDate: new Date(expireDate).toISOString(),
+                expireDate: new Date(expireDate + 'T23:59:59').toISOString(),
                 status: 'active',
                 yesBet,
                 noBet,
@@ -1361,14 +1367,24 @@ async function saveIssue(event) {
             issues.unshift(newIssue);
         }
         
-        // Save to both localStorage AND file
+        // Save to localStorage for immediate display
         localStorage.setItem('eventbet_issues', JSON.stringify(issues));
         
-        // Copy to clipboard for manual save
+        // Copy to clipboard for GitHub deployment
         const jsonStr = JSON.stringify(issues, null, 2);
         await navigator.clipboard.writeText(jsonStr);
         
-        alert(issueId ? '✅ 이슈가 수정되었습니다!\n\n📋 JSON이 클립보드에 복사되었습니다.\ndocs/data/issues.json 파일에 붙여넣기 해주세요.' : '✅ 이슈가 등록되었습니다!\n\n📋 JSON이 클립보드에 복사되었습니다.\ndocs/data/issues.json 파일에 붙여넣기 해주세요.');
+        // Show download link
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'issues.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        alert(issueId ? '✅ 이슈가 수정되었습니다!\n\n📥 issues.json 파일이 다운로드되었습니다.\n📋 JSON이 클립보드에도 복사되었습니다.\n\n⚠️ GitHub에 배포하려면:\n1. 다운로드된 issues.json을 docs/data/ 폴더에 복사\n2. Git 커밋 & 푸시' : '✅ 이슈가 등록되었습니다!\n\n📥 issues.json 파일이 다운로드되었습니다.\n📋 JSON이 클립보드에도 복사되었습니다.\n\n✨ 메인 페이지를 새로고침하면 즉시 표시됩니다!\n\n⚠️ GitHub에 배포하려면:\n1. 다운로드된 issues.json을 docs/data/ 폴더에 복사\n2. Git 커밋 & 푸시');
+        
         closeIssueModal();
         loadIssues();
         
@@ -1382,18 +1398,39 @@ function editIssue(issueId) {
     openIssueModal(issueId);
 }
 
-function deleteIssue(issueId) {
+async function deleteIssue(issueId) {
     if (!confirm('정말 이 이슈를 삭제하시겠습니까?')) {
         return;
     }
     
     try {
-        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        // Load from JSON file
+        let issues = [];
+        try {
+            const response = await fetch('/data/issues.json?t=' + Date.now());
+            issues = await response.json();
+        } catch (e) {
+            issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        }
+        
         const filteredIssues = issues.filter(i => i.id !== issueId);
         
+        // Save to localStorage
         localStorage.setItem('eventbet_issues', JSON.stringify(filteredIssues));
         
-        alert('✅ 이슈가 삭제되었습니다!');
+        // Copy to clipboard and download
+        const jsonStr = JSON.stringify(filteredIssues, null, 2);
+        await navigator.clipboard.writeText(jsonStr);
+        
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'issues.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        alert('✅ 이슈가 삭제되었습니다!\n\n📥 issues.json 파일이 다운로드되었습니다.\n\n⚠️ GitHub에 배포하려면:\n1. 다운로드된 issues.json을 docs/data/ 폴더에 복사\n2. Git 커밋 & 푸시');
         loadIssues();
         
         console.log('[ADMIN] Deleted issue:', issueId);
