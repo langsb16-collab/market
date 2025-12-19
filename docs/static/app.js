@@ -334,8 +334,17 @@ function loadIssuesFromLocalStorage() {
         console.log('EventBET: First 3 issues:', issues.slice(0, 3).map(i => ({ id: i.id, title: i.title, status: i.status })))
         
         // Convert admin issues to event format
+        console.log('EventBET: Converting issues to events...')
+        console.log('EventBET: Active issues:', issues.filter(i => i.status === 'active').length)
+        
         const adminEvents = issues
-            .filter(issue => issue && issue.status === 'active')
+            .filter(issue => {
+                const isValid = issue && issue.status === 'active';
+                if (!isValid && issue) {
+                    console.log('EventBET: Filtered out issue:', issue.id, 'status:', issue.status);
+                }
+                return isValid;
+            })
             .map(issue => {
                 // Find matching category
                 const categorySlug = issue.category || 'crypto'
@@ -376,6 +385,9 @@ function loadIssuesFromLocalStorage() {
                 }
             })
         
+        console.log('EventBET: Created admin events:', adminEvents.length)
+        console.log('EventBET: Admin events sample:', adminEvents.slice(0, 2))
+        
         if (adminEvents.length > 0) {
             // CRITICAL: Completely replace window.events
             const baseEvents = window.events || generateEvents();
@@ -383,13 +395,16 @@ function loadIssuesFromLocalStorage() {
             
             console.log(`EventBET: ✅✅✅ SUCCESS! Added ${adminEvents.length} admin issues`)
             console.log(`EventBET: Total events in window.events: ${window.events.length}`)
-            console.log('EventBET: First 3 events:', window.events.slice(0, 3).map(e => ({
+            console.log('EventBET: First 5 events:', window.events.slice(0, 5).map(e => ({
                 id: e.id,
                 title: e.title_ko,
-                isAdmin: e.isAdminIssue
+                isAdmin: e.isAdminIssue,
+                category: e.category_slug
             })))
             
             return adminEvents.length;
+        } else {
+            console.error('EventBET: ❌ NO admin events created! Check conversion logic');
         }
         
         return 0;
