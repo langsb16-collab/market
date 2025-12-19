@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventBET - Decentralized Prediction Market</title>
     
-    <!-- 강력한 캐시 무효화 -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <!-- 캐시 방지 메타 태그 (강력한 캐시 무효화) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="cache-control" content="no-cache">
+    <meta name="expires" content="0">
+    <meta name="pragma" content="no-cache">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
@@ -153,8 +157,11 @@
             transform: translateY(-1px);
         }
         
-        /* Notice Button - Orange */
+        /* Notice Button - Orange (모바일 최적화) */
         .btn-notice {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
             background: linear-gradient(180deg, #FF9500 0%, #FF8000 100%);
             color: #ffffff;
             border: none;
@@ -163,6 +170,8 @@
             letter-spacing: -0.01em;
             box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
             transition: all 0.2s ease;
+            min-width: 40px; /* 모바일 최소 너비 */
+            white-space: nowrap; /* 텍스트 줄바꿈 방지 */
         }
         
         .btn-notice:hover {
@@ -228,10 +237,74 @@
             background-color: rgba(120, 120, 128, 0.32);
         }
         
-        .btn-category.active {
-            background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
+        /* 최근등록순 - 보라색 그라데이션 */
+        #sort-recent.active {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.4);
+        }
+        
+        /* 결과발표일 - 파란색 그라데이션 */
+        #sort-date.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* 배팅규모 - 초록색 그라데이션 */
+        #sort-volume.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* 이용객 숫자 - 주황색 그라데이션 */
+        #sort-participants.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* 비활성 상태에서도 각 버튼에 색상 힌트 추가 */
+        #sort-recent:not(.active) {
+            background-color: rgba(147, 51, 234, 0.08);
+            border: 1px solid rgba(147, 51, 234, 0.2);
+        }
+        
+        #sort-date:not(.active) {
+            background-color: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        #sort-volume:not(.active) {
+            background-color: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        #sort-participants:not(.active) {
+            background-color: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        /* 다크모드에서 비활성 버튼 색상 */
+        body.dark-mode #sort-recent:not(.active) {
+            background-color: rgba(147, 51, 234, 0.15);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+        
+        body.dark-mode #sort-date:not(.active) {
+            background-color: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        body.dark-mode #sort-volume:not(.active) {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        body.dark-mode #sort-participants:not(.active) {
+            background-color: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
         
         /* Outcome bars */
@@ -266,6 +339,23 @@
         
         body.dark-mode .text-accent {
             color: #60a5fa;
+        }
+        
+        /* Market card text colors for dark mode */
+        body.dark-mode .market-card .text-gray-900 {
+            color: #f5f5f7 !important;
+        }
+        
+        body.dark-mode .market-card .text-gray-500 {
+            color: #9ca3af !important;
+        }
+        
+        body.dark-mode .market-card .bg-blue-100 {
+            background-color: rgba(59, 130, 246, 0.2) !important;
+        }
+        
+        body.dark-mode .market-card .text-blue-800 {
+            color: #93c5fd !important;
         }
         
         /* Inputs and selects */
@@ -368,8 +458,33 @@
                 font-size: 0.75rem;
             }
             
+            /* 모바일 헤더 최적화 */
+            .header {
+                padding-bottom: 0.5rem !important;
+            }
+            
+            /* 모바일 버튼 그리드 스타일 */
+            .btn-notice, .btn-issue, .btn-login, .btn-register {
+                font-size: 0.875rem !important;
+                padding: 0.75rem 0.5rem !important;
+                font-weight: 700;
+                letter-spacing: -0.01em;
+                width: 100%;
+                min-height: 44px; /* iOS 터치 타겟 최소 크기 */
+            }
+            
+            .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
+                font-size: 1rem !important;
+                margin-right: 0.375rem !important;
+            }
+            
+            /* 버튼 텍스트 줄바꿈 방지 */
+            .btn-notice span, .btn-issue span, .btn-login span, .btn-register span {
+                white-space: nowrap;
+            }
+            
             h1 {
-                font-size: 1.125rem !important;
+                font-size: 1rem !important;
             }
             
             h2 {
@@ -421,11 +536,22 @@
                 padding: 0.5rem !important;
             }
             
-            /* Category buttons mobile */
+            /* Category buttons mobile - 더 큰 터치 영역 */
             .btn-category {
-                font-size: 0.7rem !important;
-                padding: 0.375rem 0.625rem !important;
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.875rem !important;
                 white-space: nowrap;
+                min-height: 36px;
+            }
+            
+            /* 가로 스크롤 영역 최적화 */
+            .overflow-x-auto {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            
+            .overflow-x-auto::-webkit-scrollbar {
+                display: none;
             }
             
             /* Modal mobile */
@@ -436,19 +562,28 @@
                 overflow-y: auto;
             }
             
-            /* Hero section mobile */
-            #heroTitle {
-                font-size: 0.875rem !important;
-                padding: 0.5rem 0.75rem !important;
-                line-height: 1.4;
+            /* Hero section mobile - 더 컴팩트하게 */
+            .text-center.mb-4 {
+                margin-bottom: 1rem !important;
             }
             
-            #heroSubtitle {
+            h2 {
+                font-size: 0.875rem !important;
+                line-height: 1.3;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .text-base.mobile-text {
                 font-size: 0.75rem !important;
             }
             
-            #heroDescription {
+            .text-sm.mobile-text {
                 font-size: 0.7rem !important;
+            }
+            
+            /* USDT 아이콘 크기 조정 */
+            .text-accent.font-bold {
+                font-size: 1.125rem !important;
             }
             
             /* Crypto icons */
@@ -486,13 +621,24 @@
                 margin-bottom: 1.25rem !important;
             }
             
-            /* Odds/Fee structure mobile */
-            .card.p-4 {
+            /* Odds/Fee structure mobile - 더 컴팩트 */
+            .card.p-4, .card.p-6 {
                 padding: 0.75rem !important;
             }
             
-            .card.p-6 {
-                padding: 1rem !important;
+            .card {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            /* 카드 내 텍스트 크기 조정 */
+            .card h4 {
+                font-size: 0.875rem !important;
+                line-height: 1.3;
+                margin-bottom: 0.375rem !important;
+            }
+            
+            .card p, .card span {
+                font-size: 0.75rem !important;
             }
             
             /* Form spacing mobile */
@@ -507,6 +653,34 @@
             /* Hide non-essential text on mobile */
             .hide-mobile {
                 display: none;
+            }
+        }
+        
+        /* Extra small mobile optimization (iPhone SE, small Android) */
+        @media (max-width: 375px) {
+            h1 {
+                font-size: 0.875rem !important;
+            }
+            
+            h2 {
+                font-size: 0.8rem !important;
+            }
+            
+            /* 버튼 그리드는 유지하되 텍스트만 작게 */
+            .btn-notice, .btn-issue, .btn-login, .btn-register {
+                font-size: 0.8rem !important;
+                padding: 0.625rem 0.375rem !important;
+            }
+            
+            .btn-notice i, .btn-issue i, .btn-login i, .btn-register i {
+                font-size: 0.875rem !important;
+                margin-right: 0.25rem !important;
+            }
+            
+            /* 카테고리 버튼 작게 */
+            .btn-category {
+                font-size: 0.75rem !important;
+                padding: 0.375rem 0.625rem !important;
             }
         }
         
@@ -535,56 +709,63 @@
 <body class="min-h-screen">
     <!-- Header -->
     <header class="header sticky top-0 z-50">
-        <div class="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
-            <div class="flex items-center justify-between">
+        <div class="container mx-auto px-3 sm:px-6 py-2 sm:py-4">
+            <!-- 첫 번째 줄: 로고 + 공지 버튼 + 설정 -->
+            <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <i class="fas fa-chart-line text-accent text-xl sm:text-2xl"></i>
-                    <h1 class="text-lg sm:text-2xl font-bold mobile-text">EventBET</h1>
+                    <h1 class="text-base sm:text-2xl font-bold">EventBET</h1>
                 </div>
-                <div class="flex items-center space-x-2 sm:space-x-4">
+                <div class="flex items-center space-x-2">
+                    <!-- Notice Button - Orange (모바일 우선) -->
+                    <button id="notice-btn" class="btn-notice text-xs sm:text-base px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                        <i class="fas fa-bullhorn mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                        <span id="notice-btn-text" class="hidden sm:inline">공지</span>
+                    </button>
                     <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm" title="Toggle Dark Mode">
+                    <button id="theme-toggle" class="theme-toggle text-xs sm:text-sm p-2" title="Toggle Dark Mode">
                         <i class="fas fa-moon" id="theme-icon"></i>
                     </button>
                     <!-- Language Selector -->
-                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
+                    <select id="language-selector" class="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg focus:border-blue-400 focus:outline-none">
                         <option value="en">🇬🇧 EN</option>
                         <option value="ko">🇰🇷 KO</option>
                         <option value="zh">🇨🇳 ZH</option>
                         <option value="ja">🇯🇵 JA</option>
                     </select>
-                    <!-- Notice Button - Orange -->
-                    <button id="notice-btn" class="btn-notice text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-bullhorn mr-1 sm:mr-2"></i>
-                        <span id="notice-btn-text">공지</span>
+                </div>
+            </div>
+            
+            <!-- 두 번째 줄: 나머지 액션 버튼들 (모바일 3열 그리드) -->
+            <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end sm:space-x-2">
+                <!-- Submit Issue Button - Green -->
+                <button id="submit-issue-btn" class="btn-issue text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="submit-issue-btn-text" class="text-xs sm:text-base">이슈 등록</span>
+                </button>
+                <!-- Login Button - Blue -->
+                <button id="login-btn" class="btn-login text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="login-btn-text" class="text-xs sm:text-base">로그인</span>
+                </button>
+                <!-- Register Button - Purple -->
+                <button id="register-btn" class="btn-register text-xs sm:text-base px-2 py-2 sm:px-5 sm:py-2.5 rounded-lg font-bold shadow-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-1 sm:mr-1.5 text-sm sm:text-base"></i>
+                    <span id="register-btn-text" class="text-xs sm:text-base">회원가입</span>
+                </button>
+                <!-- User Profile (로그인 시 표시) -->
+                <div id="user-profile" class="hidden col-span-3 sm:col-span-1 flex items-center justify-between bg-blue-50 px-4 py-2 rounded-lg">
+                    <span id="user-name" class="text-sm font-semibold"></span>
+                    <button id="logout-btn" class="btn-primary text-sm px-3 py-1 rounded-lg font-semibold ml-3">
+                        <i class="fas fa-sign-out-alt mr-1"></i>
+                        로그아웃
                     </button>
-                    <!-- Submit Issue Button - Green -->
-                    <button id="submit-issue-btn" class="btn-issue text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-plus-circle mr-1 sm:mr-2"></i>
-                        <span id="submit-issue-btn-text">이슈 등록</span>
-                    </button>
-                    <!-- Login Button - Blue -->
-                    <button id="login-btn" class="btn-login text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-sign-in-alt mr-1 sm:mr-2"></i>
-                        <span id="login-btn-text">로그인</span>
-                    </button>
-                    <!-- Register Button - Purple -->
-                    <button id="register-btn" class="btn-register text-xs sm:text-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg font-semibold shadow-lg mobile-text">
-                        <i class="fas fa-user-plus mr-1 sm:mr-2"></i>
-                        <span id="register-btn-text">회원가입</span>
-                    </button>
-                    <div id="user-profile" class="hidden flex items-center space-x-2">
-                        <span id="user-name" class="text-xs sm:text-sm font-semibold"></span>
-                        <button id="logout-btn" class="btn-primary text-xs sm:text-sm px-2 py-1 rounded-lg font-semibold">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+    <div class="container mx-auto px-2 sm:px-6 py-3 sm:py-8">
         <!-- Hero Section -->
         <div class="text-center mb-4 sm:mb-8">
             <h2 class="text-sm sm:text-xl font-bold mb-2 sm:mb-3" id="hero-title">EventBET(이벤트벳) - 예측 시장 블록체인 배팅 플랫폼</h2>
@@ -594,19 +775,54 @@
             <p class="text-sm text-secondary mb-3 sm:mb-4 mobile-text" id="hero-description">
                 전 세계 이슈와 당신의 예측이 만나는 곳.
             </p>
-            <div class="flex justify-center text-xs mobile-text">
-                <div class="text-center">
+            <div class="flex flex-col items-center text-xs mobile-text">
+                <div class="text-center mb-3">
                     <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT (Tether)</div>
-                    <p class="text-xs text-secondary mt-1">유일하게 지원되는 암호화폐</p>
+                    <p class="text-xs text-secondary mt-1 crypto-support-text">유일하게 지원되는 암호화폐</p>
+                </div>
+                
+                <!-- USDT Wallet Address -->
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4 max-w-2xl w-full shadow-lg border-2 border-blue-200 dark:border-gray-600">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-wallet text-blue-600 text-lg"></i>
+                            <span class="font-bold text-sm sm:text-base text-gray-800 dark:text-white" 
+                                  data-ko="플랫폼 지갑 주소" 
+                                  data-en="Platform Wallet Address" 
+                                  data-zh="平台钱包地址" 
+                                  data-ja="プラットフォームウォレットアドレス">플랫폼 지갑 주소</span>
+                        </div>
+                        <button onclick="copyWalletAddress()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-semibold transition transform hover:scale-105 flex items-center gap-1">
+                            <i class="fas fa-copy"></i>
+                            <span data-ko="복사" 
+                                  data-en="Copy" 
+                                  data-zh="复制" 
+                                  data-ja="コピー">복사</span>
+                        </button>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                        <code id="wallet-address" class="text-xs sm:text-sm font-mono text-gray-800 dark:text-gray-200 break-all select-all">
+                            0x76a58f92E837beC527A90aa8Be31ec88B917dBaf
+                        </code>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-2 text-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <span data-ko="이슈 등록 입금 및 모든 거래에 사용되는 공식 지갑 주소입니다" 
+                              data-en="Official wallet address used for issue registration deposits and all transactions" 
+                              data-zh="用于问题注册存款和所有交易的官方钱包地址" 
+                              data-ja="問題登録の入金およびすべての取引に使用される公式ウォレットアドレス">이슈 등록 입금 및 모든 거래에 사용되는 공식 지갑 주소입니다</span>
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Categories Filter -->
         <div class="mb-4 sm:mb-6">
-            <h3 class="text-base sm:text-lg font-bold mb-2 sm:mb-3 mobile-text text-center" id="categories-title">카테고리</h3>
-            <div id="categories-container" class="flex justify-center flex-wrap gap-2 pb-2">
-                <!-- Categories will be loaded here -->
+            <h3 class="text-sm sm:text-lg font-bold mb-2 sm:mb-3 text-left sm:text-center px-1" id="categories-title">카테고리</h3>
+            <div class="overflow-x-auto scrollbar-hide -mx-3 px-3">
+                <div id="categories-container" class="flex sm:justify-center gap-2 pb-2 min-w-max sm:min-w-0 sm:flex-wrap">
+                    <!-- Categories will be loaded here -->
+                </div>
             </div>
         </div>
 
@@ -617,8 +833,11 @@
                     <span data-ko="인기 마켓" data-en="Popular Markets" data-zh="热门市场" data-ja="人気市場">인기 마켓</span>
                 </h3>
                 <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
-                    <button onclick="sortMarkets('date')" id="sort-date" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
-                        <i class="fas fa-calendar mr-1"></i><span data-ko="날짜순서" data-en="Latest" data-zh="日期顺序" data-ja="日付順">날짜순서</span>
+                    <button onclick="sortMarkets('recent')" id="sort-recent" class="btn-category active px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                        <i class="fas fa-clock mr-1"></i><span data-ko="최근등록순" data-en="Recently Added" data-zh="最新注册" data-ja="最近登録順">최근등록순</span>
+                    </button>
+                    <button onclick="sortMarkets('date')" id="sort-date" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                        <i class="fas fa-calendar mr-1"></i><span data-ko="결과발표일" data-en="Resolution Date" data-zh="结果日期" data-ja="結果日付">결과발표일</span>
                     </button>
                     <button onclick="sortMarkets('volume')" id="sort-volume" class="btn-category px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
                         <i class="fas fa-chart-bar mr-1"></i><span data-ko="배팅규모" data-en="Volume" data-zh="交易量" data-ja="取引量">배팅규모</span>
@@ -642,9 +861,6 @@
                     <i class="fas fa-plus-circle mr-2"></i>
                     <span data-ko="더 보기" data-en="Load More" data-zh="加载更多" data-ja="もっと見る">더 보기</span>
                 </button>
-                <p class="text-sm text-secondary mt-3">
-                    <span id="market-count"></span>
-                </p>
             </div>
         </div>
 
@@ -677,7 +893,10 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg sm:text-2xl font-bold mobile-text">
                     <i class="fas fa-plus-circle mr-2 text-accent"></i>
-                    이슈 등록하기
+                    <span data-ko="이슈 등록하기" 
+                          data-en="Submit an Issue" 
+                          data-zh="提交问题" 
+                          data-ja="問題を登録">이슈 등록하기</span>
                 </h3>
                 <button id="close-submit-modal" class="text-secondary hover:text-accent text-xl sm:text-2xl">
                     <i class="fas fa-times"></i>
@@ -772,7 +991,7 @@
                                     <i class="fas fa-dollar-sign mr-2 text-green-500"></i>
                                     <span class="font-bold text-green-500">USDT (Tether)</span>
                                 </div>
-                                <p class="text-xs text-center text-secondary mt-1">유일하게 지원되는 암호화폐</p>
+                                <p class="text-xs text-center text-secondary mt-1 crypto-support-text">유일하게 지원되는 암호화폐</p>
                             </div>
                             <input type="hidden" name="crypto_type" value="USDT" required>
                         </div>
@@ -820,6 +1039,35 @@
                     </div>
                 </div>
 
+                <!-- Platform Wallet Address -->
+                <div class="card p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-300 dark:border-gray-600">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                            <i class="fas fa-wallet text-xl"></i>
+                            <span>입금 받을 지갑 주소 (USDT)</span>
+                        </h4>
+                        <button type="button" onclick="copyWalletAddress()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition transform hover:scale-105 flex items-center gap-1">
+                            <i class="fas fa-copy"></i>
+                            <span>복사</span>
+                        </button>
+                    </div>
+                    <div class="bg-white dark:bg-gray-900 rounded-lg p-3 mb-2 border border-gray-300 dark:border-gray-600">
+                        <code id="wallet-address-modal" class="text-xs sm:text-sm font-mono text-gray-800 dark:text-gray-200 break-all select-all">
+                            0x76a58f92E837beC527A90aa8Be31ec88B917dBaf
+                        </code>
+                    </div>
+                    <div class="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <i class="fas fa-info-circle mt-0.5 text-blue-500"></i>
+                        <p>
+                            <span data-ko="이슈 등록 시" data-en="When registering an issue" data-zh="注册问题时" data-ja="問題登録時">이슈 등록 시</span> 
+                            <strong class="text-blue-600 dark:text-blue-400">
+                                <span data-ko="이 주소로 USDT를 입금" data-en="deposit USDT to this address" data-zh="请向此地址存入USDT" data-ja="このアドレスにUSDTを入金">이 주소로 USDT를 입금</span>
+                            </strong>
+                            <span data-ko="해주세요. 입금 확인 후 이슈가 활성화됩니다." data-en="please. The issue will be activated after deposit confirmation." data-zh="。存款确认后问题将被激活。" data-ja="してください。入金確認後、問題が有効化されます。">해주세요. 입금 확인 후 이슈가 활성화됩니다.</span>
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Wallet Connection Warning (hidden by default) -->
                 <div id="walletWarningSubmit" class="hidden p-4 bg-yellow-500 bg-opacity-20 border-2 border-yellow-500 rounded-lg text-center">
                     <i class="fas fa-wallet text-2xl text-yellow-500 mb-2"></i>
@@ -827,7 +1075,7 @@
                         <span class="lang-ko">이슈를 제출하려면 지갑을 연결해주세요</span>
                         <span class="lang-en hidden">Connect Wallet to Submit Issue</span>
                         <span class="lang-zh hidden">连接钱包以提交问题</span>
-                        <span class="lang-ja hidden">ウォレットを接続して問題を提出してください</span>
+                        <span class="lang-ja hidden">ウォレットを接속して問題を提出してください</span>
                     </p>
                     <button type="button" onclick="closeModalAndConnectWalletSubmit()" 
                             class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold text-sm transition">
@@ -853,19 +1101,13 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-    <script src="/static/chatbot.js"></script>
-    <script src="/static/auth.js"></script>
-    <script src="/static/app.js"></script>
-</body>
-
     <!-- Login Modal -->
     <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div class="modal-content rounded-lg p-6 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">
                     <i class="fas fa-sign-in-alt mr-2 text-accent"></i>
-                    로그인
+                    <span id="login-modal-title">로그인</span>
                 </h3>
                 <button onclick="closeLoginModal()" class="text-secondary hover:text-accent text-2xl">
                     <i class="fas fa-times"></i>
@@ -873,25 +1115,25 @@
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="login-email-label">이메일</span> *</label>
                     <input type="email" id="login-email" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
                            placeholder="your@email.com">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="login-password-label">비밀번호</span> *</label>
                     <input type="password" id="login-password" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                           placeholder="비밀번호를 입력하세요">
+                           id="login-password-input">
                 </div>
                 <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
                     <i class="fas fa-sign-in-alt mr-2"></i>
-                    로그인
+                    <span id="login-submit-btn">로그인</span>
                 </button>
                 <p class="text-center text-sm text-secondary">
-                    계정이 없으신가요?
+                    <span id="login-no-account">계정이 없으신가요?</span>
                     <button type="button" onclick="closeLoginModal(); showRegisterModal()" class="text-accent hover:underline">
-                        회원가입
+                        <span id="login-to-register">회원가입</span>
                     </button>
                 </p>
             </form>
@@ -904,7 +1146,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">
                     <i class="fas fa-user-plus mr-2 text-accent"></i>
-                    회원가입
+                    <span id="register-modal-title">회원가입</span>
                 </h3>
                 <button onclick="closeRegisterModal()" class="text-secondary hover:text-accent text-2xl">
                     <i class="fas fa-times"></i>
@@ -913,67 +1155,67 @@
             <form onsubmit="handleRegister(event)" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">이름 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-name-label">이름</span> *</label>
                         <input type="text" id="register-name" required 
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="홍길동">
+                               id="register-name-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">전화번호 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-phone-label">전화번호</span> *</label>
                         <input type="tel" id="register-phone" required 
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="010-1234-5678">
+                               id="register-phone-input">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">
-                        USDT 지갑주소 *
-                        <span class="text-xs text-secondary ml-2">(배당 받을 주소)</span>
+                        <span id="register-wallet-label">USDT 지갑주소</span> *
+                        <span class="text-xs text-secondary ml-2"><span id="register-wallet-hint">(배당 받을 주소)</span></span>
                     </label>
                     <input type="text" id="register-wallet" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                           placeholder="0x...">
+                           id="register-wallet-input">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">이메일 *</label>
+                    <label class="block text-sm font-medium mb-2"><span id="register-email-label">이메일</span> *</label>
                     <input type="email" id="register-email" required 
                            class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
                            placeholder="your@email.com">
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">비밀번호 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-password-label">비밀번호</span> *</label>
                         <input type="password" id="register-password" required minlength="6"
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="최소 6자 이상">
+                               id="register-password-input">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-2">비밀번호 확인 *</label>
+                        <label class="block text-sm font-medium mb-2"><span id="register-confirm-password-label">비밀번호 확인</span> *</label>
                         <input type="password" id="register-confirm-password" required minlength="6"
                                class="w-full px-4 py-3 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
-                               placeholder="비밀번호 재입력">
+                               id="register-confirm-password-input">
                     </div>
                 </div>
                 <div class="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-4">
                     <h4 class="font-semibold text-blue-500 mb-2">
                         <i class="fas fa-star mr-2"></i>
-                        회원 전용 혜택
+                        <span id="register-benefits-title">회원 전용 혜택</span>
                     </h4>
                     <ul class="text-sm text-secondary space-y-1">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>모든 마켓 상세 정보 조회</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>베팅 및 이슈 등록 권한</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>신규 이벤트 알림 서비스</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i>배당 내역 관리</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-1">모든 마켓 상세 정보 조회</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-2">베팅 및 이슈 등록 권한</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-3">신규 이벤트 알림 서비스</span></li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i><span id="register-benefit-4">배당 내역 관리</span></li>
                     </ul>
                 </div>
                 <button type="submit" class="w-full btn-primary py-3 rounded-lg font-semibold text-sm">
                     <i class="fas fa-user-plus mr-2"></i>
-                    회원가입
+                    <span id="register-submit-btn">회원가입</span>
                 </button>
                 <p class="text-center text-sm text-secondary">
-                    이미 계정이 있으신가요?
+                    <span id="register-has-account">이미 계정이 있으신가요?</span>
                     <button type="button" onclick="closeRegisterModal(); showLoginModal()" class="text-accent hover:underline">
-                        로그인
+                        <span id="register-to-login">로그인</span>
                     </button>
                 </p>
             </form>
@@ -1022,11 +1264,10 @@
     <!-- Popup Container -->
     <div id="popup-container"></div>
 
-    <script src="/static/auth.js?v=20241219"></script>
-    <script src="/static/app.js?v=20241219"></script>
-    <script src="/static/app-issues.js?v=20241219"></script>
-    <script src="/static/chatbot.js?v=20241219"></script>
-    <script src="/static/notices.js?v=20241219"></script>
-    <script src="/static/popup.js?v=20241219"></script>
+    <script src="/static/auth.js?v=20250121001"></script>
+    <script src="/static/app.js?v=20250121007"></script>
+    <script src="/static/chatbot.js?v=20250121001"></script>
+    <script src="/static/notices.js?v=20250121001"></script>
+    <script src="/static/popup.js?v=20250121001"></script>
 </body>
 </html>
