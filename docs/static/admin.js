@@ -1467,86 +1467,15 @@ async function saveEditedIssue(event) {
 }
 
 function syncIssuesToMainSite() {
-    alert('✅ 이슈가 GitHub에 자동으로 반영됩니다!\n\n1-2분 후 PC와 모바일 모두에서 확인하세요:\nhttps://cashiq.my\n\n※ GitHub Pages 반영까지 시간이 걸릴 수 있습니다.'); +
-            `현재 등록된 ${adminIssues.length}개의 이슈를 공유합니다.\n\n` +
-            `진행하시겠습니까?`
-        );
-        
-        if (!confirmed) {
-            return;
-        }
-        
-        // localStorage 강제 업데이트 트리거 (같은 기기의 다른 탭용)
-        localStorage.setItem('admin_issues_sync_trigger', Date.now().toString());
-        
-        // QR 코드 모달 생성
-        const qrModal = document.createElement('div');
-        qrModal.style.cssText = `
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        
-        qrModal.innerHTML = `
-            <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; text-align: center;">
-                <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1d1d1f;">
-                    📱 모바일에서 스캔하세요
-                </h3>
-                <p style="color: #666; margin-bottom: 24px;">
-                    모바일 기기로 QR 코드를 스캔하면<br>
-                    ${adminIssues.length}개의 이슈가 자동으로 추가됩니다.
-                </p>
-                <div id="qrcode" style="display: flex; justify-content: center; margin: 24px 0;"></div>
-                <p style="font-size: 12px; color: #999; margin-bottom: 16px;">
-                    또는 아래 링크를 모바일에서 직접 열어주세요
-                </p>
-                <input 
-                    type="text" 
-                    value="${shareUrl}" 
-                    readonly 
-                    onclick="this.select()"
-                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; margin-bottom: 16px;"
-                >
-                <div style="display: flex; gap: 8px;">
-                    <button 
-                        onclick="navigator.clipboard.writeText('${shareUrl}').then(() => alert('링크가 복사되었습니다!'));"
-                        style="flex: 1; background: #007aff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;"
-                    >
-                        📋 링크 복사
-                    </button>
-                    <button 
-                        onclick="this.closest('div').parentElement.parentElement.remove()"
-                        style="flex: 1; background: #f5f5f7; color: #1d1d1f; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;"
-                    >
-                        닫기
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(qrModal);
-        
-        // QR 코드 생성 (QRCode.js 라이브러리 사용)
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-        script.onload = () => {
-            new QRCode(document.getElementById('qrcode'), {
-                text: shareUrl,
-                width: 256,
-                height: 256,
-                colorDark: '#000000',
-                colorLight: '#ffffff'
-            });
-        };
-        document.head.appendChild(script);
-        
-    } catch (error) {
-        console.error('Failed to sync issues:', error);
-        alert('❌ 이슈 동기화에 실패했습니다.');
+    // 메인 페이지가 자동으로 새로고침되도록 강제 트리거
+    const confirmed = confirm(
+        '✅ 메인 사이트에 반영하시겠습니까?\n\n' +
+        '확인을 누르면 메인 페이지가 자동으로 열립니다.'
+    );
+    
+    if (confirmed) {
+        // 메인 페이지 열기
+        window.open('https://cashiq.my/?_refresh=' + Date.now(), '_blank');
     }
 }
 
