@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "id": 1737579001,
+    "category_id": 1,
+    "category_slug": "politics",
+    "title_ko": "한국 주식 코스피 5000 가능?",
+    "title_en": "Can Korean KOSPI reach 5000?",
+    "title_zh": "韩国股市KOSPI能达到5000吗？",
+    "title_ja": "韓国株式コスピ5000可能？",
+    "description_ko": "한국 주식 코스피 5000 가능?에 대한 예측 마켓입니다.",
+    "description_en": "Prediction market for Can Korean KOSPI reach 5000?.",
+    "description_zh": "关于韩国股市KOSPI能达到5000吗？的预测市场。",
+    "description_ja": "韓国株式コスピ5000可能？についての予測市場です。",
+    "resolve_date": "2026-06-30",
+    "total_volume": 100000,
+    "status": "published",
+    "outcomes": [
+      {
+        "name": "예",
+        "probability": 0.5
+      },
+      {
+        "name": "아니오",
+        "probability": 0.5
+      }
+    ],
+    "createdAt": "2025-01-22T00:10:01.000Z",
+    "publishedAt": "2025-01-22T00:10:01.000Z"
+  },
+  {
+    "id": 1737579002,
+    "category_id": 1,
+    "category_slug": "politics",
+    "title_ko": "성국유 일본돈 1000가치?",
+    "title_en": "Seonggukyu Japanese money 1000 value?",
+    "title_zh": "成国油日本钱1000价值？",
+    "title_ja": "成国油日本のお金1000価値？",
+    "description_ko": "성국유 일본돈 1000가치?에 대한 예측 마켓입니다.",
+    "description_en": "Prediction market for Seonggukyu Japanese money 1000 value?.",
+    "description_zh": "关于成国油日本钱1000价值？的预测市场。",
+    "description_ja": "成国油日本のお金1000価値？についての予測市場です。",
+    "resolve_date": "2026-06-30",
+    "total_volume": 60000,
+    "status": "published",
+    "outcomes": [
+      {
+        "name": "예",
+        "probability": 0.5
+      },
+      {
+        "name": "아니오",
+        "probability": 0.5
+      }
+    ],
+    "createdAt": "2025-01-22T00:10:02.000Z",
+    "publishedAt": "2025-01-22T00:10:02.000Z"
+  },
+  {
+    "id": 1737579003,
+    "category_id": 1,
+    "category_slug": "politics",
+    "title_ko": "컴투머의 대국에 현정 살부보다? 입니다.",
+    "title_en": "Computer's great country Hyeonjeong compared to Salbuda? is.",
+    "title_zh": "计算机的大国与现政相比？是的。",
+    "title_ja": "コンピューターの大国に現政と比べて？です。",
+    "description_ko": "컴투머의 대국에 현정 살부보다? 입니다.에 대한 예측 마켓입니다.",
+    "description_en": "Prediction market for Computer's great country Hyeonjeong compared to Salbuda? is..",
+    "description_zh": "关于计算机的大国与现政相比？是的。的预测市场。",
+    "description_ja": "コンピューターの大国に現政と比べて？です。についての予測市場です。",
+    "resolve_date": "2025-12-31",
+    "total_volume": 80000,
+    "status": "published",
+    "outcomes": [
+      {
+        "name": "예",
+        "probability": 0.5
+      },
+      {
+        "name": "아니오",
+        "probability": 0.5
+      }
+    ],
+    "createdAt": "2025-01-22T00:10:03.000Z",
+    "publishedAt": "2025-01-22T00:10:03.000Z"
+  }
+]
