@@ -1017,3 +1017,153 @@ function previewPopupUrl() {
         preview.classList.add('hidden');
     }
 }
+
+// 4개국어 일괄 이슈 등록
+let issueBoxCount = 1;
+
+function addNewIssueBox() {
+    if (issueBoxCount >= 5) {
+        alert('최대 5개까지만 등록할 수 있습니다.');
+        return;
+    }
+    issueBoxCount++;
+    
+    const container = document.getElementById('issue-boxes-container');
+    const newBox = document.createElement('div');
+    newBox.className = 'border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm';
+    newBox.id = `issue-box-${issueBoxCount}`;
+    newBox.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-bold text-gray-800">📝 이슈 #${issueBoxCount}</h4>
+            <button type="button" onclick="removeIssueBox(${issueBoxCount})" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-times-circle text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2 text-purple-700">🟣 카테고리 *</label>
+            <select id="issue-${issueBoxCount}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                <option value="정치">정치</option>
+                <option value="crypto">암호화폐</option>
+                <option value="sports">스포츠</option>
+                <option value="entertainment">엔터테인먼트</option>
+                <option value="economy">경제</option>
+                <option value="science">과학/기술</option>
+                <option value="climate">기후/환경</option>
+                <option value="other">기타</option>
+            </select>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-3 text-gray-800">H 제목 (4개 언어 입력) *</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                    <input type="text" id="issue-${issueBoxCount}-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="예: 비트코인이 $150K 도달?" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 en English</label>
+                    <input type="text" id="issue-${issueBoxCount}-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Bitcoin reaches $150K?">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 cn 中文</label>
+                    <input type="text" id="issue-${issueBoxCount}-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：比特币突破$150K？">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 jp 日本語</label>
+                    <input type="text" id="issue-${issueBoxCount}-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：ビットコインが$150K突破？">
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2 text-gray-700">큰 내용 설명 (선택)</label>
+            <textarea id="issue-${issueBoxCount}-description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-red-700">🟥 결론 설정 기간 *</label>
+                <input type="date" id="issue-${issueBoxCount}-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-green-700">🟩 Yes 배당률 (%)</label>
+                <input type="number" id="issue-${issueBoxCount}-yes-odds" value="50" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-yellow-700">🟨 전체 배팅액 (USDT)</label>
+                <input type="number" id="issue-${issueBoxCount}-usdt" value="100000" min="0" step="1000" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+            </div>
+        </div>
+    `;
+    container.appendChild(newBox);
+}
+
+function removeIssueBox(id) {
+    if (issueBoxCount <= 1) {
+        alert('최소 1개는 남겨야 합니다.');
+        return;
+    }
+    const box = document.getElementById(`issue-box-${id}`);
+    if (box) {
+        box.remove();
+        issueBoxCount--;
+    }
+}
+
+async function saveBatchIssues(event) {
+    event.preventDefault();
+    
+    const issues = [];
+    for (let i = 1; i <= 5; i++) {
+        const box = document.getElementById(`issue-box-${i}`);
+        if (!box) continue;
+        
+        const ko = document.getElementById(`issue-${i}-ko`)?.value.trim();
+        const en = document.getElementById(`issue-${i}-en`)?.value.trim();
+        const zh = document.getElementById(`issue-${i}-zh`)?.value.trim();
+        const ja = document.getElementById(`issue-${i}-ja`)?.value.trim();
+        const category = document.getElementById(`issue-${i}-category`)?.value;
+        const description = document.getElementById(`issue-${i}-description`)?.value.trim();
+        const date = document.getElementById(`issue-${i}-date`)?.value;
+        const yesOdds = document.getElementById(`issue-${i}-yes-odds`)?.value || 50;
+        const usdt = document.getElementById(`issue-${i}-usdt`)?.value || 100000;
+        
+        if (ko && category && date) {
+            issues.push({
+                title_ko: ko,
+                title_en: en || ko,
+                title_zh: zh || ko,
+                title_ja: ja || ko,
+                category,
+                description,
+                expire_date: new Date(date).toISOString(),
+                yes_odds: parseFloat(yesOdds),
+                initial_usdt: parseFloat(usdt)
+            });
+        }
+    }
+    
+    if (issues.length === 0) {
+        alert('최소 1개 이슈를 입력하세요.');
+        return;
+    }
+    
+    // localStorage에 저장
+    const existingIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    issues.forEach(issue => {
+        existingIssues.push({
+            ...issue,
+            id: `iss_${Date.now()}_${Math.random()}`,
+            status: 'active',
+            yes_bet: Math.floor(issue.initial_usdt * (issue.yes_odds / 100)),
+            no_bet: Math.floor(issue.initial_usdt * ((100 - issue.yes_odds) / 100)),
+            createdAt: new Date().toISOString()
+        });
+    });
+    localStorage.setItem('eventbet_issues', JSON.stringify(existingIssues));
+    
+    alert(`✅ ${issues.length}개 이슈가 등록되었습니다!`);
+    closeIssueModal();
+    location.reload();
+}
