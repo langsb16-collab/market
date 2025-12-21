@@ -1,246 +1,152 @@
-// EventBET Admin Panel - GitHub JSON Based System
-// PC와 모바일 간 자동 동기화 (GitHub Repository 기반)
+// EventBET Admin Panel JavaScript
 
-// ============================================
-// 📌 공지 관리 (최대 30개) - GitHub JSON 기반
-// ============================================
-
-async function loadNotices() {
+// ========== 유틸리티: fetch 래퍼 (에러 명확화) ==========
+async function fetchJsonOrThrow(url, options = {}) {
     try {
-        const response = await fetch('/data/notices.json?_=' + Date.now());
-        const notices = await response.json();
-        const tbody = document.getElementById('notices-list');
+        const res = await fetch(url, options);
         
-        if (notices.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">등록된 공지가 없습니다.</td></tr>';
+        // JSON이 아닌 에러 바디도 잡기 위해 text로 먼저 받음
+        const text = await res.text();
+        let data = null;
+        try { 
+            data = text ? JSON.parse(text) : null; 
+        } catch (parseError) { 
+            console.warn('[ADMIN] JSON parse failed, returning text');
+        }
+        
+        if (!res.ok) {
+            const detail = data ? JSON.stringify(data) : text;
+            throw new Error(`[${res.status}] ${url} :: ${detail}`);
+        }
+        return data;
+    } catch (error) {
+        console.error('[ADMIN] fetchJsonOrThrow failed:', error);
+        throw error;
+    }
+}
+
+// ========== Mapify 초기화 가드 (관리자에서는 스킵) ==========
+const __IS_ADMIN__ = window.__IS_ADMIN__ === true || location.pathname.startsWith("/admin");
+
+if (!__IS_ADMIN__ && typeof initMapify === 'function') {
+    try {
+        const mapifyEl = document.querySelector('#mapify-window') || document.querySelector('mapify-window');
+        if (mapifyEl) {
+            initMapify();
+        } else {
+            console.debug('[Mapify] Element not found, skipping initialization');
+        }
+    } catch (e) {
+        console.error('[Mapify] Initialization failed:', e);
+    }
+} else if (__IS_ADMIN__) {
+    console.debug('[ADMIN] Mapify initialization skipped');
+}
+
+// 섹션 전환
+function showSection(section) {
+    try {
+        console.log('[ADMIN] Switching to section:', section);
+        
+        // 모든 섹션 숨기기
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        
+        // 선택된 섹션 표시
+        const sectionEl = document.getElementById(`${section}-section`);
+        if (sectionEl) {
+            sectionEl.classList.add('active');
+        } else {
+            console.error('[ADMIN] Section not found:', `${section}-section`);
             return;
         }
         
-        tbody.innerHTML = notices.map((notice, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td class="font-semibold">${notice.title}</td>
-                <td class="text-sm text-gray-600">${notice.content.substring(0, 50)}...</td>
-                <td class="text-sm">${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
-                <td>
-                    <button onclick="editNotice(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm mr-1">
+        // 사이드바 아이템 활성화
+        if (event && event.target) {
+            const sidebarItem = event.target.closest('.sidebar-item');
+            if (sidebarItem) {
+                sidebarItem.classList.add('active');
+            }
+        }
+        
+        // 데이터 로드
+        if (section === 'banners') loadBanners();
+        if (section === 'notices') loadNotices();
+        if (section === 'popups') loadPopups();
+        if (section === 'members') loadMembers();
+        if (section === 'issues') {
+            console.log('[ADMIN] Issues section loaded - ready for batch registration');
+        }
+    } catch (error) {
+        console.error('[ADMIN] showSection failed:', error);
+        alert('섹션 전환 실패: ' + error.message);
+    }
+}
+
+// ========== 배너 관리 ==========
+function loadBanners() {
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    const container = document.getElementById('banners-list');
+    
+    if (banners.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">등록된 배너가 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = banners.map((banner, index) => `
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <h4 class="font-bold text-lg mb-2">${banner.title}</h4>
+                    ${banner.type === 'image' ? 
+                        `<img src="${banner.image}" class="w-full max-h-48 object-cover rounded-lg mb-2">` :
+                        `<div class="bg-gray-100 p-4 rounded-lg mb-2">
+                            <i class="fab fa-youtube text-red-600 text-2xl mr-2"></i>
+                            <span class="text-sm text-gray-600">유튜브: ${banner.youtube}</span>
+                        </div>`
+                    }
+                    ${banner.link ? `<p class="text-sm text-gray-600"><i class="fas fa-link mr-1"></i>링크: ${banner.link}</p>` : ''}
+                </div>
+                <div class="flex space-x-2 ml-4">
+                    <button onclick="editBanner(${index})" class="btn-warning">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteNotice(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
+                    <button onclick="deleteBanner(${index})" class="btn-danger">
                         <i class="fas fa-trash"></i>
                     </button>
-                </td>
-            </tr>
-        `).join('');
-    } catch (error) {
-        console.error('Failed to load notices:', error);
-        const tbody = document.getElementById('notices-list');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">⚠️ 공지 로드 실패</td></tr>';
-    }
-}
-
-async function openNoticeModal(index = null) {
-    const modal = document.getElementById('notice-modal');
-    modal.classList.add('active');
-    
-    if (index !== null) {
-        try {
-            const response = await fetch('/data/notices.json?_=' + Date.now());
-            const notices = await response.json();
-            const notice = notices[index];
-            document.getElementById('notice-id').value = index;
-            document.getElementById('notice-title').value = notice.title;
-            document.getElementById('notice-content').value = notice.content;
-            document.getElementById('notice-youtube').value = notice.youtubeUrl || '';
-            if (notice.imageUrl) {
-                document.getElementById('notice-image-preview').src = notice.imageUrl;
-                document.getElementById('notice-image-preview').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Failed to load notice:', error);
-            alert('⚠️ 공지 로드 실패: ' + error.message);
-        }
-    } else {
-        document.getElementById('notice-id').value = '';
-        document.getElementById('notice-title').value = '';
-        document.getElementById('notice-content').value = '';
-        document.getElementById('notice-youtube').value = '';
-        document.getElementById('notice-image-preview').classList.add('hidden');
-    }
-}
-
-function closeNoticeModal() {
-    document.getElementById('notice-modal').classList.remove('active');
-}
-
-function handleNoticeImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    if (file.size > 5 * 1024 * 1024) {
-        alert('⚠️ 이미지 크기는 5MB 이하여야 합니다.');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('notice-image-preview');
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
-}
-
-async function saveNotice(event) {
-    event.preventDefault();
-    
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
-    
-    try {
-        // 현재 공지 목록 가져오기
-        const response = await fetch('/data/notices.json?_=' + Date.now());
-        const notices = await response.json();
-        
-        const index = document.getElementById('notice-id').value;
-        const title = document.getElementById('notice-title').value;
-        const content = document.getElementById('notice-content').value;
-        const youtubeUrl = document.getElementById('notice-youtube').value;
-        const preview = document.getElementById('notice-image-preview');
-        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-        
-        const noticeData = {
-            title,
-            content,
-            imageUrl,
-            youtubeUrl,
-            createdAt: new Date().toISOString()
-        };
-        
-        if (index === '') {
-            // 새 공지 추가
-            if (notices.length >= 30) {
-                alert('⚠️ 최대 30개의 공지만 등록할 수 있습니다.');
-                return;
-            }
-            notices.unshift(noticeData); // 최신 공지를 맨 위에
-        } else {
-            // 기존 공지 수정
-            notices[parseInt(index)] = noticeData;
-        }
-        
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/notices.json',
-            notices,
-            index === '' ? '새 공지 추가' : '공지 수정'
-        );
-        
-        closeNoticeModal();
-        loadNotices();
-        alert('✅ 공지가 저장되었습니다. (GitHub Pages 반영까지 1-2분 소요)');
-    } catch (error) {
-        console.error('Failed to save notice:', error);
-        alert('⚠️ 공지 저장 실패: ' + error.message);
-    }
-}
-
-async function deleteNotice(index) {
-    if (!confirm('정말 이 공지를 삭제하시겠습니까?')) return;
-    
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다.');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/data/notices.json?_=' + Date.now());
-        const notices = await response.json();
-        
-        notices.splice(index, 1);
-        
-        await window.githubAPI.updateFile(
-            'docs/data/notices.json',
-            notices,
-            '공지 삭제'
-        );
-        
-        loadNotices();
-        alert('✅ 공지가 삭제되었습니다.');
-    } catch (error) {
-        console.error('Failed to delete notice:', error);
-        alert('⚠️ 공지 삭제 실패: ' + error.message);
-    }
-}
-
-function editNotice(index) {
-    openNoticeModal(index);
-}
-
-// ============================================
-// 📌 배너 관리 (최대 3개) - GitHub JSON 기반
-// ============================================
-
-async function loadBanners() {
-    try {
-        const response = await fetch('/data/banners.json?_=' + Date.now());
-        const banners = await response.json();
-        const container = document.getElementById('banners-list');
-        
-        if (banners.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 배너가 없습니다.</p>';
-            return;
-        }
-        
-        container.innerHTML = banners.map((banner, index) => `
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex justify-between items-start mb-3">
-                    <h3 class="font-bold text-lg">${banner.title}</h3>
-                    <div class="flex gap-2">
-                        <button onclick="editBanner(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            <i class="fas fa-edit"></i> 수정
-                        </button>
-                        <button onclick="deleteBanner(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                            <i class="fas fa-trash"></i> 삭제
-                        </button>
-                    </div>
                 </div>
-                ${banner.imageUrl ? `<img src="${banner.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-2">` : ''}
-                ${banner.link ? `<p class="text-sm text-gray-600"><i class="fas fa-link"></i> ${banner.link}</p>` : ''}
             </div>
-        `).join('');
-    } catch (error) {
-        console.error('Failed to load banners:', error);
-    }
+        </div>
+    `).join('');
 }
 
-async function openBannerModal(index = null) {
+function openBannerModal(index = null) {
     const modal = document.getElementById('banner-modal');
     modal.classList.add('active');
     
     if (index !== null) {
-        try {
-            const response = await fetch('/data/banners.json?_=' + Date.now());
-            const banners = await response.json();
-            const banner = banners[index];
-            document.getElementById('banner-id').value = index;
-            document.getElementById('banner-title').value = banner.title;
-            document.getElementById('banner-link').value = banner.link || '';
-            if (banner.imageUrl) {
-                document.getElementById('banner-preview').src = banner.imageUrl;
-                document.getElementById('banner-preview').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Failed to load banner:', error);
+        const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+        const banner = banners[index];
+        
+        document.getElementById('banner-id').value = index;
+        document.getElementById('banner-title').value = banner.title;
+        document.getElementById('banner-type').value = banner.type;
+        document.getElementById('banner-link').value = banner.link || '';
+        
+        if (banner.type === 'image') {
+            document.getElementById('banner-image').value = banner.image;
+            toggleBannerInputs();
+        } else {
+            document.getElementById('banner-youtube').value = banner.youtube;
+            toggleBannerInputs();
         }
     } else {
         document.getElementById('banner-id').value = '';
         document.getElementById('banner-title').value = '';
+        document.getElementById('banner-image').value = '';
+        document.getElementById('banner-youtube').value = '';
         document.getElementById('banner-link').value = '';
-        document.getElementById('banner-preview').classList.add('hidden');
+        toggleBannerInputs();
     }
 }
 
@@ -248,183 +154,254 @@ function closeBannerModal() {
     document.getElementById('banner-modal').classList.remove('active');
 }
 
-function handleBannerImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+function toggleBannerInputs() {
+    const type = document.getElementById('banner-type').value;
+    const imageInput = document.getElementById('banner-image-input');
+    const youtubeInput = document.getElementById('banner-youtube-input');
     
-    if (file.size > 5 * 1024 * 1024) {
-        alert('⚠️ 이미지 크기는 5MB 이하여야 합니다.');
-        return;
+    if (type === 'image') {
+        imageInput.classList.remove('hidden');
+        youtubeInput.classList.add('hidden');
+    } else {
+        imageInput.classList.add('hidden');
+        youtubeInput.classList.remove('hidden');
     }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('banner-preview');
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
 }
 
-async function saveBanner(event) {
+function saveBanner(event) {
     event.preventDefault();
     
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다.');
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    const id = document.getElementById('banner-id').value;
+    const type = document.getElementById('banner-type').value;
+    
+    // 최대 3개 체크
+    if (id === '' && banners.length >= 3) {
+        alert('배너는 최대 3개까지만 등록할 수 있습니다.');
         return;
     }
     
-    try {
-        const response = await fetch('/data/banners.json?_=' + Date.now());
-        const banners = await response.json();
-        
-        const index = document.getElementById('banner-id').value;
-        const title = document.getElementById('banner-title').value;
-        const link = document.getElementById('banner-link').value;
-        const preview = document.getElementById('banner-preview');
-        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-        
-        if (!imageUrl) {
-            alert('⚠️ 이미지를 업로드해주세요.');
-            return;
-        }
-        
-        const bannerData = { title, link, imageUrl, createdAt: new Date().toISOString() };
-        
-        if (index === '') {
-            if (banners.length >= 3) {
-                alert('⚠️ 최대 3개의 배너만 등록할 수 있습니다.');
-                return;
-            }
-            banners.push(bannerData);
-        } else {
-            banners[parseInt(index)] = bannerData;
-        }
-        
-        await window.githubAPI.updateFile(
-            'docs/data/banners.json',
-            banners,
-            index === '' ? '새 배너 추가' : '배너 수정'
-        );
-        
-        closeBannerModal();
-        loadBanners();
-        alert('✅ 배너가 저장되었습니다.');
-    } catch (error) {
-        console.error('Failed to save banner:', error);
-        alert('⚠️ 배너 저장 실패: ' + error.message);
-    }
-}
-
-async function deleteBanner(index) {
-    if (!confirm('정말 이 배너를 삭제하시겠습니까?')) return;
+    const banner = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('banner-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('banner-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('banner-youtube').value : '',
+        link: document.getElementById('banner-link').value,
+        createdAt: id !== '' ? banners[id].createdAt : new Date().toISOString()
+    };
     
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다.');
-        return;
+    if (id !== '') {
+        banners[id] = banner;
+    } else {
+        banners.push(banner);
     }
     
-    try {
-        const response = await fetch('/data/banners.json?_=' + Date.now());
-        const banners = await response.json();
-        
-        banners.splice(index, 1);
-        
-        await window.githubAPI.updateFile(
-            'docs/data/banners.json',
-            banners,
-            '배너 삭제'
-        );
-        
-        loadBanners();
-        alert('✅ 배너가 삭제되었습니다.');
-    } catch (error) {
-        console.error('Failed to delete banner:', error);
-        alert('⚠️ 배너 삭제 실패: ' + error.message);
-    }
+    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
+    closeBannerModal();
+    loadBanners();
+    alert('배너가 저장되었습니다.');
 }
 
 function editBanner(index) {
     openBannerModal(index);
 }
 
-// ============================================
-// 📌 팝업 관리 - GitHub JSON 기반
-// ============================================
+function deleteBanner(index) {
+    if (!confirm('이 배너를 삭제하시겠습니까?')) return;
+    
+    const banners = JSON.parse(localStorage.getItem('eventbet_banners') || '[]');
+    banners.splice(index, 1);
+    localStorage.setItem('eventbet_banners', JSON.stringify(banners));
+    loadBanners();
+    alert('배너가 삭제되었습니다.');
+}
 
-async function loadPopups() {
-    try {
-        const response = await fetch('/data/popups.json?_=' + Date.now());
-        const popups = await response.json();
-        const container = document.getElementById('popups-list');
+// ========== 공지 관리 ==========
+function loadNotices() {
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const tbody = document.getElementById('notices-list');
+    
+    if (notices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-8">등록된 공지가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = notices.map((notice, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>
+                ${notice.title}
+                ${notice.image ? '<br><small class="text-gray-500"><i class="fas fa-image"></i> 이미지 포함</small>' : ''}
+            </td>
+            <td class="max-w-xs truncate">${notice.content}</td>
+            <td>${new Date(notice.createdAt).toLocaleDateString('ko-KR')}</td>
+            <td>
+                <button onclick="editNotice(${index})" class="btn-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteNotice(${index})" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openNoticeModal(index = null) {
+    const modal = document.getElementById('notice-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+        const notice = notices[index];
         
-        if (popups.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-8">등록된 팝업이 없습니다.</p>';
-            return;
+        document.getElementById('notice-id').value = index;
+        document.getElementById('notice-title').value = notice.title;
+        document.getElementById('notice-content').value = notice.content;
+        document.getElementById('notice-image').value = notice.image || '';
+        
+        // 이미지 미리보기 표시
+        const preview = document.getElementById('notice-preview');
+        if (notice.image) {
+            preview.src = notice.image;
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
         }
-        
-        container.innerHTML = popups.map((popup, index) => `
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h3 class="font-bold text-lg">${popup.title}</h3>
-                        <p class="text-sm text-gray-600">
-                            위치: 위(${popup.top}cm), 왼쪽(${popup.left}cm)<br>
-                            크기: ${popup.width}x${popup.height}px<br>
-                            ${popup.startDate && popup.endDate ? `기간: ${popup.startDate} ~ ${popup.endDate}` : ''}
-                        </p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="editPopup(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                            <i class="fas fa-edit"></i> 수정
-                        </button>
-                        <button onclick="deletePopup(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                            <i class="fas fa-trash"></i> 삭제
-                        </button>
-                    </div>
-                </div>
-                ${popup.imageUrl ? `<img src="${popup.imageUrl}" class="w-full h-48 object-cover rounded-lg">` : ''}
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Failed to load popups:', error);
+    } else {
+        document.getElementById('notice-id').value = '';
+        document.getElementById('notice-title').value = '';
+        document.getElementById('notice-content').value = '';
+        document.getElementById('notice-image').value = '';
+        document.getElementById('notice-image-file').value = '';
+        document.getElementById('notice-preview').classList.add('hidden');
     }
 }
 
-async function openPopupModal(index = null) {
+function closeNoticeModal() {
+    document.getElementById('notice-modal').classList.remove('active');
+}
+
+function saveNotice(event) {
+    event.preventDefault();
+    
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    const id = document.getElementById('notice-id').value;
+    
+    // 최대 30개 체크
+    if (id === '' && notices.length >= 30) {
+        alert('공지는 최대 30개까지만 등록할 수 있습니다.');
+        return;
+    }
+    
+    const notice = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('notice-title').value,
+        content: document.getElementById('notice-content').value,
+        image: document.getElementById('notice-image').value || '',
+        createdAt: id !== '' ? notices[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        notices[id] = notice;
+    } else {
+        notices.push(notice);
+    }
+    
+    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
+    closeNoticeModal();
+    loadNotices();
+    alert('공지가 저장되었습니다.');
+}
+
+function editNotice(index) {
+    openNoticeModal(index);
+}
+
+function deleteNotice(index) {
+    if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+    
+    const notices = JSON.parse(localStorage.getItem('eventbet_notices') || '[]');
+    notices.splice(index, 1);
+    localStorage.setItem('eventbet_notices', JSON.stringify(notices));
+    loadNotices();
+    alert('공지가 삭제되었습니다.');
+}
+
+// ========== 팝업 관리 ==========
+function loadPopups() {
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const container = document.getElementById('popups-list');
+    
+    if (popups.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">등록된 팝업이 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = popups.map((popup, index) => `
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h4 class="font-bold text-lg">${popup.title}</h4>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${popup.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                            ${popup.enabled ? '활성' : '비활성'}
+                        </span>
+                    </div>
+                    ${popup.type === 'image' ? 
+                        `<img src="${popup.image}" class="w-full max-h-48 object-cover rounded-lg mb-2">` :
+                        `<div class="bg-gray-100 p-4 rounded-lg mb-2">
+                            <i class="fab fa-youtube text-red-600 text-2xl mr-2"></i>
+                            <span class="text-sm text-gray-600">유튜브: ${popup.youtube}</span>
+                        </div>`
+                    }
+                    <div class="text-xs text-gray-600 mt-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>위치: 상단 ${popup.top || 10}cm, 좌측 ${popup.left || 10}cm
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>크기: ${popup.width || 600}px × ${popup.height || 400}px
+                    </div>
+                </div>
+                <div class="flex space-x-2 ml-4">
+                    <button onclick="editPopup(${index})" class="btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deletePopup(${index})" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openPopupModal(index = null) {
     const modal = document.getElementById('popup-modal');
     modal.classList.add('active');
     
     if (index !== null) {
-        try {
-            const response = await fetch('/data/popups.json?_=' + Date.now());
-            const popups = await response.json();
-            const popup = popups[index];
-            document.getElementById('popup-id').value = index;
-            document.getElementById('popup-title').value = popup.title;
-            document.getElementById('popup-top').value = popup.top || '';
-            document.getElementById('popup-left').value = popup.left || '';
-            document.getElementById('popup-width').value = popup.width || 600;
-            document.getElementById('popup-height').value = popup.height || 400;
-            document.getElementById('popup-start-date').value = popup.startDate || '';
-            document.getElementById('popup-end-date').value = popup.endDate || '';
-            if (popup.imageUrl) {
-                document.getElementById('popup-preview').src = popup.imageUrl;
-                document.getElementById('popup-preview').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Failed to load popup:', error);
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        const popup = popups[index];
+        
+        document.getElementById('popup-id').value = index;
+        document.getElementById('popup-title').value = popup.title;
+        document.getElementById('popup-type').value = popup.type;
+        document.getElementById('popup-enabled').checked = popup.enabled;
+        
+        if (popup.type === 'image') {
+            document.getElementById('popup-image').value = popup.image;
+            togglePopupInputs();
+        } else {
+            document.getElementById('popup-youtube').value = popup.youtube;
+            togglePopupInputs();
         }
     } else {
         document.getElementById('popup-id').value = '';
         document.getElementById('popup-title').value = '';
-        document.getElementById('popup-top').value = '';
-        document.getElementById('popup-left').value = '';
-        document.getElementById('popup-width').value = 600;
-        document.getElementById('popup-height').value = 400;
-        document.getElementById('popup-start-date').value = '';
-        document.getElementById('popup-end-date').value = '';
-        document.getElementById('popup-preview').classList.add('hidden');
+        document.getElementById('popup-image').value = '';
+        document.getElementById('popup-youtube').value = '';
+        document.getElementById('popup-enabled').checked = true;
+        togglePopupInputs();
     }
 }
 
@@ -432,1206 +409,801 @@ function closePopupModal() {
     document.getElementById('popup-modal').classList.remove('active');
 }
 
-function handlePopupImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+function togglePopupInputs() {
+    const type = document.getElementById('popup-type').value;
+    const imageInput = document.getElementById('popup-image-input');
+    const youtubeInput = document.getElementById('popup-youtube-input');
     
-    if (file.size > 5 * 1024 * 1024) {
-        alert('⚠️ 이미지 크기는 5MB 이하여야 합니다.');
-        return;
+    if (type === 'image') {
+        imageInput.classList.remove('hidden');
+        youtubeInput.classList.add('hidden');
+    } else {
+        imageInput.classList.add('hidden');
+        youtubeInput.classList.remove('hidden');
     }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('popup-preview');
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
 }
 
-async function savePopup(event) {
+function savePopup(event) {
     event.preventDefault();
     
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다.');
-        return;
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const id = document.getElementById('popup-id').value;
+    const type = document.getElementById('popup-type').value;
+    
+    const popup = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('popup-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('popup-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('popup-youtube').value : '',
+        enabled: document.getElementById('popup-enabled').checked,
+        createdAt: id !== '' ? popups[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        popups[id] = popup;
+    } else {
+        popups.push(popup);
     }
     
-    try {
-        const response = await fetch('/data/popups.json?_=' + Date.now());
-        const popups = await response.json();
-        
-        const index = document.getElementById('popup-id').value;
-        const title = document.getElementById('popup-title').value;
-        const top = parseFloat(document.getElementById('popup-top').value) || 10;
-        const left = parseFloat(document.getElementById('popup-left').value) || 10;
-        const width = parseInt(document.getElementById('popup-width').value) || 600;
-        const height = parseInt(document.getElementById('popup-height').value) || 400;
-        const startDate = document.getElementById('popup-start-date').value;
-        const endDate = document.getElementById('popup-end-date').value;
-        const preview = document.getElementById('popup-preview');
-        const imageUrl = preview.classList.contains('hidden') ? '' : preview.src;
-        
-        if (!imageUrl) {
-            alert('⚠️ 이미지를 업로드해주세요.');
-            return;
-        }
-        
-        const popupData = {
-            title, top, left, width, height, startDate, endDate, imageUrl,
-            createdAt: new Date().toISOString()
-        };
-        
-        if (index === '') {
-            popups.push(popupData);
-        } else {
-            popups[parseInt(index)] = popupData;
-        }
-        
-        await window.githubAPI.updateFile(
-            'docs/data/popups.json',
-            popups,
-            index === '' ? '새 팝업 추가' : '팝업 수정'
-        );
-        
-        closePopupModal();
-        loadPopups();
-        alert('✅ 팝업이 저장되었습니다.');
-    } catch (error) {
-        console.error('Failed to save popup:', error);
-        alert('⚠️ 팝업 저장 실패: ' + error.message);
-    }
-}
-
-async function deletePopup(index) {
-    if (!confirm('정말 이 팝업을 삭제하시겠습니까?')) return;
-    
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다.');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/data/popups.json?_=' + Date.now());
-        const popups = await response.json();
-        
-        popups.splice(index, 1);
-        
-        await window.githubAPI.updateFile(
-            'docs/data/popups.json',
-            popups,
-            '팝업 삭제'
-        );
-        
-        loadPopups();
-        alert('✅ 팝업이 삭제되었습니다.');
-    } catch (error) {
-        console.error('Failed to delete popup:', error);
-        alert('⚠️ 팝업 삭제 실패: ' + error.message);
-    }
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    closePopupModal();
+    loadPopups();
+    alert('팝업이 저장되었습니다.');
 }
 
 function editPopup(index) {
     openPopupModal(index);
 }
 
-// ============================================
-// 📌 섹션 전환
-// ============================================
-
-function showSection(sectionName) {
-    // 모든 섹션 숨기기
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
-        section.classList.remove('active');
-    });
+function deletePopup(index) {
+    if (!confirm('이 팝업을 삭제하시겠습니까?')) return;
     
-    // 모든 사이드바 항목 비활성화
-    document.querySelectorAll('.sidebar-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // 선택한 섹션 표시
-    const targetSection = document.getElementById(sectionName + '-section');
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        targetSection.classList.add('active');
-    }
-    
-    // 선택한 사이드바 항목 활성화
-    event.target.classList.add('active');
-    
-    // 데이터 로드
-    if (sectionName === 'banners') loadBanners();
-    if (sectionName === 'notices') loadNotices();
-    if (sectionName === 'popups') loadPopups();
-    if (sectionName === 'issues') loadAdminIssues();
-    if (sectionName === 'settings') loadSettings();
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    popups.splice(index, 1);
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    loadPopups();
+    alert('팝업이 삭제되었습니다.');
 }
 
-// ============================================
-// 📌 GitHub 설정
-// ============================================
-
-function loadSettings() {
-    const token = localStorage.getItem('github_token') || '';
-    const owner = localStorage.getItem('github_owner') || '';
-    const repo = localStorage.getItem('github_repo') || '';
+// ========== 회원 관리 ==========
+function loadMembers() {
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
     
-    document.getElementById('github-token').value = token ? '••••••••••••••••' : '';
-    document.getElementById('github-owner').value = owner;
-    document.getElementById('github-repo').value = repo;
+    // 통계 업데이트
+    const totalMembers = users.length;
+    const activeMembers = users.filter(u => u.status === 'active').length;
+    const suspendedMembers = users.filter(u => u.status === 'suspended').length;
     
-    const statusDiv = document.getElementById('github-status');
-    if (token && owner && repo) {
-        statusDiv.innerHTML = '<p class="text-green-600"><i class="fas fa-check-circle"></i> GitHub 연동 완료</p>';
-    } else {
-        statusDiv.innerHTML = '<p class="text-red-600"><i class="fas fa-times-circle"></i> GitHub 설정이 필요합니다</p>';
-    }
+    document.getElementById('total-members').textContent = totalMembers;
+    document.getElementById('active-members').textContent = activeMembers;
+    document.getElementById('suspended-members').textContent = suspendedMembers;
+    
+    filterMembers();
 }
 
-function saveSettings(event) {
-    event.preventDefault();
+function filterMembers() {
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const searchQuery = document.getElementById('member-search').value.toLowerCase();
+    const statusFilter = document.getElementById('member-status-filter').value;
     
-    const tokenInput = document.getElementById('github-token').value;
-    const owner = document.getElementById('github-owner').value;
-    const repo = document.getElementById('github-repo').value;
+    let filteredUsers = users;
     
-    // 토큰이 가려진 상태면 기존 값 유지
-    const token = tokenInput.includes('•') ? localStorage.getItem('github_token') : tokenInput;
-    
-    if (!token || !owner || !repo) {
-        alert('⚠️ 모든 항목을 입력해주세요.');
-        return;
-    }
-    
-    window.githubAPI.saveConfig(token, owner, repo);
-    alert('✅ GitHub 설정이 저장되었습니다.');
-    loadSettings();
-}
-
-// ============================================
-// 📌 이슈 관리 (일괄 등록)
-// ============================================
-
-let issueFormCount = 0;
-const MAX_ISSUES = 5;
-
-// 카테고리 목록
-const CATEGORIES = [
-    { id: 1, slug: 'politics', name_ko: '정치', icon: '🏛️' },
-    { id: 2, slug: 'sports', name_ko: '스포츠', icon: '⚽' },
-    { id: 3, slug: 'technology', name_ko: '기술', icon: '💻' },
-    { id: 4, slug: 'cryptocurrency', name_ko: '암호화폐', icon: '₿' },
-    { id: 5, slug: 'entertainment', name_ko: '엔터테인먼트', icon: '🎬' },
-    { id: 6, slug: 'economy', name_ko: '경제', icon: '📈' },
-    { id: 7, slug: 'science', name_ko: '과학', icon: '🔬' },
-    { id: 8, slug: 'climate', name_ko: '기후', icon: '🌍' }
-];
-
-function showBulkIssueModal() {
-    const modal = document.getElementById('bulk-issue-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    
-    // 초기 폼 1개 추가
-    issueFormCount = 0;
-    document.getElementById('issues-container').innerHTML = '';
-    addIssueForm();
-}
-
-function closeBulkIssueModal() {
-    const modal = document.getElementById('bulk-issue-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    issueFormCount = 0;
-    document.getElementById('issues-container').innerHTML = '';
-}
-
-function addIssueForm() {
-    if (issueFormCount >= MAX_ISSUES) {
-        alert(`최대 ${MAX_ISSUES}개까지만 등록할 수 있습니다.`);
-        return;
-    }
-    
-    issueFormCount++;
-    const container = document.getElementById('issues-container');
-    const formId = `issue-form-${issueFormCount}`;
-    
-    const formHTML = `
-        <div id="${formId}" class="border-2 border-gray-300 rounded-lg p-6 bg-gray-50">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="text-lg font-bold text-gray-800">
-                    <i class="fas fa-file-alt mr-2 text-blue-600"></i>
-                    이슈 #${issueFormCount}
-                </h4>
-                <button type="button" onclick="removeIssueForm('${formId}')" class="text-red-600 hover:text-red-800">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <!-- 카테고리 선택 -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-folder mr-1 text-purple-600"></i>카테고리 *
-                </label>
-                <select name="category_${issueFormCount}" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    ${CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('')}
-                </select>
-            </div>
-            
-            <!-- 제목 (4개 언어) -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-heading mr-1 text-green-600"></i>제목 (4개 언어 필수) *
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-gray-600 mb-1">🇰🇷 한국어</label>
-                        <input type="text" name="title_ko_${issueFormCount}" required placeholder="예: 비트코인 $150K 돌파?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-600 mb-1">🇬🇧 English</label>
-                        <input type="text" name="title_en_${issueFormCount}" required placeholder="e.g., Bitcoin reaches $150K?" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-600 mb-1">🇨🇳 中文</label>
-                        <input type="text" name="title_zh_${issueFormCount}" required placeholder="例如：比特币突破$150K？" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-600 mb-1">🇯🇵 日本語</label>
-                        <input type="text" name="title_ja_${issueFormCount}" required placeholder="例：ビットコイン$150K突破？" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 내용 설명 -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-align-left mr-1 text-blue-600"></i>내용 설명 (선택)
-                </label>
-                <textarea name="description_${issueFormCount}" rows="2" placeholder="이슈에 대한 간단한 설명..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
-            </div>
-            
-            <!-- 결론 결정 기간 & 배팅 설정 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-calendar mr-1 text-red-600"></i>결론 결정 기간 *
-                    </label>
-                    <input type="date" name="resolve_date_${issueFormCount}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-percentage mr-1 text-green-600"></i>Yes 배팅 비율 (%)
-                    </label>
-                    <input type="number" name="yes_prob_${issueFormCount}" min="0" max="100" value="50" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-coins mr-1 text-yellow-600"></i>전체 배팅액 (USDT)
-                    </label>
-                    <input type="number" name="total_volume_${issueFormCount}" min="1000" value="100000" step="1000" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-            </div>
-        </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', formHTML);
-}
-
-function removeIssueForm(formId) {
-    const form = document.getElementById(formId);
-    if (form) {
-        form.remove();
-        issueFormCount--;
-    }
-}
-
-function clearIssueFormInputs() {
-    if (confirm('모든 입력 내용을 초기화하시겠습니까?')) {
-        issueFormCount = 0;
-        document.getElementById('issues-container').innerHTML = '';
-        addIssueForm();
-    }
-}
-
-function clearAllIssues() {
-    localStorage.removeItem('admin_issues');
-    console.log('✅ All issues cleared from localStorage');
-    location.reload();
-}
-
-function submitBulkIssues(event) {
-    event.preventDefault();
-    
-    if (issueFormCount === 0) {
-        alert('등록할 이슈가 없습니다.');
-        return;
-    }
-    
-    const formData = new FormData(event.target);
-    const issues = [];
-    
-    // 각 이슈 폼에서 데이터 수집
-    for (let i = 1; i <= issueFormCount; i++) {
-        const category = formData.get(`category_${i}`);
-        const titleKo = formData.get(`title_ko_${i}`);
-        const titleEn = formData.get(`title_en_${i}`);
-        const titleZh = formData.get(`title_zh_${i}`);
-        const titleJa = formData.get(`title_ja_${i}`);
-        const description = formData.get(`description_${i}`) || '';
-        const resolveDate = formData.get(`resolve_date_${i}`);
-        const yesProb = parseInt(formData.get(`yes_prob_${i}`)) / 100;
-        const totalVolume = parseInt(formData.get(`total_volume_${i}`));
-        
-        if (titleKo && titleEn && titleZh && titleJa && resolveDate) {
-            const selectedCategory = CATEGORIES.find(c => c.slug === category);
-            
-            issues.push({
-                id: Date.now() + i, // 고유 ID 생성
-                category_id: selectedCategory.id,
-                category_slug: category,
-                title_ko: titleKo,
-                title_en: titleEn,
-                title_zh: titleZh,
-                title_ja: titleJa,
-                description_ko: description || `${titleKo}에 대한 예측 마켓입니다.`,
-                description_en: description || `Prediction market for ${titleEn}.`,
-                description_zh: description || `关于${titleZh}的预测市场。`,
-                description_ja: description || `${titleJa}についての予測市場です。`,
-                resolve_date: resolveDate,
-                total_volume: totalVolume,
-                status: 'published', // 항상 즉시 공개
-                outcomes: [
-                    { name: '예', probability: yesProb },
-                    { name: '아니오', probability: 1 - yesProb }
-                ],
-                createdAt: new Date().toISOString(),
-                publishedAt: new Date().toISOString()
-            });
-        }
-    }
-    
-    if (issues.length === 0) {
-        alert('유효한 이슈 데이터가 없습니다.');
-        return;
-    }
-    
-    // localStorage에 저장 (기존 이슈와 병합)
-    try {
-        // 현재 이슈 목록 가져오기
-        const existingIssues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        
-        // 기존 이슈와 병합
-        const mergedIssues = [...existingIssues, ...issues];
-        
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(mergedIssues));
-        
-        // 메인 페이지 새로고침 트리거
-        window.dispatchEvent(new CustomEvent('adminIssuesUpdated', { 
-            detail: { count: mergedIssues.length } 
-        }));
-        
-        closeBulkIssueModal();
-        loadAdminIssues();
-        
-        // 성공 메시지
-        alert(
-            `✅ ${issues.length}개의 이슈가 성공적으로 등록되었습니다!\n\n` +
-            `💡 메인 페이지(cashiq.my)를 새로고침하면 바로 확인할 수 있습니다.\n\n` +
-            `📌 등록된 이슈는 "인기 마켓" 섹션에 표시됩니다.`
+    // 검색 필터
+    if (searchQuery) {
+        filteredUsers = filteredUsers.filter(u => 
+            u.name.toLowerCase().includes(searchQuery) ||
+            u.email.toLowerCase().includes(searchQuery) ||
+            u.phone.includes(searchQuery)
         );
-    } catch (error) {
-        console.error('Failed to save issues:', error);
-        alert('❌ 이슈 저장에 실패했습니다: ' + error.message);
     }
-}
-
-// 전역 변수로 필터된 이슈 저장
-let filteredIssues = [];
-let selectedIssueIndices = new Set();
-
-function loadAdminIssues() {
-    console.log('🔄 loadAdminIssues() started');
-    try {
-        // localStorage에서 이슈 목록 가져오기
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        
-        // 전역 변수에 저장
-        window.adminIssues = issues;
-        filteredIssues = issues;
-        
-        console.log('📊 Total issues loaded:', issues.length);
-        
-        // 각 이슈의 필드 구조 출력
-        if (issues.length > 0) {
-            console.log('📋 Issue data samples:');
-            issues.forEach((issue, idx) => {
-                console.log(`Issue ${idx + 1}:`, {
-                    keys: Object.keys(issue),
-                    title_ko: issue.title_ko,
-                    title: issue.title,
-                    name_ko: issue.name_ko,
-                    category: issue.category_slug,
-                    status: issue.status
-                });
-            });
-        }
-        
-        selectedIssueIndices.clear(); // 선택 초기화
-        
-        // 카테고리 필터 옵션 생성
-        const categoryFilter = document.getElementById('category-filter');
-        console.log('🔍 Category filter element:', !!categoryFilter);
-        if (categoryFilter) {
-            categoryFilter.innerHTML = '<option value="">전체</option>' + 
-                CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('');
-            console.log('✅ Category filter options created');
-        } else {
-            console.warn('⚠️ Category filter element not found');
-        }
-        
-        console.log('🎨 Calling renderIssuesList()...');
-        renderIssuesList();
-        console.log('✅ loadAdminIssues() completed');
-    } catch (error) {
-        console.error('❌ Failed to load issues:', error);
-        alert('이슈 로드 실패: ' + error.message);
-    }
-}
-
-function renderIssuesList() {
-    console.log('🎨 renderIssuesList() started');
-    const container = document.getElementById('issues-list');
     
-    if (!container) {
-        console.error('❌ issues-list container not found!');
+    // 상태 필터
+    if (statusFilter) {
+        filteredUsers = filteredUsers.filter(u => u.status === statusFilter);
+    }
+    
+    renderMembersList(filteredUsers);
+}
+
+function renderMembersList(users) {
+    const tbody = document.getElementById('members-list');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">회원이 없습니다.</td></tr>';
         return;
     }
-    console.log('✅ Container found:', container);
     
-    const allIssues = window.adminIssues || [];
-    console.log('📊 All issues:', allIssues.length, 'Filtered:', filteredIssues.length);
+    tbody.innerHTML = users.map(user => `
+        <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone}</td>
+            <td class="text-xs">${user.wallet.substring(0, 10)}...</td>
+            <td>${new Date(user.createdAt).toLocaleDateString('ko-KR')}</td>
+            <td>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                    ${user.status === 'active' ? '활성' : '정지'}
+                </span>
+            </td>
+            <td>
+                ${user.status === 'active' ? 
+                    `<button onclick="suspendMember('${user.id}')" class="btn-warning mr-2">
+                        <i class="fas fa-pause"></i> 정지
+                    </button>` :
+                    `<button onclick="activateMember('${user.id}')" class="btn-success mr-2">
+                        <i class="fas fa-play"></i> 활성
+                    </button>`
+                }
+                <button onclick="deleteMember('${user.id}')" class="btn-danger">
+                    <i class="fas fa-trash"></i> 삭제
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function suspendMember(userId) {
+    if (!confirm('이 회원을 정지하시겠습니까?')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex !== -1) {
+        users[userIndex].status = 'suspended';
+        localStorage.setItem('eventbet_users', JSON.stringify(users));
+        alert('회원이 정지되었습니다.');
+        loadMembers();
+    }
+}
+
+function activateMember(userId) {
+    if (!confirm('이 회원을 활성화하시겠습니까?')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex !== -1) {
+        users[userIndex].status = 'active';
+        localStorage.setItem('eventbet_users', JSON.stringify(users));
+        alert('회원이 활성화되었습니다.');
+        loadMembers();
+    }
+}
+
+function deleteMember(userId) {
+    if (!confirm('이 회원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    
+    const users = JSON.parse(localStorage.getItem('eventbet_users') || '[]');
+    const filteredUsers = users.filter(u => u.id !== userId);
+    localStorage.setItem('eventbet_users', JSON.stringify(filteredUsers));
+    alert('회원이 삭제되었습니다.');
+    loadMembers();
+}
+
+// ========== 결산 페이지 ==========
+function loadSettlement() {
+    loadFeeSettings();
+    loadIssues();
+    updateSettlementStats();
+}
+
+// 수수료 설정 로드
+function loadFeeSettings() {
+    const settings = JSON.parse(localStorage.getItem('eventbet_fee_settings') || '{"total": 7, "headquarters": 3, "distributor": 2.5, "subdistributor": 1.5}');
+    
+    document.getElementById('total-fee').value = settings.total;
+    document.getElementById('headquarters-fee').value = settings.headquarters;
+    document.getElementById('distributor-fee').value = settings.distributor;
+    document.getElementById('subdistributor-fee').value = settings.subdistributor;
+}
+
+// 수수료 설정 저장
+function saveFeeSettings() {
+    const settings = {
+        total: parseFloat(document.getElementById('total-fee').value),
+        headquarters: parseFloat(document.getElementById('headquarters-fee').value),
+        distributor: parseFloat(document.getElementById('distributor-fee').value),
+        subdistributor: parseFloat(document.getElementById('subdistributor-fee').value)
+    };
+    
+    const sum = settings.headquarters + settings.distributor + settings.subdistributor;
+    if (Math.abs(sum - settings.total) > 0.01) {
+        alert(`수수료 합계가 맞지 않습니다. 본사 + 총판 + 부총판 = ${sum.toFixed(1)}% (총 ${settings.total}% 필요)`);
+        return;
+    }
+    
+    localStorage.setItem('eventbet_fee_settings', JSON.stringify(settings));
+    alert('수수료 설정이 저장되었습니다.');
+    updateSettlementStats();
+}
+
+// 이슈 목록 로드
+function loadIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const filterStatus = document.getElementById('issue-status-filter')?.value || '';
+    
+    let filteredIssues = issues;
+    if (filterStatus) {
+        filteredIssues = issues.filter(issue => issue.status === filterStatus);
+    }
+    
+    const tbody = document.getElementById('issues-list');
     
     if (filteredIssues.length === 0) {
-        // 전체 이슈가 없는 경우 vs 검색 결과가 없는 경우 구분
-        if (allIssues.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-16 text-gray-500">
-                    <i class="fas fa-inbox text-8xl mb-6 opacity-30"></i>
-                    <p class="text-2xl font-bold text-gray-700 mb-2">등록된 이슈가 없습니다</p>
-                    <p class="text-base text-gray-600 mb-6">
-                        아래 방법 중 하나를 선택하여 이슈를 추가하세요
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <button 
-                            onclick="showBulkIssueModal()" 
-                            class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg flex items-center gap-2"
-                        >
-                            <i class="fas fa-plus-circle"></i>
-                            <span>이슈 일괄 등록</span>
-                        </button>
-                        <button 
-                            onclick="createTestIssues()" 
-                            class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors shadow-lg flex items-center gap-2"
-                        >
-                            <i class="fas fa-flask"></i>
-                            <span>테스트 데이터 생성</span>
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-6">
-                        💡 테스트 데이터는 정치/스포츠/기술 카테고리에 각 1개씩 생성됩니다
-                    </p>
-                </div>
-            `;
-        } else {
-            container.innerHTML = `
-                <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-search text-6xl mb-4 opacity-50"></i>
-                    <p class="text-lg font-semibold text-gray-700">검색 결과가 없습니다</p>
-                    <p class="text-sm mt-2 text-gray-600">다른 검색어나 필터를 시도해보세요</p>
-                    <button 
-                        onclick="document.getElementById('issue-search-input').value=''; document.getElementById('category-filter').value=''; searchIssues();" 
-                        class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                    >
-                        <i class="fas fa-redo mr-2"></i>검색 초기화
-                    </button>
-                </div>
-            `;
-        }
-        updateSelectedCount();
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
         return;
     }
     
-    container.innerHTML = `
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="px-4 py-3 text-center">
-                            <input 
-                                type="checkbox" 
-                                id="select-all-checkbox"
-                                onchange="toggleSelectAll(this.checked)"
-                                class="w-4 h-4 cursor-pointer"
-                            >
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">#</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">카테고리</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">제목 (한국어)</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">결론 기간</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700">배팅액</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700">상태</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700">관리</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    ${filteredIssues.map((issue, displayIndex) => {
-                        try {
-                            // 더 유연한 인덱스 찾기 (다양한 필드명 지원)
-                            const originalIndex = allIssues.findIndex(i => {
-                                const titleMatch = (i.title_ko || i.title) === (issue.title_ko || issue.title);
-                                const categoryMatch = i.category_slug === issue.category_slug;
-                                const dateMatch = (i.resolve_date || i.end_date) === (issue.resolve_date || issue.end_date);
-                                return titleMatch && categoryMatch && dateMatch;
-                            });
-                            
-                            if (originalIndex === -1) {
-                                console.warn('⚠️ Could not find original index for issue:', issue);
-                                return '';
-                            }
-                            
-                            const category = CATEGORIES.find(c => c.slug === issue.category_slug);
-                            const isChecked = selectedIssueIndices.has(originalIndex);
-                            return `
-                            <tr class="hover:bg-gray-50 ${isChecked ? 'bg-blue-50' : ''}">
-                                <td class="px-4 py-3 text-center">
-                                    <input 
-                                        type="checkbox" 
-                                        ${isChecked ? 'checked' : ''}
-                                        onchange="toggleIssueSelection(${originalIndex}, this.checked)"
-                                        class="w-4 h-4 cursor-pointer"
-                                    >
-                                </td>
-                                <td class="px-4 py-3 text-sm">${displayIndex + 1}</td>
-                                <td class="px-4 py-3 text-sm">${category ? category.icon : ''} ${category ? category.name_ko : issue.category_slug}</td>
-                                <td class="px-4 py-3 text-sm font-semibold">${issue.title_ko || issue.title || issue.name_ko || issue.name || '제목 없음'}</td>
-                                <td class="px-4 py-3 text-sm">${issue.resolve_date || issue.end_date || '-'}</td>
-                                <td class="px-4 py-3 text-sm">$${(issue.total_volume || issue.volume || 0).toLocaleString()}</td>
-                                <td class="px-4 py-3 text-center">
-                                    ${issue.status === 'published' 
-                                        ? '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>공개됨</span>' 
-                                        : '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800"><i class="fas fa-clock mr-1"></i>대기중</span>'}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-center">
-                                    <button onclick="editAdminIssue(${originalIndex})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1" title="편집">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button onclick="deleteAdminIssue(${originalIndex})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" title="삭제">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                        } catch (error) {
-                            console.error('❌ Error rendering issue at index', displayIndex, error);
-                            return '';
-                        }
-                    }).filter(html => html !== '').join('')}
-                </tbody>
-            </table>
-        </div>
+    tbody.innerHTML = filteredIssues.map((issue, index) => {
+        const totalBet = (issue.yesBet || 0) + (issue.noBet || 0);
+        const expireDate = new Date(issue.expireDate).toLocaleDateString('ko-KR');
+        const isExpired = new Date(issue.expireDate) < new Date();
         
-        <div class="mt-6 flex justify-between items-center">
-            <p class="text-sm text-gray-600">총 <span class="font-bold text-blue-600">${filteredIssues.length}</span>개의 이슈</p>
-            <button onclick="syncIssuesToMainSite()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                <i class="fas fa-sync mr-2"></i>메인 사이트에 반영
-            </button>
-        </div>
-    `;
-    
-    updateSelectedCount();
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${issue.title}</td>
+                <td>${totalBet.toLocaleString()} USDT</td>
+                <td>${(issue.yesBet || 0).toLocaleString()} USDT</td>
+                <td>${(issue.noBet || 0).toLocaleString()} USDT</td>
+                <td class="${isExpired ? 'text-red-600' : ''}">${expireDate}</td>
+                <td>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${issue.status === 'settled' ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'}">
+                        ${issue.status === 'settled' ? '종료됨' : '진행중'}
+                    </span>
+                </td>
+                <td>
+                    ${issue.status !== 'settled' ? `
+                        <button onclick="settleIssue('${issue.id}', 'yes')" class="btn-success mr-2">
+                            YES 승리
+                        </button>
+                        <button onclick="settleIssue('${issue.id}', 'no')" class="btn-danger">
+                            NO 승리
+                        </button>
+                    ` : `
+                        <span class="text-sm text-gray-600">결과: ${issue.result === 'yes' ? 'YES' : 'NO'}</span>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
-function searchIssues() {
-    console.log('🔍 searchIssues() called');
-    const searchInput = document.getElementById('issue-search-input');
-    const categoryFilter = document.getElementById('category-filter');
+// 개별 이슈 정산
+function settleIssue(issueId, result) {
+    if (!confirm(`이 이슈를 ${result.toUpperCase()} 승리로 정산하시겠습니까?`)) return;
     
-    if (!searchInput || !categoryFilter) {
-        console.error('❌ Search elements not found');
-        return;
-    }
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issueIndex = issues.findIndex(i => i.id === issueId);
     
-    const searchValue = searchInput.value.toLowerCase().trim();
-    const categoryValue = categoryFilter.value;
-    const allIssues = window.adminIssues || [];
+    if (issueIndex === -1) return;
     
-    console.log('🔍 Search params:', { searchValue, categoryValue, totalIssues: allIssues.length });
+    const issue = issues[issueIndex];
+    const totalBet = (issue.yesBet || 0) + (issue.noBet || 0);
+    const feeSettings = JSON.parse(localStorage.getItem('eventbet_fee_settings') || '{"total": 7, "headquarters": 3, "distributor": 2.5, "subdistributor": 1.5}');
     
-    // 검색어가 없으면 카테고리 필터만 적용
-    if (!searchValue) {
-        console.log('ℹ️ No search value, applying category filter only');
-        filteredIssues = categoryValue 
-            ? allIssues.filter(issue => issue.category_slug === categoryValue)
-            : allIssues;
-        console.log('✅ Filtered by category:', filteredIssues.length);
-        selectedIssueIndices.clear();
-        renderIssuesList();
-        return;
-    }
+    const feeAmount = totalBet * (feeSettings.total / 100);
+    const headquartersAmount = totalBet * (feeSettings.headquarters / 100);
+    const distributorAmount = totalBet * (feeSettings.distributor / 100);
+    const subdistributorAmount = totalBet * (feeSettings.subdistributor / 100);
     
-    // 검색 로직 개선: 공백을 유지한 검색도 지원
-    filteredIssues = allIssues.filter((issue) => {
-        // 카테고리 필터 먼저 적용
-        if (categoryValue && issue.category_slug !== categoryValue) {
-            return false;
-        }
-        
-        // 주요 텍스트 필드들을 검색
-        const searchFields = [
-            issue.title_ko,
-            issue.title_en,
-            issue.title_zh,
-            issue.title_ja,
-            issue.description_ko,
-            issue.description_en,
-            issue.description_zh,
-            issue.description_ja,
-            issue.category_slug,
-            issue.status,
-            String(issue.total_volume || ''),
-            issue.resolve_date || ''
-        ].filter(Boolean); // null/undefined 제거
-        
-        // 전체 검색 텍스트 생성
-        const searchableText = searchFields.join(' ').toLowerCase();
-        
-        // 검색어 일치 확인 (공백 포함 및 공백 제거 두 가지 방식)
-        const matchesWithSpace = searchableText.includes(searchValue);
-        const matchesWithoutSpace = searchableText.replace(/\s+/g, '').includes(searchValue.replace(/\s+/g, ''));
-        
-        return matchesWithSpace || matchesWithoutSpace;
+    // 정산 내역 저장
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    settlements.push({
+        id: Date.now().toString(),
+        issueId: issue.id,
+        issueTitle: issue.title,
+        totalBet: totalBet,
+        result: result,
+        feeAmount: feeAmount,
+        headquarters: headquartersAmount,
+        distributor: distributorAmount,
+        subdistributor: subdistributorAmount,
+        settledAt: new Date().toISOString()
     });
     
-    console.log('✅ Filtered issues:', filteredIssues.length, '/', allIssues.length);
-    selectedIssueIndices.clear();
-    renderIssuesList();
+    localStorage.setItem('eventbet_settlements', JSON.stringify(settlements));
+    
+    // 이슈 상태 업데이트
+    issues[issueIndex].status = 'settled';
+    issues[issueIndex].result = result;
+    issues[issueIndex].settledAt = new Date().toISOString();
+    
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('정산이 완료되었습니다.');
+    loadIssues();
+    updateSettlementStats();
 }
 
-function toggleSelectAll(checked) {
-    const allIssues = window.adminIssues || [];
+// 만기일자 일괄 종료
+function settleAllExpiredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const today = new Date();
+    const expiredIssues = issues.filter(issue => 
+        issue.status !== 'settled' && new Date(issue.expireDate) < today
+    );
     
-    if (checked) {
-        // 현재 필터된 이슈들의 원본 인덱스를 모두 선택
-        filteredIssues.forEach(issue => {
-            const originalIndex = allIssues.findIndex(i => 
-                i.title_ko === issue.title_ko && 
-                i.category_slug === issue.category_slug &&
-                i.resolve_date === issue.resolve_date
-            );
-            if (originalIndex !== -1) {
-                selectedIssueIndices.add(originalIndex);
-            }
-        });
+    if (expiredIssues.length === 0) {
+        alert('만기된 이슈가 없습니다.');
+        return;
+    }
+    
+    if (!confirm(`${expiredIssues.length}개의 만기된 이슈를 정산하시겠습니까?\n(자동으로 더 많은 베팅액을 받은 쪽이 승리로 처리됩니다)`)) return;
+    
+    expiredIssues.forEach(issue => {
+        const result = (issue.yesBet || 0) >= (issue.noBet || 0) ? 'yes' : 'no';
+        settleIssue(issue.id, result);
+    });
+    
+    alert(`${expiredIssues.length}개의 이슈가 정산되었습니다.`);
+}
+
+// 정산 통계 업데이트
+function updateSettlementStats() {
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    
+    const totalSettled = settlements.reduce((sum, s) => sum + s.feeAmount, 0);
+    const totalHeadquarters = settlements.reduce((sum, s) => sum + s.headquarters, 0);
+    const totalDistributor = settlements.reduce((sum, s) => sum + s.distributor, 0);
+    const totalSubdistributor = settlements.reduce((sum, s) => sum + s.subdistributor, 0);
+    
+    document.getElementById('total-settled').textContent = totalSettled.toLocaleString();
+    document.getElementById('headquarters-amount').textContent = totalHeadquarters.toLocaleString();
+    document.getElementById('distributor-amount').textContent = totalDistributor.toLocaleString();
+    document.getElementById('subdistributor-amount').textContent = totalSubdistributor.toLocaleString();
+}
+
+// 날짜별 정산 조회
+function loadSettlementByDate() {
+    const startDate = document.getElementById('settlement-start-date').value;
+    const endDate = document.getElementById('settlement-end-date').value;
+    
+    if (!startDate || !endDate) {
+        alert('시작일과 종료일을 선택해주세요.');
+        return;
+    }
+    
+    const settlements = JSON.parse(localStorage.getItem('eventbet_settlements') || '[]');
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    const filteredSettlements = settlements.filter(s => {
+        const settledDate = new Date(s.settledAt);
+        return settledDate >= start && settledDate <= end;
+    });
+    
+    // 날짜별로 그룹화
+    const dailyData = {};
+    filteredSettlements.forEach(s => {
+        const date = new Date(s.settledAt).toLocaleDateString('ko-KR');
+        if (!dailyData[date]) {
+            dailyData[date] = {
+                count: 0,
+                totalBet: 0,
+                feeAmount: 0,
+                headquarters: 0,
+                distributor: 0,
+                subdistributor: 0
+            };
+        }
+        
+        dailyData[date].count++;
+        dailyData[date].totalBet += s.totalBet;
+        dailyData[date].feeAmount += s.feeAmount;
+        dailyData[date].headquarters += s.headquarters;
+        dailyData[date].distributor += s.distributor;
+        dailyData[date].subdistributor += s.subdistributor;
+    });
+    
+    const tbody = document.getElementById('daily-settlement-list');
+    
+    if (Object.keys(dailyData).length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">해당 기간에 정산 내역이 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = Object.entries(dailyData)
+        .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+        .map(([date, data]) => `
+            <tr>
+                <td>${date}</td>
+                <td>${data.count}건</td>
+                <td>${data.totalBet.toLocaleString()} USDT</td>
+                <td>${data.feeAmount.toLocaleString()} USDT</td>
+                <td>${data.headquarters.toLocaleString()} USDT</td>
+                <td>${data.distributor.toLocaleString()} USDT</td>
+                <td>${data.subdistributor.toLocaleString()} USDT</td>
+            </tr>
+        `).join('');
+}
+
+// 이슈 필터링
+function filterIssues() {
+    loadIssues();
+}
+
+// ========== 팝업 관리 (위치 조정 포함) ==========
+// openPopupModal 함수 수정 (크기 조절 추가)
+const originalOpenPopupModal = window.openPopupModal;
+window.openPopupModal = function(index = null) {
+    const modal = document.getElementById('popup-modal');
+    modal.classList.add('active');
+    
+    if (index !== null) {
+        const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+        const popup = popups[index];
+        
+        document.getElementById('popup-id').value = index;
+        document.getElementById('popup-title').value = popup.title;
+        document.getElementById('popup-type').value = popup.type;
+        document.getElementById('popup-enabled').checked = popup.enabled !== false; // 명시적 체크
+        document.getElementById('popup-top').value = popup.top || 10;
+        document.getElementById('popup-left').value = popup.left || 10;
+        document.getElementById('popup-width').value = popup.width || 600;
+        document.getElementById('popup-height').value = popup.height || 400;
+        
+        if (popup.type === 'image') {
+            document.getElementById('popup-image').value = popup.image;
+            togglePopupInputs();
+        } else {
+            document.getElementById('popup-youtube').value = popup.youtube;
+            togglePopupInputs();
+        }
     } else {
-        selectedIssueIndices.clear();
+        document.getElementById('popup-id').value = '';
+        document.getElementById('popup-title').value = '';
+        document.getElementById('popup-image').value = '';
+        document.getElementById('popup-youtube').value = '';
+        document.getElementById('popup-enabled').checked = true;
+        document.getElementById('popup-top').value = 10;
+        document.getElementById('popup-left').value = 10;
+        document.getElementById('popup-width').value = 600;
+        document.getElementById('popup-height').value = 400;
+        togglePopupInputs();
     }
-    
-    renderIssuesList();
-}
-
-function toggleIssueSelection(index, checked) {
-    if (checked) {
-        selectedIssueIndices.add(index);
-    } else {
-        selectedIssueIndices.delete(index);
-    }
-    
-    updateSelectedCount();
-    
-    // 체크박스 배경색 업데이트
-    const row = event.target.closest('tr');
-    if (row) {
-        if (checked) {
-            row.classList.add('bg-blue-50');
-        } else {
-            row.classList.remove('bg-blue-50');
-        }
-    }
-}
-
-function updateSelectedCount() {
-    const countElement = document.getElementById('selected-count');
-    const deleteBtn = document.getElementById('bulk-delete-btn');
-    
-    if (countElement) {
-        countElement.textContent = selectedIssueIndices.size;
-    }
-    
-    if (deleteBtn) {
-        deleteBtn.disabled = selectedIssueIndices.size === 0;
-    }
-}
-
-function bulkDeleteIssues() {
-    console.log('🗑️ bulkDeleteIssues() called');
-    console.log('Selected indices:', Array.from(selectedIssueIndices));
-    
-    if (selectedIssueIndices.size === 0) {
-        alert('삭제할 이슈를 선택해주세요.');
-        return;
-    }
-    
-    if (!confirm(`선택한 ${selectedIssueIndices.size}개의 이슈를 삭제하시겠습니까?`)) {
-        console.log('User cancelled deletion');
-        return;
-    }
-    
-    try {
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        console.log('Before deletion:', issues.length);
-        
-        // 선택된 인덱스를 내림차순으로 정렬하여 삭제 (뒤에서부터 삭제해야 인덱스가 안 꼬임)
-        const sortedIndices = Array.from(selectedIssueIndices).sort((a, b) => b - a);
-        console.log('Deleting indices (sorted):', sortedIndices);
-        
-        sortedIndices.forEach(index => {
-            console.log(`Deleting issue at index ${index}:`, issues[index]?.title_ko);
-            issues.splice(index, 1);
-        });
-        
-        console.log('After deletion:', issues.length);
-        
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
-        
-        selectedIssueIndices.clear();
-        
-        alert(`✅ ${sortedIndices.length}개의 이슈가 삭제되었습니다.`);
-        loadAdminIssues();
-    } catch (error) {
-        console.error('❌ Failed to delete issues:', error);
-        alert('❌ 이슈 삭제에 실패했습니다.');
-    }
-}
-
-function deleteAdminIssue(index) {
-    console.log('🗑️ deleteAdminIssue() called with index:', index);
-    
-    try {
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        console.log('Total issues before deletion:', issues.length);
-        
-        if (!issues[index]) {
-            console.error('❌ Issue not found at index:', index);
-            alert('이슈를 찾을 수 없습니다.');
-            return;
-        }
-        
-        const issueToDelete = issues[index];
-        console.log('Issue to delete:', issueToDelete.title_ko);
-        
-        if (!confirm(`이 이슈를 삭제하시겠습니까?\n\n"${issueToDelete.title_ko}"`)) {
-            console.log('User cancelled deletion');
-            return;
-        }
-        
-        issues.splice(index, 1);
-        
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
-        console.log('✅ Issue deleted. Remaining:', issues.length);
-        
-        alert(`✅ 이슈 "${issueToDelete.title_ko}"가 삭제되었습니다.`);
-        loadAdminIssues();
-    } catch (error) {
-        console.error('❌ Failed to delete issue:', error);
-        alert('❌ 이슈 삭제에 실패했습니다.');
-    }
-}
-
-function editAdminIssue(index) {
-    try {
-        const issues = window.adminIssues || [];
-        const issue = issues[index];
-        
-        if (!issue) {
-            alert('이슈를 찾을 수 없습니다.');
-            return;
-        }
-        
-        // 모달 열기
-        document.getElementById('edit-issue-modal').style.display = 'flex';
-        
-        // 카테고리 옵션 생성
-        const categorySelect = document.getElementById('edit-category');
-        categorySelect.innerHTML = '<option value="">카테고리 선택</option>' + 
-            CATEGORIES.map(cat => `<option value="${cat.slug}">${cat.icon} ${cat.name_ko}</option>`).join('');
-        
-        // 폼에 데이터 채우기
-        document.getElementById('edit-issue-index').value = index;
-        document.getElementById('edit-category').value = issue.category_slug;
-        document.getElementById('edit-title-ko').value = issue.title_ko;
-        document.getElementById('edit-title-en').value = issue.title_en;
-        document.getElementById('edit-title-zh').value = issue.title_zh;
-        document.getElementById('edit-title-ja').value = issue.title_ja;
-        document.getElementById('edit-resolve-date').value = issue.resolve_date;
-        document.getElementById('edit-total-volume').value = issue.total_volume;
-        
-        // yes/no 확률 값 채우기 (0-1 범위를 0-100% 범위로 변환)
-        if (issue.outcomes && issue.outcomes.length >= 2) {
-            const yesProb = (issue.outcomes[0].probability || 0.5) * 100;
-            const noProb = (issue.outcomes[1].probability || 0.5) * 100;
-            document.getElementById('edit-probability-yes').value = yesProb.toFixed(1);
-            document.getElementById('edit-probability-no').value = noProb.toFixed(1);
-        } else {
-            // 기본값 50/50
-            document.getElementById('edit-probability-yes').value = '50.0';
-            document.getElementById('edit-probability-no').value = '50.0';
-        }
-    } catch (error) {
-        console.error('Failed to edit issue:', error);
-        alert('❌ 이슈 불러오기에 실패했습니다.');
-    }
-}
-
-function closeEditIssueModal() {
-    document.getElementById('edit-issue-modal').style.display = 'none';
-}
-
-function saveEditedIssue(event) {
-    event.preventDefault();
-    
-    try {
-        const index = parseInt(document.getElementById('edit-issue-index').value);
-        const issues = JSON.parse(localStorage.getItem('admin_issues') || '[]');
-        
-        if (!issues[index]) {
-            alert('이슈를 찾을 수 없습니다.');
-            return;
-        }
-        
-        // yes/no 확률 값 가져오기 (0-100% 범위를 0-1 범위로 변환)
-        const yesProbPercent = parseFloat(document.getElementById('edit-probability-yes').value);
-        const noProbPercent = parseFloat(document.getElementById('edit-probability-no').value);
-        
-        // 확률 값 검증 (합계가 100%인지 확인)
-        const totalPercent = yesProbPercent + noProbPercent;
-        if (Math.abs(totalPercent - 100) > 0.01) {
-            alert(`⚠️ 확률 합계가 100%가 아닙니다. (현재: ${totalPercent.toFixed(1)}%)`);
-            return;
-        }
-        
-        // category_id도 업데이트
-        const categorySlug = document.getElementById('edit-category').value;
-        const selectedCategory = CATEGORIES.find(c => c.slug === categorySlug);
-        
-        // 수정된 데이터 가져오기
-        const updatedIssue = {
-            ...issues[index], // 기존 데이터 유지
-            category_id: selectedCategory.id,
-            category_slug: categorySlug,
-            title_ko: document.getElementById('edit-title-ko').value,
-            title_en: document.getElementById('edit-title-en').value,
-            title_zh: document.getElementById('edit-title-zh').value,
-            title_ja: document.getElementById('edit-title-ja').value,
-            resolve_date: document.getElementById('edit-resolve-date').value,
-            total_volume: parseInt(document.getElementById('edit-total-volume').value),
-            outcomes: [
-                { name: '예', probability: yesProbPercent / 100 },
-                { name: '아니오', probability: noProbPercent / 100 }
-            ],
-            updatedAt: new Date().toISOString()
-        };
-        
-        // 배열에서 업데이트
-        issues[index] = updatedIssue;
-        
-        // localStorage에 저장
-        localStorage.setItem('admin_issues', JSON.stringify(issues));
-        
-        alert(`✅ 이슈 "${updatedIssue.title_ko}"가 수정되었습니다.`);
-        closeEditIssueModal();
-        loadAdminIssues();
-    } catch (error) {
-        console.error('Failed to save issue:', error);
-        alert('❌ 이슈 저장에 실패했습니다.');
-    }
-}
-
-async function syncIssuesToMainSite() {
-    try {
-        // GitHub API 설정 확인
-        if (!window.githubAPI.isConfigured()) {
-            alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-            return;
-        }
-        
-        // 현재 이슈 목록 가져오기
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        const allIssues = await response.json();
-        
-        if (allIssues.length === 0) {
-            alert('반영할 이슈가 없습니다.');
-            return;
-        }
-        
-        // pending 상태의 이슈만 카운트
-        const pendingIssues = allIssues.filter(issue => issue.status === 'pending');
-        const publishedIssues = allIssues.filter(issue => issue.status === 'published');
-        
-        if (pendingIssues.length === 0) {
-            alert(
-                `ℹ️ 대기 중인 이슈가 없습니다.\n\n` +
-                `이미 공개된 이슈: ${publishedIssues.length}개\n` +
-                `전체 이슈: ${allIssues.length}개`
-            );
-            return;
-        }
-        
-        // 확인 모달 표시
-        const confirmed = confirm(
-            `📢 메인 사이트에 반영하기\n\n` +
-            `대기 중인 ${pendingIssues.length}개의 이슈를 공개합니다.\n` +
-            `(이미 공개된 이슈: ${publishedIssues.length}개)\n\n` +
-            `진행하시겠습니까?`
-        );
-        
-        if (!confirmed) {
-            return;
-        }
-        
-        // 모든 pending 이슈를 published로 변경
-        const updatedIssues = allIssues.map(issue => {
-            if (issue.status === 'pending') {
-                return { ...issue, status: 'published', publishedAt: new Date().toISOString() };
-            }
-            return issue;
-        });
-        
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            updatedIssues,
-            `${pendingIssues.length}개의 이슈를 메인 사이트에 공개`
-        );
-        
-        // 메인 페이지 URL
-        const mainPageUrl = window.location.origin;
-        
-        // 성공 메시지
-        alert(
-            `✅ ${pendingIssues.length}개의 이슈가 메인 사이트에 공개되었습니다!\n\n` +
-            `💡 메인 페이지에서 "최근등록순" 필터를 클릭하여 확인하세요:\n${mainPageUrl}\n\n` +
-            `📌 즉시 공개된 이슈는 "최근등록순" 정렬에서 맨 위에 표시됩니다.\n\n` +
-            `(GitHub Pages 반영까지 1-2분 소요)`
-        );
-        
-        // 메인 페이지 자동 열기 옵션
-        const openMainPage = confirm('메인 페이지를 새 탭으로 열까요?');
-        if (openMainPage) {
-            window.open(mainPageUrl, '_blank');
-        }
-        
-        // 이슈 목록 새로고침
-        loadAdminIssues();
-        
-    } catch (error) {
-        console.error('Failed to sync issues:', error);
-        alert('❌ 이슈 동기화에 실패했습니다: ' + error.message);
-    }
-}
-
-// ============================================
-// 📌 초기화
-// ============================================
-
-// 테스트 데이터 생성 함수 (디버깅용)
-async function createTestIssues() {
-    // GitHub API 설정 확인
-    if (!window.githubAPI.isConfigured()) {
-        alert('⚠️ GitHub 설정이 필요합니다. 설정 메뉴에서 GitHub Token을 입력해주세요.');
-        return;
-    }
-    
-    const testIssues = [
-        {
-            id: Date.now() + 1,
-            category_id: 1,
-            category_slug: 'politics',
-            title_ko: '2024년 대선 결과 예측',
-            title_en: '2024 Presidential Election Results',
-            title_zh: '2024年总统选举结果',
-            title_ja: '2024年大統領選挙結果',
-            description_ko: '2024년 대선 결과 예측 마켓입니다.',
-            description_en: 'Prediction market for 2024 Presidential Election Results.',
-            description_zh: '关于2024年总统选举结果的预测市场。',
-            description_ja: '2024年大統領選挙結果についての予測市場です。',
-            resolve_date: '2024-12-31',
-            total_volume: 50000,
-            status: 'pending',
-            outcomes: [
-                { name: '예', probability: 0.55 },
-                { name: '아니오', probability: 0.45 }
-            ],
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: Date.now() + 2,
-            category_id: 2,
-            category_slug: 'sports',
-            title_ko: '월드컵 우승팀 예측',
-            title_en: 'World Cup Winner Prediction',
-            title_zh: '世界杯冠军预测',
-            title_ja: 'ワールドカップ優勝チーム予想',
-            description_ko: '월드컵 우승팀 예측 마켓입니다.',
-            description_en: 'Prediction market for World Cup Winner.',
-            description_zh: '关于世界杯冠军的预测市场。',
-            description_ja: 'ワールドカップ優勝チームについての予測市場です。',
-            resolve_date: '2024-11-30',
-            total_volume: 30000,
-            status: 'pending',
-            outcomes: [
-                { name: '예', probability: 0.60 },
-                { name: '아니오', probability: 0.40 }
-            ],
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: Date.now() + 3,
-            category_id: 3,
-            category_slug: 'technology',
-            title_ko: 'AI 기술 발전 전망',
-            title_en: 'AI Technology Development',
-            title_zh: 'AI技术发展展望',
-            title_ja: 'AI技術発展の展望',
-            description_ko: 'AI 기술 발전 전망 마켓입니다.',
-            description_en: 'Prediction market for AI Technology Development.',
-            description_zh: '关于AI技术发展展望的预测市场。',
-            description_ja: 'AI技術発展の展望についての予測市場です。',
-            resolve_date: '2024-10-15',
-            total_volume: 20000,
-            status: 'pending',
-            outcomes: [
-                { name: '예', probability: 0.70 },
-                { name: '아니오', probability: 0.30 }
-            ],
-            createdAt: new Date().toISOString()
-        }
-    ];
-    
-    try {
-        // 사용자에게 즉시 공개 여부 확인
-        const publishNow = confirm(
-            '🧪 테스트 이슈 3개를 생성합니다.\n\n' +
-            '즉시 메인 사이트에 공개하시겠습니까?\n\n' +
-            '확인: 즉시 공개 (published)\n' +
-            '취소: 대기 상태 (pending)'
-        );
-        
-        // 즉시 공개 선택 시 상태 변경
-        if (publishNow) {
-            testIssues.forEach(issue => {
-                issue.status = 'published';
-                issue.publishedAt = new Date().toISOString();
-            });
-        }
-        
-        // 현재 이슈 목록 가져오기
-        const response = await fetch('/data/issues.json?_=' + Date.now());
-        const existingIssues = await response.json();
-        
-        // 기존 이슈와 병합
-        const mergedIssues = [...existingIssues, ...testIssues];
-        
-        // GitHub에 저장
-        await window.githubAPI.updateFile(
-            'docs/data/issues.json',
-            mergedIssues,
-            publishNow ? '테스트 이슈 3개 추가 (즉시 공개)' : '테스트 이슈 3개 추가'
-        );
-        
-        if (publishNow) {
-            alert(
-                '✅ 테스트 이슈 3개가 메인 사이트에 공개되었습니다!\n\n' +
-                '💡 메인 페이지에서 "최근등록순" 필터를 클릭하여 확인하세요:\n' +
-                'https://cashiq.my\n\n' +
-                '📌 즉시 공개된 이슈는 "최근등록순" 정렬에서 맨 위에 표시됩니다.\n\n' +
-                '(GitHub Pages 반영까지 1-2분 소요)'
-            );
-        } else {
-            alert(
-                '✅ 테스트 이슈 3개가 생성되었습니다!\n\n' +
-                '💡 pending 상태로 저장되었습니다.\n' +
-                '"메인 사이트에 반영" 버튼으로 공개하세요.\n\n' +
-                '(GitHub Pages 반영까지 1-2분 소요)'
-            );
-        }
-        
-        loadAdminIssues();
-    } catch (error) {
-        console.error('Failed to create test issues:', error);
-        alert('❌ 테스트 이슈 생성 실패: ' + error.message);
-    }
-}
-
-// 전역 함수로 노출 (콘솔에서 호출 가능)
-window.createTestIssues = createTestIssues;
-window.showIssues = function() {
-    const issues = window.adminIssues || [];
-    console.log('📦 Current issues:', issues);
-    return issues;
 };
 
-// 카테고리 필터 초기화
-function initializeCategoryFilter() {
-    const categoryFilter = document.getElementById('category-filter');
-    if (!categoryFilter) {
-        console.error('❌ Category filter element not found');
-        return;
+// savePopup 함수에 위치 및 크기 정보 추가
+const originalSavePopup = window.savePopup;
+window.savePopup = function(event) {
+    event.preventDefault();
+    
+    const popups = JSON.parse(localStorage.getItem('eventbet_popups') || '[]');
+    const id = document.getElementById('popup-id').value;
+    const type = document.getElementById('popup-type').value;
+    const enabledCheckbox = document.getElementById('popup-enabled');
+    
+    const popup = {
+        id: id !== '' ? id : Date.now().toString(),
+        title: document.getElementById('popup-title').value,
+        type: type,
+        image: type === 'image' ? document.getElementById('popup-image').value : '',
+        youtube: type === 'youtube' ? document.getElementById('popup-youtube').value : '',
+        enabled: enabledCheckbox.checked === true, // 명시적 불린 변환
+        top: parseFloat(document.getElementById('popup-top').value) || 10,
+        left: parseFloat(document.getElementById('popup-left').value) || 10,
+        width: parseInt(document.getElementById('popup-width').value) || 600,
+        height: parseInt(document.getElementById('popup-height').value) || 400,
+        createdAt: id !== '' ? popups[id].createdAt : new Date().toISOString()
+    };
+    
+    if (id !== '') {
+        popups[id] = popup;
+    } else {
+        popups.push(popup);
     }
     
-    // 기존 옵션 제거 (전체 옵션 제외)
-    while (categoryFilter.options.length > 1) {
-        categoryFilter.remove(1);
+    localStorage.setItem('eventbet_popups', JSON.stringify(popups));
+    closePopupModal();
+    loadPopups();
+    alert('팝업이 저장되었습니다.');
+};
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('[ADMIN] Page loaded, initializing...');
+        loadBanners();
+        console.log('[ADMIN] Initialization complete');
+    } catch (e) {
+        console.error('[ADMIN] DOMContentLoaded initialization failed:', e);
+        alert('관리자 페이지 초기화 실패: ' + e.message);
     }
+});
+
+// ========== 이미지 업로드 핸들러 ==========
+
+// 배너 이미지 파일 업로드
+function handleBannerImageUpload() {
+    const fileInput = document.getElementById('banner-image-file');
+    const file = fileInput.files[0];
     
-    // 카테고리 옵션 추가
-    CATEGORIES.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.slug;
-        option.textContent = `${category.icon} ${category.name_ko}`;
-        categoryFilter.appendChild(option);
-    });
-    
-    console.log('✅ Category filter initialized with', CATEGORIES.length, 'categories');
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('banner-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('banner-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ Admin page DOMContentLoaded');
+// 배너 URL 미리보기
+function previewBannerUrl() {
+    const url = document.getElementById('banner-image').value;
+    const preview = document.getElementById('banner-preview');
     
-    // 카테고리 필터 초기화
-    initializeCategoryFilter();
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('banner-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+// 공지 이미지 파일 업로드
+function handleNoticeImageUpload() {
+    const fileInput = document.getElementById('notice-image-file');
+    const file = fileInput.files[0];
     
-    // 데이터 로드
-    loadNotices();
-    loadBanners();
-    loadPopups();
-    loadSettings();
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('notice-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('notice-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 공지 URL 미리보기
+function previewNoticeUrl() {
+    const url = document.getElementById('notice-image').value;
+    const preview = document.getElementById('notice-preview');
     
-    // 이슈 관리 섹션 디버깅
-    console.log('🔍 Checking issues section...');
-    const issuesSection = document.getElementById('issues-section');
-    console.log('Issues section found:', !!issuesSection);
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('notice-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+// 팝업 이미지 파일 업로드
+function handlePopupImageUpload() {
+    const fileInput = document.getElementById('popup-image-file');
+    const file = fileInput.files[0];
     
-    const issuesList = document.getElementById('issues-list');
-    console.log('Issues list found:', !!issuesList);
+    if (file) {
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+            fileInput.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            
+            // URL 입력 필드에 base64 데이터 설정
+            document.getElementById('popup-image').value = base64Data;
+            
+            // 미리보기 표시
+            const preview = document.getElementById('popup-preview');
+            preview.src = base64Data;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 팝업 URL 미리보기
+function previewPopupUrl() {
+    const url = document.getElementById('popup-image').value;
+    const preview = document.getElementById('popup-preview');
     
-    // 이슈 로드
-    loadAdminIssues();
-    console.log('✅ loadAdminIssues() called');
-});
+    if (url) {
+        preview.src = url;
+        preview.classList.remove('hidden');
+        
+        // 파일 입력 초기화
+        document.getElementById('popup-image-file').value = '';
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+// ========== 이슈 일괄 등록 ==========
+function saveBatchIssues() {
+    try {
+        console.log('[ADMIN] Starting batch issue registration...');
+        
+        // 기존 이슈 가져오기
+        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        console.log('[ADMIN] Existing issues:', issues.length);
+        
+        // 카테고리와 만료일, 초기 USDT
+        const categoryEl = document.getElementById('issue-batch-category');
+        const expireDaysEl = document.getElementById('issue-batch-days');
+        const initialUsdtEl = document.getElementById('issue-batch-usdt');
+        
+        if (!categoryEl || !expireDaysEl || !initialUsdtEl) {
+            throw new Error('필수 입력 필드를 찾을 수 없습니다. 페이지를 새로고침하세요.');
+        }
+        
+        const category = categoryEl.value || 'crypto';
+        const expireDays = parseInt(expireDaysEl.value) || 7;
+        const initialUsdt = parseInt(initialUsdtEl.value) || 60;
+        
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + expireDays);
+        const expireDateISO = expireDate.toISOString();
+        
+        console.log('[ADMIN] Settings:', { category, expireDays, initialUsdt, expireDateISO });
+        
+        // 4개 언어
+        const languages = ['en', 'ko', 'zh', 'ja'];
+        const languageNames = {
+            'en': 'English',
+            'ko': '한국어',
+            'zh': '中文',
+            'ja': '日本語'
+        };
+        
+        const newIssues = [];
+        let addedCount = 0;
+        
+        // 각 언어별로 5개씩 총 20개 이슈 수집
+        languages.forEach(lang => {
+            for (let i = 1; i <= 5; i++) {
+                const inputId = `issue-${lang}-${i}`;
+                const input = document.getElementById(inputId);
+                const title = input ? input.value.trim() : '';
+                
+                if (title) {
+                    // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
+                    const yesRatio = 0.3 + Math.random() * 0.4;
+                    const yesBet = Math.floor(initialUsdt * yesRatio);
+                    const noBet = initialUsdt - yesBet;
+                    
+                    const newIssue = {
+                        id: `${Date.now()}-${lang}-${i}-${Math.random().toString(36).substr(2, 9)}`,
+                        title: title,
+                        description: `${languageNames[lang]} - Issue ${i}`,
+                        category: category,
+                        image: 'https://via.placeholder.com/400x200?text=EventBET',
+                        expireDate: expireDateISO,
+                        status: 'active',
+                        yesBet: yesBet,
+                        noBet: noBet,
+                        initialUsdt: initialUsdt,
+                        language: lang,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    newIssues.push(newIssue);
+                    addedCount++;
+                    console.log(`[ADMIN] Added issue ${addedCount}:`, newIssue.title);
+                }
+            }
+        });
+        
+        if (addedCount === 0) {
+            alert('⚠️ 등록할 이슈가 없습니다.\n\n최소 1개 이상의 이슈 제목을 입력해주세요.\n\n입력 가능한 언어:\n- 🇺🇸 English\n- 🇰🇷 한국어\n- 🇨🇳 中文\n- 🇯🇵 日本語');
+            return;
+        }
+        
+        // 새 이슈를 앞에 추가
+        const updatedIssues = [...newIssues, ...issues];
+        
+        // localStorage에 저장
+        localStorage.setItem('eventbet_issues', JSON.stringify(updatedIssues));
+        console.log('[ADMIN] Saved to localStorage:', updatedIssues.length, 'total issues');
+        
+        // 저장 확인
+        const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+        console.log('[ADMIN] Verification - saved issues:', saved.length);
+        console.log('[ADMIN] First 3 issues:', saved.slice(0, 3));
+        
+        alert(`✅ 등록 완료!\n\n✔ ${addedCount}개의 이슈가 성공적으로 등록되었습니다.\n✔ 전체 ${saved.length}개 이슈 저장됨.\n\n📢 메인 페이지(https://cashiq.my)를 새로고침하면 즉시 표시됩니다!`);
+        
+        // 폼 초기화
+        languages.forEach(lang => {
+            for (let i = 1; i <= 5; i++) {
+                const inputId = `issue-${lang}-${i}`;
+                const input = document.getElementById(inputId);
+                if (input) input.value = '';
+            }
+        });
+        
+    } catch (error) {
+        console.error('[ADMIN] saveBatchIssues failed:', error);
+        alert('❌ 이슈 등록 실패:\n\n' + error.message + '\n\n콘솔에서 자세한 오류를 확인하세요.');
+    }
+}
+
+// ========== 전역 함수 노출 (HTML onclick에서 사용) ==========
+window.showSection = showSection;
+window.loadBanners = loadBanners;
+window.saveBanner = saveBanner;
+window.editBanner = editBanner;
+window.deleteBanner = deleteBanner;
+window.loadNotices = loadNotices;
+window.saveNotice = saveNotice;
+window.editNotice = editNotice;
+window.deleteNotice = deleteNotice;
+window.loadPopups = loadPopups;
+window.savePopup = savePopup;
+window.editPopup = editPopup;
+window.deletePopup = deletePopup;
+window.loadMembers = loadMembers;
+window.suspendMember = suspendMember;
+window.activateMember = activateMember;
+window.deleteMember = deleteMember;
+window.saveBatchIssues = saveBatchIssues;
+window.handleBannerImageUpload = handleBannerImageUpload;
+window.uploadBannerImage = uploadBannerImage;
+window.handleNoticeImageUpload = handleNoticeImageUpload;
+window.uploadNoticeImage = uploadNoticeImage;
+window.previewNoticeUrl = previewNoticeUrl;
+
+console.log('[ADMIN] All functions exposed to global scope');
