@@ -2,7 +2,10 @@
   "name": "webapp",
   "type": "module",
   "scripts": {
-    "deploy": "gh-pages -d docs"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "hono": "^4.10.5"
