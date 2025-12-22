@@ -1506,20 +1506,54 @@ async function saveBatchIssues() {
     // 새 이슈를 앞에 추가
     issues = [...newIssues, ...issues];
     
-    // localStorage에 저장
+    // 관리자 localStorage에 저장
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    // 메인 사이트에도 동시에 등록 (자동 동기화)
+    localStorage.setItem('eventbet_main_issues', JSON.stringify(issues));
     
     // 저장 확인
     const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
     console.log('✅ Saved to localStorage:', saved.length, 'issues');
     console.log('✅ New issues added:', newIssues.length);
     console.log('✅ First issue:', saved[0]);
+    console.log('✅ 메인 사이트에도 자동 등록 완료!');
     
-    alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n같은 브라우저 메인 페이지에서 확인하세요!`);
+    alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 관리자 페이지와 메인 사이트에 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n같은 브라우저 메인 페이지에서 확인하세요!`);
     
     // 모달 닫기
     closeBatchIssueModal();
     
     // 이슈 목록 새로고침
     loadRegisteredIssues();
+}
+
+// ========== 전체 등록 (관리자 → 메인 사이트) ==========
+async function registerAllIssuesToMainSite() {
+    console.log('=== 전체 등록 시작 ===');
+    
+    // 관리자 화면의 모든 이슈 가져오기
+    const adminIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    
+    if (adminIssues.length === 0) {
+        alert('등록할 이슈가 없습니다.');
+        return;
+    }
+    
+    // 확인 메시지
+    if (!confirm(`총 ${adminIssues.length}개의 이슈를 메인 사이트에 등록하시겠습니까?`)) {
+        return;
+    }
+    
+    try {
+        // 메인 사이트의 이슈 데이터에 복사
+        localStorage.setItem('eventbet_main_issues', JSON.stringify(adminIssues));
+        
+        console.log(`✅ ${adminIssues.length}개 이슈를 메인 사이트에 등록했습니다.`);
+        alert(`✅ 성공!\n\n총 ${adminIssues.length}개의 이슈가 메인 사이트에 등록되었습니다.`);
+        
+    } catch (error) {
+        console.error('전체 등록 실패:', error);
+        alert('❌ 등록 실패: ' + error.message);
+    }
 }
