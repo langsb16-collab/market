@@ -15,7 +15,10 @@ function showSection(section) {
     if (section === 'notices') loadNotices();
     if (section === 'popups') loadPopups();
     if (section === 'members') loadMembers();
-    if (section === 'issues') loadBatchIssuesForm();
+    if (section === 'issues') {
+        loadBatchIssuesForm();
+        loadRegisteredIssues();
+    }
 }
 
 // ========== 배너 관리 ==========
@@ -1093,7 +1096,157 @@ function saveIssue(event) {
 // ============================================
 
 function loadBatchIssuesForm() {
-    // 폼이 이미 로드되어 있으면 아무것도 하지 않음
+    // 등록된 이슈 목록 로드
+    loadRegisteredIssues();
+}
+
+// 등록된 이슈 목록 로드
+function loadRegisteredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const tbody = document.getElementById('registered-issues-list');
+    
+    if (!tbody) return;
+    
+    if (issues.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = issues.map((issue, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td class="max-w-xs truncate">${issue.title}</td>
+            <td>${issue.category}</td>
+            <td>
+                ${issue.language === 'ko' ? '🇰🇷 한국어' : 
+                  issue.language === 'en' ? '🇺🇸 English' : 
+                  issue.language === 'zh' ? '🇨🇳 中文' : 
+                  issue.language === 'ja' ? '🇯🇵 日本語' : issue.language || 'N/A'}
+            </td>
+            <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
+            <td class="text-green-600 font-bold">${issue.yesBet?.toLocaleString() || 0} USDT</td>
+            <td class="text-red-600 font-bold">${issue.noBet?.toLocaleString() || 0} USDT</td>
+            <td>
+                <span class="px-2 py-1 rounded text-xs ${issue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                    ${issue.status === 'active' ? '진행중' : '종료됨'}
+                </span>
+            </td>
+            <td>
+                <button onclick="editRegisteredIssue(${index})" class="btn-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteRegisteredIssue(${index})" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 등록된 이슈 편집
+function editRegisteredIssue(index) {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issue = issues[index];
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 일괄 등록 모달 열기
+    openBatchIssueModal();
+    
+    // 기존 데이터로 채우기
+    setTimeout(() => {
+        const container = document.getElementById('batch-issues-container');
+        container.innerHTML = '';
+        
+        issueCardCount++;
+        const cardId = issueCardCount;
+        
+        const cardHtml = `
+            <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm issue-card" data-card-id="${cardId}" data-edit-index="${index}">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-bold text-gray-800">📝 이슈 편집</h4>
+                </div>
+                
+                <!-- 카테고리 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-purple-700">
+                        🟣 카테고리 *
+                    </label>
+                    <select id="batch-issue-${cardId}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                        <option value="정치" ${issue.category === '정치' ? 'selected' : ''}>정치</option>
+                        <option value="crypto" ${issue.category === 'crypto' ? 'selected' : ''}>암호화폐</option>
+                        <option value="sports" ${issue.category === 'sports' ? 'selected' : ''}>스포츠</option>
+                        <option value="entertainment" ${issue.category === 'entertainment' ? 'selected' : ''}>엔터테인먼트</option>
+                        <option value="economy" ${issue.category === 'economy' ? 'selected' : ''}>경제</option>
+                        <option value="science" ${issue.category === 'science' ? 'selected' : ''}>과학/기술</option>
+                        <option value="climate" ${issue.category === 'climate' ? 'selected' : ''}>기후/환경</option>
+                        <option value="other" ${issue.category === 'other' ? 'selected' : ''}>기타</option>
+                    </select>
+                </div>
+                
+                <!-- 제목 (단일 언어) -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-gray-800">
+                        📝 제목 (${issue.language === 'ko' ? '🇰🇷 한국어' : 
+                                  issue.language === 'en' ? '🇺🇸 English' : 
+                                  issue.language === 'zh' ? '🇨🇳 中文' : 
+                                  issue.language === 'ja' ? '🇯🇵 日本語' : '제목'}) *
+                    </label>
+                    <input type="text" id="batch-issue-${cardId}-title" value="${issue.title}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    <input type="hidden" id="batch-issue-${cardId}-language" value="${issue.language}">
+                </div>
+                
+                <!-- 내용 설명 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-gray-700">내용 설명 (선택)</label>
+                    <textarea id="batch-issue-${cardId}-description" rows="3" 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm">${issue.description || ''}</textarea>
+                </div>
+                
+                <!-- 공통 설정 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-red-700">
+                            🟥 결론 결정 기간 *
+                        </label>
+                        <input type="date" id="batch-issue-${cardId}-date" value="${issue.expireDate?.split('T')[0] || ''}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-green-700">
+                            🟩 Yes 배팅액 (USDT)
+                        </label>
+                        <input type="number" id="batch-issue-${cardId}-yes-bet" value="${issue.yesBet || 0}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                            🟨 No 배팅액 (USDT)
+                        </label>
+                        <input type="number" id="batch-issue-${cardId}-no-bet" value="${issue.noBet || 0}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', cardHtml);
+    }, 100);
+}
+
+// 등록된 이슈 삭제
+function deleteRegisteredIssue(index) {
+    if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
+    
+    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    issues.splice(index, 1);
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('이슈가 삭제되었습니다.');
+    loadRegisteredIssues();
 }
 
 // 일괄 등록 모달 열기
@@ -1364,4 +1517,7 @@ async function saveBatchIssues() {
     
     // 모달 닫기
     closeBatchIssueModal();
+    
+    // 이슈 목록 새로고침
+    loadRegisteredIssues();
 }
