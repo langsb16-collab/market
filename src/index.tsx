@@ -9,40 +9,29 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-// Enable CORS
-app.use('/api/*', cors())
-
-// Serve static files
-app.use('/static/*', serveStatic({ root: './' }))
-app.use('/admin/*', serveStatic({ root: './' }))
-app.use('/*', serveStatic({ root: './' }))
-
-// GitHub Gist configuration
 const GIST_FILENAME = 'eventbet-issues.json'
 
-// API: Get all issues from GitHub Gist
+// CORS for API
+app.use('/api/*', cors())
+
+// API Routes - BEFORE any static
 app.get('/api/issues', async (c) => {
   try {
     const gistId = c.env.GIST_ID || 'YOUR_GIST_ID_HERE'
-    
-    // Fetch from raw Gist URL (no auth needed for public read)
     const rawUrl = `https://gist.githubusercontent.com/langsb16-collab/${gistId}/raw/${GIST_FILENAME}`
     const response = await fetch(rawUrl)
     
     if (!response.ok) {
-      // Return empty array if Gist doesn't exist yet
       return c.json({ success: true, issues: [] })
     }
     
     const data = await response.json() as { version: number; updatedAt: string; items: any[] }
     return c.json({ success: true, issues: data.items || [] })
   } catch (error) {
-    console.error('Error fetching issues:', error)
     return c.json({ success: true, issues: [] })
   }
 })
 
-// API: Create issue (writes to GitHub Gist)
 app.post('/api/issues', async (c) => {
   try {
     const body = await c.req.json()
@@ -55,7 +44,6 @@ app.post('/api/issues', async (c) => {
       return c.json({ success: false, error: 'GitHub token not configured' }, 500)
     }
     
-    // Fetch current Gist content
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
@@ -73,7 +61,6 @@ app.post('/api/issues', async (c) => {
       }
     }
     
-    // Create new issue
     const newIssue = {
       id: `iss_${Date.now()}`,
       title_ko,
@@ -91,10 +78,8 @@ app.post('/api/issues', async (c) => {
       updatedAt: new Date().toISOString()
     }
     
-    // Add to beginning of array
     currentIssues.unshift(newIssue)
     
-    // Update Gist
     const updateResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       method: 'PATCH',
       headers: {
@@ -116,19 +101,15 @@ app.post('/api/issues', async (c) => {
     })
     
     if (!updateResponse.ok) {
-      const error = await updateResponse.text()
-      console.error('Failed to update Gist:', error)
       return c.json({ success: false, error: 'Failed to update Gist' }, 500)
     }
     
     return c.json({ success: true, id: newIssue.id })
   } catch (error) {
-    console.error('Error creating issue:', error)
     return c.json({ success: false, error: String(error) }, 500)
   }
 })
 
-// API: Update issue
 app.put('/api/issues/:id', async (c) => {
   try {
     const id = c.req.param('id')
@@ -141,7 +122,6 @@ app.put('/api/issues/:id', async (c) => {
       return c.json({ success: false, error: 'GitHub token not configured' }, 500)
     }
     
-    // Fetch current Gist content
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
@@ -158,7 +138,6 @@ app.put('/api/issues/:id', async (c) => {
     const parsed = JSON.parse(fileContent || '{"items":[]}')
     const issues = parsed.items || []
     
-    // Find and update issue
     const index = issues.findIndex((issue: any) => issue.id === id)
     if (index === -1) {
       return c.json({ success: false, error: 'Issue not found' }, 404)
@@ -170,7 +149,6 @@ app.put('/api/issues/:id', async (c) => {
       updatedAt: new Date().toISOString()
     }
     
-    // Update Gist
     await fetch(`https://api.github.com/gists/${gistId}`, {
       method: 'PATCH',
       headers: {
@@ -193,12 +171,10 @@ app.put('/api/issues/:id', async (c) => {
     
     return c.json({ success: true })
   } catch (error) {
-    console.error('Error updating issue:', error)
     return c.json({ success: false, error: String(error) }, 500)
   }
 })
 
-// API: Delete issue
 app.delete('/api/issues/:id', async (c) => {
   try {
     const id = c.req.param('id')
@@ -210,7 +186,6 @@ app.delete('/api/issues/:id', async (c) => {
       return c.json({ success: false, error: 'GitHub token not configured' }, 500)
     }
     
-    // Fetch current Gist content
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
@@ -227,10 +202,8 @@ app.delete('/api/issues/:id', async (c) => {
     const parsed = JSON.parse(fileContent || '{"items":[]}')
     let issues = parsed.items || []
     
-    // Remove issue
     issues = issues.filter((issue: any) => issue.id !== id)
     
-    // Update Gist
     await fetch(`https://api.github.com/gists/${gistId}`, {
       method: 'PATCH',
       headers: {
@@ -253,23 +226,15 @@ app.delete('/api/issues/:id', async (c) => {
     
     return c.json({ success: true })
   } catch (error) {
-    console.error('Error deleting issue:', error)
     return c.json({ success: false, error: String(error) }, 500)
   }
 })
 
-// Admin routes
-app.get('/admin', (c) => {
-  return c.redirect('/admin/index.html')
-})
-
-app.get('/admin/', (c) => {
-  return c.redirect('/admin/index.html')
-})
-
-// Default route
-app.get('/', (c) => {
-  return c.redirect('/index.html')
-})
+// Static files ONLY for non-API paths
+app.get('/static/*', serveStatic({ root: './' }))
+app.get('/admin/*', serveStatic({ root: './' }))
+app.get('/admin', (c) => c.redirect('/admin/'))
+app.get('/', (c) => c.redirect('/index.html'))
+app.get('/*', serveStatic({ root: './' }))
 
 export default app

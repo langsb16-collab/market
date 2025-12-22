@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="cache-control" content="no-cache">
-    <meta name="expires" content="0">
-    <meta name="pragma" content="no-cache">
-    <meta name="timestamp" content="<?php echo time(); ?>">
-    <title>EventBET 관리자 - v2.0</title>
+    <meta name="timestamp" content="20251222-042000">
+    <title>EventBET 관리자</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -126,13 +122,7 @@
         }
         
         .content-section.active {
-            display: block !important;
-        }
-        
-        .sidebar-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-left: 4px solid #ffffff;
+            display: block;
         }
         
         table {
@@ -211,27 +201,27 @@
         </div>
         
         <div class="py-4">
-            <div class="sidebar-item" data-section="banners-section">
+            <div class="sidebar-item active" onclick="showSection('banners')">
                 <i class="fas fa-image"></i>
                 <span>배너 관리</span>
             </div>
-            <div class="sidebar-item" data-section="notices-section">
+            <div class="sidebar-item" onclick="showSection('notices')">
                 <i class="fas fa-bullhorn"></i>
                 <span>공지 관리</span>
             </div>
-            <div class="sidebar-item" data-section="popups-section">
+            <div class="sidebar-item" onclick="showSection('popups')">
                 <i class="fas fa-window-maximize"></i>
                 <span>팝업 관리</span>
             </div>
-            <div class="sidebar-item" data-section="members-section">
+            <div class="sidebar-item" onclick="showSection('members')">
                 <i class="fas fa-users"></i>
                 <span>회원 관리</span>
             </div>
-            <div class="sidebar-item" data-section="issues-section">
+            <div class="sidebar-item" onclick="showSection('issues')">
                 <i class="fas fa-plus-circle"></i>
                 <span>이슈 등록</span>
             </div>
-            <div class="sidebar-item" data-section="settlement-section">
+            <div class="sidebar-item" onclick="showSection('settlement')">
                 <i class="fas fa-calculator"></i>
                 <span>결산 페이지</span>
             </div>
@@ -252,17 +242,9 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">배너 관리</h2>
-                    <div style="display: flex; gap: 12px;">
-                        <button onclick="openBatchIssueModal()" style="background: linear-gradient(180deg, #FF9500 0%, #FF8000 100%); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 15px;">
-                            <i class="fas fa-plus-circle mr-2"></i>이슈 일괄 등록
-                        </button>
-                        <button onclick="registerAllIssuesToMainSiteNow()" style="background: linear-gradient(180deg, #34C759 0%, #28A745 100%); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 15px;">
-                            <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
-                        </button>
-                        <button onclick="openBannerModal()" class="btn-success">
-                            <i class="fas fa-plus mr-2"></i>배너 추가
-                        </button>
-                    </div>
+                    <button onclick="openBannerModal()" class="btn-success">
+                        <i class="fas fa-plus mr-2"></i>배너 추가
+                    </button>
                 </div>
                 
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
@@ -388,38 +370,18 @@
         <!-- 이슈 등록 -->
         <div id="issues-section" class="content-section">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-plus-circle mr-2"></i>이슈 관리
-                </h2>
-                
-                <!-- 버튼 그룹 (최상단 배치) -->
-                <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
-                    <button onclick="registerAllIssuesToMainSite()" 
-                            style="background: linear-gradient(180deg, #34C759 0%, #28A745 100%); 
-                                   color: white; 
-                                   padding: 14px 28px; 
-                                   border-radius: 10px; 
-                                   border: none; 
-                                   font-size: 17px; 
-                                   font-weight: 700; 
-                                   cursor: pointer;
-                                   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-                                   transition: all 0.2s;">
-                        <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
-                    </button>
-                    <button onclick="openBatchIssueModal()" 
-                            style="background: linear-gradient(180deg, #007aff 0%, #0051d5 100%); 
-                                   color: white; 
-                                   padding: 14px 28px; 
-                                   border-radius: 10px; 
-                                   border: none; 
-                                   font-size: 17px; 
-                                   font-weight: 700; 
-                                   cursor: pointer;
-                                   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-                                   transition: all 0.2s;">
-                        <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
-                    </button>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-plus-circle mr-2"></i>이슈 관리
+                    </h2>
+                    <div class="flex gap-3">
+                        <button onclick="registerAllIssuesToMainSite()" class="btn-success" style="font-weight: 700; font-size: 15px;">
+                            <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
+                        </button>
+                        <button onclick="openBatchIssueModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
@@ -918,51 +880,20 @@
                 <!-- 이슈 카드들이 여기에 동적으로 추가됩니다 -->
             </div>
             
-            <div class="flex justify-between mt-6 pt-4 border-t sticky bottom-0 bg-white gap-3">
-                <button onclick="addIssueCard()" class="btn-primary flex-1" style="font-size: 16px; font-weight: 700;">
+            <div class="flex justify-between mt-6 pt-4 border-t sticky bottom-0 bg-white">
+                <button onclick="addIssueCard()" class="btn-primary">
                     <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
                 </button>
-                <button onclick="saveBatchIssues()" class="btn-success flex-1" style="font-size: 16px; font-weight: 700;">
-                    <i class="fas fa-check-circle mr-2"></i>전체 등록
+                <button onclick="saveBatchIssues()" class="btn-success">
+                    <i class="fas fa-save mr-2"></i>전체 초기화
+                </button>
+                <button onclick="submitAllToMainSite()" class="btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
                 </button>
             </div>
         </div>
     </div>
     
-    <script src="/static/admin-v2.js?v=20251222-143000"></script>
-    <script>
-    // 메인 사이트 일괄 등록 함수 (HTML 내장)
-    function registerAllIssuesToMainSiteNow() {
-        console.log('=== 메인 사이트 일괄 등록 시작 ===');
-        
-        try {
-            // localStorage에서 관리자 이슈 가져오기
-            const adminIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-            
-            if (adminIssues.length === 0) {
-                alert('등록할 이슈가 없습니다.\n\n먼저 "이슈 등록" 메뉴에서 이슈를 등록해주세요.');
-                return;
-            }
-            
-            // 확인 메시지
-            if (!confirm('총 ' + adminIssues.length + '개의 이슈를 메인 사이트에 등록하시겠습니까?\n\n등록된 이슈는 즉시 메인 페이지에 표시됩니다.')) {
-                return;
-            }
-            
-            // localStorage는 이미 공유되므로 추가 작업 불필요
-            console.log('✅ 이슈가 메인 사이트에서 사용 가능합니다:', adminIssues.length, '개');
-            
-            alert('✅ 완료!\n\n총 ' + adminIssues.length + '개의 이슈가 메인 사이트에 등록되었습니다.\n\n메인 페이지를 새로고침(Ctrl+Shift+R)하여 확인하세요!');
-            
-        } catch (error) {
-            console.error('메인 사이트 등록 실패:', error);
-            alert('❌ 등록 실패: ' + error.message);
-        }
-    }
-    </script>
-    
-    <!-- API 연동 스크립트 (새로 추가) -->
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-    <script src="/static/admin-api.js"></script>
+    <script src="/static/admin-v2.js"></script>
 </body>
 </html>
