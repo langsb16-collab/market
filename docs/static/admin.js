@@ -1,86 +1,20 @@
 // EventBET Admin Panel JavaScript
 
-// ========== 유틸리티: fetch 래퍼 (에러 명확화) ==========
-async function fetchJsonOrThrow(url, options = {}) {
-    try {
-        const res = await fetch(url, options);
-        
-        // JSON이 아닌 에러 바디도 잡기 위해 text로 먼저 받음
-        const text = await res.text();
-        let data = null;
-        try { 
-            data = text ? JSON.parse(text) : null; 
-        } catch (parseError) { 
-            console.warn('[ADMIN] JSON parse failed, returning text');
-        }
-        
-        if (!res.ok) {
-            const detail = data ? JSON.stringify(data) : text;
-            throw new Error(`[${res.status}] ${url} :: ${detail}`);
-        }
-        return data;
-    } catch (error) {
-        console.error('[ADMIN] fetchJsonOrThrow failed:', error);
-        throw error;
-    }
-}
-
-// ========== Mapify 초기화 가드 (관리자에서는 스킵) ==========
-const __IS_ADMIN__ = window.__IS_ADMIN__ === true || location.pathname.startsWith("/admin");
-
-if (!__IS_ADMIN__ && typeof initMapify === 'function') {
-    try {
-        const mapifyEl = document.querySelector('#mapify-window') || document.querySelector('mapify-window');
-        if (mapifyEl) {
-            initMapify();
-        } else {
-            console.debug('[Mapify] Element not found, skipping initialization');
-        }
-    } catch (e) {
-        console.error('[Mapify] Initialization failed:', e);
-    }
-} else if (__IS_ADMIN__) {
-    console.debug('[ADMIN] Mapify initialization skipped');
-}
-
 // 섹션 전환
 function showSection(section) {
-    try {
-        console.log('[ADMIN] Switching to section:', section);
-        
-        // 모든 섹션 숨기기
-        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        
-        // 선택된 섹션 표시
-        const sectionEl = document.getElementById(`${section}-section`);
-        if (sectionEl) {
-            sectionEl.classList.add('active');
-        } else {
-            console.error('[ADMIN] Section not found:', `${section}-section`);
-            return;
-        }
-        
-        // 사이드바 아이템 활성화
-        if (event && event.target) {
-            const sidebarItem = event.target.closest('.sidebar-item');
-            if (sidebarItem) {
-                sidebarItem.classList.add('active');
-            }
-        }
-        
-        // 데이터 로드
-        if (section === 'banners') loadBanners();
-        if (section === 'notices') loadNotices();
-        if (section === 'popups') loadPopups();
-        if (section === 'members') loadMembers();
-        if (section === 'issues') {
-            console.log('[ADMIN] Issues section loaded - ready for batch registration');
-        }
-    } catch (error) {
-        console.error('[ADMIN] showSection failed:', error);
-        alert('섹션 전환 실패: ' + error.message);
-    }
+    // 모든 섹션 숨기기
+    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    
+    // 선택된 섹션 표시
+    document.getElementById(`${section}-section`).classList.add('active');
+    event.target.closest('.sidebar-item').classList.add('active');
+    
+    // 데이터 로드
+    if (section === 'banners') loadBanners();
+    if (section === 'notices') loadNotices();
+    if (section === 'popups') loadPopups();
+    if (section === 'members') loadMembers();
 }
 
 // ========== 배너 관리 ==========
@@ -903,15 +837,27 @@ window.savePopup = function(event) {
 };
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        console.log('[ADMIN] Page loaded, initializing...');
-        loadBanners();
-        console.log('[ADMIN] Initialization complete');
-    } catch (e) {
-        console.error('[ADMIN] DOMContentLoaded initialization failed:', e);
-        alert('관리자 페이지 초기화 실패: ' + e.message);
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    loadBanners();
+    
+    // 섹션 전환 함수 업데이트
+    const originalShowSection = window.showSection;
+    window.showSection = function(section) {
+        // 모든 섹션 숨기기
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        
+        // 선택된 섹션 표시
+        document.getElementById(`${section}-section`).classList.add('active');
+        event.target.closest('.sidebar-item').classList.add('active');
+        
+        // 데이터 로드
+        if (section === 'banners') loadBanners();
+        if (section === 'notices') loadNotices();
+        if (section === 'popups') loadPopups();
+        if (section === 'members') loadMembers();
+        if (section === 'settlement') loadSettlement();
+    };
 });
 
 // ========== 이미지 업로드 핸들러 ==========
@@ -1072,138 +1018,378 @@ function previewPopupUrl() {
     }
 }
 
-// ========== 이슈 일괄 등록 ==========
-function saveBatchIssues() {
-    try {
-        console.log('[ADMIN] Starting batch issue registration...');
+// 4개국어 일괄 이슈 등록
+let issueBoxCount = 1;
+
+function addNewIssueBox() {
+    if (issueBoxCount >= 5) {
+        alert('최대 5개까지만 등록할 수 있습니다.');
+        return;
+    }
+    issueBoxCount++;
+    
+    const container = document.getElementById('issue-boxes-container');
+    const newBox = document.createElement('div');
+    newBox.className = 'border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm';
+    newBox.id = `issue-box-${issueBoxCount}`;
+    newBox.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-bold text-gray-800">📝 이슈 #${issueBoxCount}</h4>
+            <button type="button" onclick="removeIssueBox(${issueBoxCount})" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-times-circle text-xl"></i>
+            </button>
+        </div>
         
-        // 기존 이슈 가져오기
-        const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-        console.log('[ADMIN] Existing issues:', issues.length);
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2 text-purple-700">🟣 카테고리 *</label>
+            <select id="issue-${issueBoxCount}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                <option value="정치">정치</option>
+                <option value="crypto">암호화폐</option>
+                <option value="sports">스포츠</option>
+                <option value="entertainment">엔터테인먼트</option>
+                <option value="economy">경제</option>
+                <option value="science">과학/기술</option>
+                <option value="climate">기후/환경</option>
+                <option value="other">기타</option>
+            </select>
+        </div>
         
-        // 카테고리와 만료일, 초기 USDT
-        const categoryEl = document.getElementById('issue-batch-category');
-        const expireDaysEl = document.getElementById('issue-batch-days');
-        const initialUsdtEl = document.getElementById('issue-batch-usdt');
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-3 text-gray-800">H 제목 (4개 언어 입력) *</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                    <input type="text" id="issue-${issueBoxCount}-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="예: 비트코인이 $150K 도달?" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 en English</label>
+                    <input type="text" id="issue-${issueBoxCount}-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Bitcoin reaches $150K?">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 cn 中文</label>
+                    <input type="text" id="issue-${issueBoxCount}-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：比特币突破$150K？">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 jp 日本語</label>
+                    <input type="text" id="issue-${issueBoxCount}-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：ビットコインが$150K突破？">
+                </div>
+            </div>
+        </div>
         
-        if (!categoryEl || !expireDaysEl || !initialUsdtEl) {
-            throw new Error('필수 입력 필드를 찾을 수 없습니다. 페이지를 새로고침하세요.');
-        }
+        <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2 text-gray-700">큰 내용 설명 (선택)</label>
+            <textarea id="issue-${issueBoxCount}-description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
+        </div>
         
-        const category = categoryEl.value || 'crypto';
-        const expireDays = parseInt(expireDaysEl.value) || 7;
-        const initialUsdt = parseInt(initialUsdtEl.value) || 60;
-        
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + expireDays);
-        const expireDateISO = expireDate.toISOString();
-        
-        console.log('[ADMIN] Settings:', { category, expireDays, initialUsdt, expireDateISO });
-        
-        // 4개 언어
-        const languages = ['en', 'ko', 'zh', 'ja'];
-        const languageNames = {
-            'en': 'English',
-            'ko': '한국어',
-            'zh': '中文',
-            'ja': '日本語'
-        };
-        
-        const newIssues = [];
-        let addedCount = 0;
-        
-        // 각 언어별로 5개씩 총 20개 이슈 수집
-        languages.forEach(lang => {
-            for (let i = 1; i <= 5; i++) {
-                const inputId = `issue-${lang}-${i}`;
-                const input = document.getElementById(inputId);
-                const title = input ? input.value.trim() : '';
-                
-                if (title) {
-                    // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
-                    const yesRatio = 0.3 + Math.random() * 0.4;
-                    const yesBet = Math.floor(initialUsdt * yesRatio);
-                    const noBet = initialUsdt - yesBet;
-                    
-                    const newIssue = {
-                        id: `${Date.now()}-${lang}-${i}-${Math.random().toString(36).substr(2, 9)}`,
-                        title: title,
-                        description: `${languageNames[lang]} - Issue ${i}`,
-                        category: category,
-                        image: 'https://via.placeholder.com/400x200?text=EventBET',
-                        expireDate: expireDateISO,
-                        status: 'active',
-                        yesBet: yesBet,
-                        noBet: noBet,
-                        initialUsdt: initialUsdt,
-                        language: lang,
-                        createdAt: new Date().toISOString()
-                    };
-                    
-                    newIssues.push(newIssue);
-                    addedCount++;
-                    console.log(`[ADMIN] Added issue ${addedCount}:`, newIssue.title);
-                }
-            }
-        });
-        
-        if (addedCount === 0) {
-            alert('⚠️ 등록할 이슈가 없습니다.\n\n최소 1개 이상의 이슈 제목을 입력해주세요.\n\n입력 가능한 언어:\n- 🇺🇸 English\n- 🇰🇷 한국어\n- 🇨🇳 中文\n- 🇯🇵 日本語');
-            return;
-        }
-        
-        // 새 이슈를 앞에 추가
-        const updatedIssues = [...newIssues, ...issues];
-        
-        // localStorage에 저장
-        localStorage.setItem('eventbet_issues', JSON.stringify(updatedIssues));
-        console.log('[ADMIN] Saved to localStorage:', updatedIssues.length, 'total issues');
-        
-        // 저장 확인
-        const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-        console.log('[ADMIN] Verification - saved issues:', saved.length);
-        console.log('[ADMIN] First 3 issues:', saved.slice(0, 3));
-        
-        alert(`✅ 등록 완료!\n\n✔ ${addedCount}개의 이슈가 성공적으로 등록되었습니다.\n✔ 전체 ${saved.length}개 이슈 저장됨.\n\n📢 메인 페이지(https://cashiq.my)를 새로고침하면 즉시 표시됩니다!`);
-        
-        // 폼 초기화
-        languages.forEach(lang => {
-            for (let i = 1; i <= 5; i++) {
-                const inputId = `issue-${lang}-${i}`;
-                const input = document.getElementById(inputId);
-                if (input) input.value = '';
-            }
-        });
-        
-    } catch (error) {
-        console.error('[ADMIN] saveBatchIssues failed:', error);
-        alert('❌ 이슈 등록 실패:\n\n' + error.message + '\n\n콘솔에서 자세한 오류를 확인하세요.');
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-red-700">🟥 결론 설정 기간 *</label>
+                <input type="date" id="issue-${issueBoxCount}-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-green-700">🟩 Yes 배당률 (%)</label>
+                <input type="number" id="issue-${issueBoxCount}-yes-odds" value="50" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-2 text-yellow-700">🟨 전체 배팅액 (USDT)</label>
+                <input type="number" id="issue-${issueBoxCount}-usdt" value="100000" min="0" step="1000" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+            </div>
+        </div>
+    `;
+    container.appendChild(newBox);
+}
+
+function removeIssueBox(id) {
+    if (issueBoxCount <= 1) {
+        alert('최소 1개는 남겨야 합니다.');
+        return;
+    }
+    const box = document.getElementById(`issue-box-${id}`);
+    if (box) {
+        box.remove();
+        issueBoxCount--;
     }
 }
 
-// ========== 전역 함수 노출 (HTML onclick에서 사용) ==========
-window.showSection = showSection;
-window.loadBanners = loadBanners;
-window.saveBanner = saveBanner;
-window.editBanner = editBanner;
-window.deleteBanner = deleteBanner;
-window.loadNotices = loadNotices;
-window.saveNotice = saveNotice;
-window.editNotice = editNotice;
-window.deleteNotice = deleteNotice;
-window.loadPopups = loadPopups;
-window.savePopup = savePopup;
-window.editPopup = editPopup;
-window.deletePopup = deletePopup;
-window.loadMembers = loadMembers;
-window.suspendMember = suspendMember;
-window.activateMember = activateMember;
-window.deleteMember = deleteMember;
-window.saveBatchIssues = saveBatchIssues;
-window.handleBannerImageUpload = handleBannerImageUpload;
-window.uploadBannerImage = uploadBannerImage;
-window.handleNoticeImageUpload = handleNoticeImageUpload;
-window.uploadNoticeImage = uploadNoticeImage;
-window.previewNoticeUrl = previewNoticeUrl;
+async function saveBatchIssues(event) {
+    event.preventDefault();
+    
+    const issues = [];
+    for (let i = 1; i <= 5; i++) {
+        const box = document.getElementById(`issue-box-${i}`);
+        if (!box) continue;
+        
+        const ko = document.getElementById(`issue-${i}-ko`)?.value.trim();
+        const en = document.getElementById(`issue-${i}-en`)?.value.trim();
+        const zh = document.getElementById(`issue-${i}-zh`)?.value.trim();
+        const ja = document.getElementById(`issue-${i}-ja`)?.value.trim();
+        const category = document.getElementById(`issue-${i}-category`)?.value;
+        const description = document.getElementById(`issue-${i}-description`)?.value.trim();
+        const date = document.getElementById(`issue-${i}-date`)?.value;
+        const yesOdds = document.getElementById(`issue-${i}-yes-odds`)?.value || 50;
+        const usdt = document.getElementById(`issue-${i}-usdt`)?.value || 100000;
+        
+        if (ko && category && date) {
+            issues.push({
+                title_ko: ko,
+                title_en: en || ko,
+                title_zh: zh || ko,
+                title_ja: ja || ko,
+                category,
+                description,
+                expire_date: new Date(date).toISOString(),
+                yes_odds: parseFloat(yesOdds),
+                initial_usdt: parseFloat(usdt)
+            });
+        }
+    }
+    
+    if (issues.length === 0) {
+        alert('최소 1개 이슈를 입력하세요.');
+        return;
+    }
+    
+    // localStorage에 저장
+    const existingIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    issues.forEach(issue => {
+        existingIssues.push({
+            ...issue,
+            id: `iss_${Date.now()}_${Math.random()}`,
+            status: 'active',
+            yes_bet: Math.floor(issue.initial_usdt * (issue.yes_odds / 100)),
+            no_bet: Math.floor(issue.initial_usdt * ((100 - issue.yes_odds) / 100)),
+            createdAt: new Date().toISOString()
+        });
+    });
+    localStorage.setItem('eventbet_issues', JSON.stringify(existingIssues));
+    
+    alert(`✅ ${issues.length}개 이슈가 등록되었습니다!`);
+    closeIssueModal();
+    location.reload();
+}
 
-console.log('[ADMIN] All functions exposed to global scope');
+// ========== 이슈 일괄 등록 모달 ==========
+let issueCardCount = 0;
+
+function openBatchIssueModal() {
+    document.getElementById('batch-issue-modal').style.display = 'flex';
+    issueCardCount = 0;
+    document.getElementById('batch-issues-container').innerHTML = '';
+    addIssueCard(); // 첫 번째 카드 자동 추가
+}
+
+function closeBatchIssueModal() {
+    document.getElementById('batch-issue-modal').style.display = 'none';
+}
+
+function addIssueCard() {
+    if (issueCardCount >= 5) {
+        alert('⚠️ 최대 5개까지만 추가할 수 있습니다.');
+        return;
+    }
+    
+    issueCardCount++;
+    const container = document.getElementById('batch-issues-container');
+    
+    const cardHtml = `
+        <div class="border-2 border-gray-200 rounded-xl p-6 mb-6 bg-white shadow-sm" id="issue-card-${issueCardCount}">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-bold text-blue-600">
+                    <i class="fas fa-file-alt mr-2"></i>이슈 #${issueCardCount}
+                </h4>
+                <button onclick="removeIssueCard(${issueCardCount})" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 카테고리 -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-2">
+                    <i class="fas fa-folder text-purple-600 mr-1"></i>카테고리 *
+                </label>
+                <select id="category-${issueCardCount}" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    <option value="">선택</option>
+                    <option value="crypto">💰 암호화폐</option>
+                    <option value="politics">🏛️ 정치</option>
+                    <option value="sports">⚽ 스포츠</option>
+                    <option value="entertainment">🎬 엔터테인먼트</option>
+                    <option value="economy">📊 경제</option>
+                    <option value="science">🔬 과학/기술</option>
+                    <option value="climate">🌍 기후/환경</option>
+                    <option value="other">📌 기타</option>
+                </select>
+            </div>
+            
+            <!-- 4개 언어 제목 -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-2">
+                    <i class="fas fa-heading text-green-600 mr-1"></i>제목 (4개 언어 필수) *
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-600">🇰🇷 한국어</label>
+                        <input type="text" id="title-ko-${issueCardCount}" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                            placeholder="예: 비트코인이 $150K 돌파?" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">🇺🇸 English</label>
+                        <input type="text" id="title-en-${issueCardCount}" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                            placeholder="e.g., Bitcoin reaches $150K?" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">🇨🇳 中文</label>
+                        <input type="text" id="title-zh-${issueCardCount}" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                            placeholder="例如：比特币突破$150K？" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">🇯🇵 日本語</label>
+                        <input type="text" id="title-ja-${issueCardCount}" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                            placeholder="例：ビットコイン$150K突破？" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 내용 설명 (선택) -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-2">
+                    <i class="fas fa-align-left text-blue-600 mr-1"></i>내용 설명 (선택)
+                </label>
+                <textarea id="description-${issueCardCount}" rows="3" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                    placeholder="이슈에 대한 간단한 설명..."></textarea>
+            </div>
+            
+            <!-- 설정 그리드 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">
+                        <i class="fas fa-calendar text-red-600 mr-1"></i>결론 결정 기간 *
+                    </label>
+                    <input type="datetime-local" id="expiredate-${issueCardCount}" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">
+                        <i class="fas fa-percentage text-green-600 mr-1"></i>Yes 배팅 비율 (%)
+                    </label>
+                    <input type="number" id="yes-odds-${issueCardCount}" value="50" min="0" max="100" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">
+                        <i class="fas fa-coins text-yellow-600 mr-1"></i>초기 배팅액 (USDT)
+                    </label>
+                    <input type="number" id="initial-usdt-${issueCardCount}" value="100000" min="0" step="1000" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', cardHtml);
+}
+
+function removeIssueCard(cardId) {
+    const card = document.getElementById(`issue-card-${cardId}`);
+    if (card) {
+        card.remove();
+        issueCardCount--;
+        
+        // 카드 번호 재정렬
+        const cards = document.querySelectorAll('[id^="issue-card-"]');
+        cards.forEach((card, index) => {
+            const newIndex = index + 1;
+            const oldId = card.id.match(/\d+/)[0];
+            
+            // ID 업데이트
+            card.id = `issue-card-${newIndex}`;
+            card.querySelector('h4').innerHTML = `<i class="fas fa-file-alt mr-2"></i>이슈 #${newIndex}`;
+            
+            // 내부 input ID도 업데이트
+            card.querySelectorAll('[id]').forEach(el => {
+                const currentId = el.id;
+                el.id = currentId.replace(/-\d+$/, `-${newIndex}`);
+            });
+            
+            // 삭제 버튼 onclick 업데이트
+            card.querySelector('button').onclick = () => removeIssueCard(newIndex);
+        });
+        
+        issueCardCount = cards.length;
+    }
+}
+
+function saveBatchIssues() {
+    const issues = [];
+    
+    for (let i = 1; i <= issueCardCount; i++) {
+        const card = document.getElementById(`issue-card-${i}`);
+        if (!card) continue;
+        
+        const category = document.getElementById(`category-${i}`).value;
+        const titleKo = document.getElementById(`title-ko-${i}`).value.trim();
+        const titleEn = document.getElementById(`title-en-${i}`).value.trim();
+        const titleZh = document.getElementById(`title-zh-${i}`).value.trim();
+        const titleJa = document.getElementById(`title-ja-${i}`).value.trim();
+        const description = document.getElementById(`description-${i}`).value.trim();
+        const expiredate = document.getElementById(`expiredate-${i}`).value;
+        const yesOdds = parseInt(document.getElementById(`yes-odds-${i}`).value);
+        const initialUsdt = parseInt(document.getElementById(`initial-usdt-${i}`).value);
+        
+        // 필수 필드 검증
+        if (!category) {
+            alert(`⚠️ 이슈 #${i}: 카테고리를 선택해주세요.`);
+            return;
+        }
+        if (!titleKo || !titleEn || !titleZh || !titleJa) {
+            alert(`⚠️ 이슈 #${i}: 4개 언어 제목을 모두 입력해주세요.`);
+            return;
+        }
+        if (!expiredate) {
+            alert(`⚠️ 이슈 #${i}: 결론 결정 기간을 선택해주세요.`);
+            return;
+        }
+        
+        // 4개 언어별로 각각 이슈 생성
+        const languages = [
+            { code: 'ko', title: titleKo, name: '한국어' },
+            { code: 'en', title: titleEn, name: 'English' },
+            { code: 'zh', title: titleZh, name: '中文' },
+            { code: 'ja', title: titleJa, name: '日本語' }
+        ];
+        
+        languages.forEach(lang => {
+            issues.push({
+                id: Date.now() + Math.random(),
+                category: category,
+                language: lang.code,
+                title: lang.title,
+                description: description || `${lang.name} 버전`,
+                expiredate: expiredate,
+                yes_odds: yesOdds,
+                initial_usdt: initialUsdt,
+                yes_bet: Math.floor(initialUsdt * (yesOdds / 100)),
+                no_bet: Math.floor(initialUsdt * ((100 - yesOdds) / 100)),
+                createdAt: new Date().toISOString()
+            });
+        });
+    }
+    
+    if (issues.length === 0) {
+        alert('⚠️ 등록할 이슈가 없습니다. 최소 1개 이상의 이슈를 추가해주세요.');
+        return;
+    }
+    
+    // localStorage에 저장
+    const existingIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    existingIssues.push(...issues);
+    localStorage.setItem('eventbet_issues', JSON.stringify(existingIssues));
+    
+    alert(`✅ ${issues.length}개 이슈가 등록되었습니다!\n(${issueCardCount}개 이슈 x 4개 언어 = ${issues.length}개)`);
+    closeBatchIssueModal();
+    location.reload();
+}

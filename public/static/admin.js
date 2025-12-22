@@ -1096,56 +1096,235 @@ function loadBatchIssuesForm() {
     // 폼이 이미 로드되어 있으면 아무것도 하지 않음
 }
 
+// 일괄 등록 모달 열기
+function openBatchIssueModal() {
+    const modal = document.getElementById('batch-issue-modal');
+    if (!modal) {
+        console.error('batch-issue-modal not found');
+        return;
+    }
+    
+    modal.classList.add('active');
+    
+    // 초기 이슈 카드 1개 생성
+    const container = document.getElementById('batch-issues-container');
+    container.innerHTML = '';
+    addIssueCard();
+}
+
+// 일괄 등록 모달 닫기
+function closeBatchIssueModal() {
+    const modal = document.getElementById('batch-issue-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 이슈 카드 추가
+let issueCardCount = 0;
+
+function addIssueCard() {
+    const container = document.getElementById('batch-issues-container');
+    const currentCards = container.querySelectorAll('.issue-card');
+    
+    if (currentCards.length >= 5) {
+        alert('최대 5개의 이슈만 등록할 수 있습니다.');
+        return;
+    }
+    
+    issueCardCount++;
+    const cardId = issueCardCount;
+    
+    const cardHtml = `
+        <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm issue-card" data-card-id="${cardId}">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-bold text-gray-800">📝 이슈 #${cardId}</h4>
+                <button type="button" onclick="removeIssueCard(${cardId})" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 카테고리 -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-purple-700">
+                    🟣 카테고리 *
+                </label>
+                <select id="batch-issue-${cardId}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    <option value="정치">정치</option>
+                    <option value="crypto">암호화폐</option>
+                    <option value="sports">스포츠</option>
+                    <option value="entertainment">엔터테인먼트</option>
+                    <option value="economy">경제</option>
+                    <option value="science">과학/기술</option>
+                    <option value="climate">기후/환경</option>
+                    <option value="other">기타</option>
+                </select>
+            </div>
+            
+            <!-- 4개 국어 제목 (2x2 그리드) -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-3 text-gray-800">
+                    📝 제목 (4개 언어 입력) *
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                        <input type="text" id="batch-issue-${cardId}-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="예: 비트코인이 $150K 도달?" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 English</label>
+                        <input type="text" id="batch-issue-${cardId}-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="e.g., Bitcoin reaches $150K?" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 中文</label>
+                        <input type="text" id="batch-issue-${cardId}-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="例：比特币突破$150K？" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 日本語</label>
+                        <input type="text" id="batch-issue-${cardId}-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="例：ビットコインが$150K突破？" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 내용 설명 (선택) -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700">내용 설명 (선택)</label>
+                <textarea id="batch-issue-${cardId}-description" rows="3" 
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" 
+                          placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
+            </div>
+            
+            <!-- 공통 설정 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-red-700">
+                        🟥 결론 결정 기간 *
+                    </label>
+                    <input type="date" id="batch-issue-${cardId}-date" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-green-700">
+                        🟩 Yes 배팅 비율 (%)
+                    </label>
+                    <input type="number" id="batch-issue-${cardId}-yes-odds" value="50" min="0" max="100" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                        🟨 초기 배팅액 (USDT)
+                    </label>
+                    <input type="number" id="batch-issue-${cardId}-usdt" value="100000" min="0" step="1000" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', cardHtml);
+    
+    // 기본 날짜를 7일 후로 설정
+    const dateInput = document.getElementById(`batch-issue-${cardId}-date`);
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 7);
+    dateInput.value = defaultDate.toISOString().split('T')[0];
+}
+
+// 이슈 카드 삭제
+function removeIssueCard(cardId) {
+    const card = document.querySelector(`.issue-card[data-card-id="${cardId}"]`);
+    if (card) {
+        card.remove();
+    }
+    
+    // 남은 카드 번호 재정렬
+    const container = document.getElementById('batch-issues-container');
+    const cards = container.querySelectorAll('.issue-card');
+    cards.forEach((card, index) => {
+        const title = card.querySelector('h4');
+        if (title) {
+            title.textContent = `📝 이슈 #${index + 1}`;
+        }
+    });
+}
+
 async function saveBatchIssues() {
     console.log('=== saveBatchIssues 시작 ===');
     
-    const category = document.getElementById('issue-batch-category').value;
-    const daysToExpire = parseInt(document.getElementById('issue-batch-days').value);
-    const initialUsdt = parseFloat(document.getElementById('issue-batch-usdt')?.value || 60);
+    const container = document.getElementById('batch-issues-container');
+    const cards = container.querySelectorAll('.issue-card');
     
-    console.log('Category:', category);
-    console.log('Days:', daysToExpire);
-    console.log('USDT:', initialUsdt);
-    
-    const languages = ['en', 'ko', 'zh', 'ja'];
-    const languageNames = {
-        'en': 'English',
-        'ko': '한국어',
-        'zh': '中文',
-        'ja': '日本語'
-    };
+    if (cards.length === 0) {
+        alert('등록할 이슈가 없습니다.');
+        return;
+    }
     
     // 기존 이슈 불러오기 (localStorage에서)
     let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
     console.log('기존 이슈:', issues.length, '개');
     
+    const newIssues = [];
     let addedCount = 0;
     
-    // 만료일 계산
-    const expireDate = new Date();
-    expireDate.setDate(expireDate.getDate() + daysToExpire);
-    const expireDateISO = expireDate.toISOString().slice(0, 16);
-    
-    // 각 언어별로 5개씩 이슈 등록
-    const newIssues = [];
-    languages.forEach(lang => {
-        for (let i = 1; i <= 5; i++) {
-            const inputId = `issue-${lang}-${i}`;
-            const inputElement = document.getElementById(inputId);
-            const title = inputElement?.value?.trim();
-            
-            console.log(`Checking ${inputId}:`, title);
-            
-            if (title) {
-                // 초기 USDT를 YES/NO에 랜덤 분배 (30-70% 비율)
-                const yesRatio = 0.3 + Math.random() * 0.4;
-                const yesBet = Math.floor(initialUsdt * yesRatio);
-                const noBet = initialUsdt - yesBet;
-                
+    // 각 카드별로 처리
+    cards.forEach((card, cardIndex) => {
+        const cardId = card.dataset.cardId;
+        
+        // 카테고리
+        const category = document.getElementById(`batch-issue-${cardId}-category`)?.value;
+        
+        // 4개 언어
+        const koTitle = document.getElementById(`batch-issue-${cardId}-ko`)?.value?.trim();
+        const enTitle = document.getElementById(`batch-issue-${cardId}-en`)?.value?.trim();
+        const zhTitle = document.getElementById(`batch-issue-${cardId}-zh`)?.value?.trim();
+        const jaTitle = document.getElementById(`batch-issue-${cardId}-ja`)?.value?.trim();
+        
+        // 설명
+        const description = document.getElementById(`batch-issue-${cardId}-description`)?.value?.trim();
+        
+        // 날짜
+        const expireDate = document.getElementById(`batch-issue-${cardId}-date`)?.value;
+        
+        // Yes 비율
+        const yesOdds = parseFloat(document.getElementById(`batch-issue-${cardId}-yes-odds`)?.value || 50);
+        
+        // 초기 USDT
+        const initialUsdt = parseFloat(document.getElementById(`batch-issue-${cardId}-usdt`)?.value || 100000);
+        
+        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, yesOdds, initialUsdt });
+        
+        // 필수 필드 검증
+        if (!category || !expireDate) {
+            alert(`이슈 #${cardIndex + 1}: 카테고리와 결론 결정 기간은 필수입니다.`);
+            return;
+        }
+        
+        // Yes/No 배팅액 계산
+        const yesRatio = yesOdds / 100;
+        const yesBet = Math.floor(initialUsdt * yesRatio);
+        const noBet = initialUsdt - yesBet;
+        
+        // 만료일 ISO 형식
+        const expireDateISO = new Date(expireDate).toISOString().slice(0, 16);
+        
+        // 언어별 이슈 생성
+        const languages = [
+            { code: 'ko', title: koTitle, name: '한국어' },
+            { code: 'en', title: enTitle, name: 'English' },
+            { code: 'zh', title: zhTitle, name: '中文' },
+            { code: 'ja', title: jaTitle, name: '日本語' }
+        ];
+        
+        languages.forEach(lang => {
+            if (lang.title) {
                 const newIssue = {
-                    id: `${Date.now()}-${lang}-${i}-${Math.random().toString(36).substr(2, 9)}`,
-                    title: title,
-                    description: `${languageNames[lang]} - Issue ${i}`,
+                    id: `${Date.now()}-${lang.code}-${cardIndex}-${Math.random().toString(36).substr(2, 9)}`,
+                    title: lang.title,
+                    description: description || `${lang.name} - Issue ${cardIndex + 1}`,
                     category: category,
                     image: 'https://via.placeholder.com/400x200?text=EventBET',
                     expireDate: expireDateISO,
@@ -1153,15 +1332,21 @@ async function saveBatchIssues() {
                     yesBet: yesBet,
                     noBet: noBet,
                     initialUsdt: initialUsdt,
-                    language: lang,
+                    language: lang.code,
                     createdAt: new Date().toISOString()
                 };
                 
                 newIssues.push(newIssue);
                 addedCount++;
+                console.log(`Added: ${lang.name} - ${lang.title}`);
             }
-        }
+        });
     });
+    
+    if (newIssues.length === 0) {
+        alert('입력된 이슈가 없습니다. 최소 1개 언어의 제목을 입력해주세요.');
+        return;
+    }
     
     // 새 이슈를 앞에 추가
     issues = [...newIssues, ...issues];
@@ -1177,12 +1362,6 @@ async function saveBatchIssues() {
     
     alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n같은 브라우저 메인 페이지에서 확인하세요!`);
     
-    // 폼 초기화
-    languages.forEach(lang => {
-        for (let i = 1; i <= 5; i++) {
-            const inputId = `issue-${lang}-${i}`;
-            const input = document.getElementById(inputId);
-            if (input) input.value = '';
-        }
-    });
+    // 모달 닫기
+    closeBatchIssueModal();
 }
