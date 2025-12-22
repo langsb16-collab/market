@@ -557,19 +557,34 @@ function saveFeeSettings() {
 }
 
 // 이슈 목록 로드
-function loadIssues() {
-    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    const filterStatus = document.getElementById('issue-status-filter')?.value || '';
-    
-    let filteredIssues = issues;
-    if (filterStatus) {
-        filteredIssues = issues.filter(issue => issue.status === filterStatus);
-    }
-    
+async function loadIssues() {
     const tbody = document.getElementById('issues-list');
     
-    if (filteredIssues.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+    try {
+        // API에서 이슈 목록 가져오기
+        const response = await fetch('/api/issues');
+        const data = await response.json();
+        
+        if (!data.success || !data.issues || data.issues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+            return;
+        }
+        
+        const issues = data.issues;
+        const filterStatus = document.getElementById('issue-status-filter')?.value || '';
+        
+        let filteredIssues = issues;
+        if (filterStatus) {
+            filteredIssues = issues.filter(issue => issue.status === filterStatus);
+        }
+        
+        if (filteredIssues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">필터 조건에 맞는 이슈가 없습니다.</td></tr>';
+            return;
+        }
+    } catch (error) {
+        console.error('이슈 로드 실패:', error);
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-red-500 py-8">이슈 로드 중 오류가 발생했습니다.</td></tr>';
         return;
     }
     
@@ -1526,31 +1541,30 @@ async function saveBatchIssues() {
 
 // ========== 전체 등록 (관리자 → 메인 사이트) ==========
 async function registerAllIssuesToMainSite() {
-    console.log('=== 메인 사이트 일괄 등록 시작 ===');
+    console.log('=== 전체 등록 시작 ===');
     
     // 관리자 화면의 모든 이슈 가져오기
     const adminIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
     
     if (adminIssues.length === 0) {
-        alert('등록할 이슈가 없습니다.\n\n먼저 "이슈 일괄 등록" 버튼으로 이슈를 등록해주세요.');
+        alert('등록할 이슈가 없습니다.');
         return;
     }
     
     // 확인 메시지
-    if (!confirm(`✅ 메인 사이트에 ${adminIssues.length}개의 이슈를 등록하시겠습니까?\n\n이슈는 즉시 메인 사이트에 표시됩니다.`)) {
+    if (!confirm(`총 ${adminIssues.length}개의 이슈를 메인 사이트에 등록하시겠습니까?`)) {
         return;
     }
     
     try {
-        // ✅ 메인 사이트도 같은 localStorage 키를 사용하므로 이미 공유됨
-        // 추가 작업 불필요 - eventbet_issues는 이미 관리자와 메인이 공유
+        // 메인 사이트의 이슈 데이터에 복사
+        localStorage.setItem('eventbet_main_issues', JSON.stringify(adminIssues));
         
-        console.log(`✅ ${adminIssues.length}개 이슈가 메인 사이트에서 이미 사용 가능합니다.`);
-        
-        alert(`✅ 완료!\n\n총 ${adminIssues.length}개의 이슈가 메인 사이트에서 표시됩니다.\n\n메인 페이지를 새로고침(Ctrl+Shift+R)하여 확인하세요!`);
+        console.log(`✅ ${adminIssues.length}개 이슈를 메인 사이트에 등록했습니다.`);
+        alert(`✅ 성공!\n\n총 ${adminIssues.length}개의 이슈가 메인 사이트에 등록되었습니다.`);
         
     } catch (error) {
-        console.error('메인 사이트 등록 실패:', error);
+        console.error('전체 등록 실패:', error);
         alert('❌ 등록 실패: ' + error.message);
     }
 }

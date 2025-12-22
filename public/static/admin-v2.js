@@ -1,25 +1,115 @@
 // EventBET Admin Panel JavaScript
 
-// 섹션 전환
-function showSection(section) {
-    // 모든 섹션 숨기기
-    document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-    
-    // 선택된 섹션 표시
-    document.getElementById(`${section}-section`).classList.add('active');
-    event.target.closest('.sidebar-item').classList.add('active');
-    
+// ============================================================
+// 섹션 전환 통합 로직 (CSS 기반 active 클래스 토글)
+// ============================================================
+(() => {
+  const SECTION_SELECTOR = '.content-section';
+  const SIDEBAR_ITEM_SELECTOR = '.sidebar-item[data-section]';
+
+  // 기본으로 처음 보여줄 섹션 ID
+  const DEFAULT_SECTION_ID = 'issues-section';
+
+  function clearActiveSections() {
+    document.querySelectorAll(SECTION_SELECTOR).forEach(sec => {
+      sec.classList.remove('active');
+    });
+  }
+
+  function setActiveSidebar(sectionId) {
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === sectionId);
+    });
+  }
+
+  // 섹션 전환 (CSS가 .content-section / .content-section.active로 display 제어)
+  function showSection(sectionId, opts = { updateHash: true }) {
+    if (!sectionId) return;
+
+    const target = document.getElementById(sectionId);
+    if (!target) {
+      console.error('[showSection] section not found:', sectionId);
+      return;
+    }
+
+    clearActiveSections();
+    target.classList.add('active');
+    setActiveSidebar(sectionId);
+
+    console.log('[showSection] ✅ 섹션 전환:', sectionId);
+
     // 데이터 로드
-    if (section === 'banners') loadBanners();
-    if (section === 'notices') loadNotices();
-    if (section === 'popups') loadPopups();
-    if (section === 'members') loadMembers();
-    if (section === 'issues') {
+    if (sectionId === 'banners-section') loadBanners();
+    if (sectionId === 'notices-section') loadNotices();
+    if (sectionId === 'popups-section') loadPopups();
+    if (sectionId === 'members-section') loadMembers();
+    if (sectionId === 'issues-section') {
         loadBatchIssuesForm();
         loadRegisteredIssues();
     }
-}
+
+    // 새로고침/뒤로가기 유지용(선택)
+    if (opts.updateHash) {
+      const h = `#${sectionId}`;
+      if (location.hash !== h) history.replaceState(null, '', h);
+    }
+  }
+
+  function bindSidebarClick() {
+    // 이벤트 위임: sidebar 전체에 1번만 걸어도 됨
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+      console.warn('[bindSidebarClick] .sidebar not found');
+      return;
+    }
+
+    sidebar.addEventListener('click', (event) => {
+      const item = event.target.closest('.sidebar-item[data-section]');
+      if (!item) return;
+
+      event.preventDefault();
+      const sectionId = item.dataset.section;
+      showSection(sectionId, { updateHash: true });
+    });
+  }
+
+  function initialRoute() {
+    const hashId = (location.hash || '').replace('#', '').trim();
+
+    // 1) URL 해시가 유효하면 그 섹션으로
+    if (hashId && document.getElementById(hashId)) {
+      showSection(hashId, { updateHash: false });
+      return;
+    }
+
+    // 2) 해시가 없거나 잘못되면 기본 섹션으로
+    if (document.getElementById(DEFAULT_SECTION_ID)) {
+      showSection(DEFAULT_SECTION_ID, { updateHash: true });
+      return;
+    }
+
+    // 3) DEFAULT_SECTION_ID가 없으면 첫 content-section을 활성화(보험)
+    const first = document.querySelector(SECTION_SELECTOR);
+    if (first && first.id) showSection(first.id, { updateHash: true });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Admin Sections] 초기화 시작');
+    bindSidebarClick();
+    initialRoute();
+  });
+
+  // 뒤로가기/앞으로가기 대응(선택)
+  window.addEventListener('hashchange', () => {
+    const hashId = (location.hash || '').replace('#', '').trim();
+    if (hashId && document.getElementById(hashId)) {
+      showSection(hashId, { updateHash: false });
+    }
+  });
+
+  // 기존 코드가 전역 showSection을 호출하고 있다면 호환성 유지
+  window.showSection = showSection;
+})();
 
 // ========== 배너 관리 ==========
 function loadBanners() {
@@ -1408,7 +1498,7 @@ function removeIssueCard(cardId) {
 }
 
 async function saveBatchIssues() {
-    console.log('=== saveBatchIssues 시작 ===');
+    console.log('=== saveBatchIssues 시작 (서버 API 사용) ===');
     
     const container = document.getElementById('batch-issues-container');
     const cards = container.querySelectorAll('.issue-card');
@@ -1418,15 +1508,12 @@ async function saveBatchIssues() {
         return;
     }
     
-    // 기존 이슈 불러오기 (localStorage에서)
-    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    console.log('기존 이슈:', issues.length, '개');
+    let successCount = 0;
+    let failCount = 0;
     
-    const newIssues = [];
-    let addedCount = 0;
-    
-    // 각 카드별로 처리
-    cards.forEach((card, cardIndex) => {
+    // 각 카드별로 서버 API로 전송
+    for (let cardIndex = 0; cardIndex < cards.length; cardIndex++) {
+        const card = cards[cardIndex];
         const cardId = card.dataset.cardId;
         
         // 카테고리
@@ -1438,90 +1525,79 @@ async function saveBatchIssues() {
         const zhTitle = document.getElementById(`batch-issue-${cardId}-zh`)?.value?.trim();
         const jaTitle = document.getElementById(`batch-issue-${cardId}-ja`)?.value?.trim();
         
-        // 설명
-        const description = document.getElementById(`batch-issue-${cardId}-description`)?.value?.trim();
-        
         // 날짜
         const expireDate = document.getElementById(`batch-issue-${cardId}-date`)?.value;
-        
-        // Yes 비율
-        const yesOdds = parseFloat(document.getElementById(`batch-issue-${cardId}-yes-odds`)?.value || 50);
         
         // 초기 USDT
         const initialUsdt = parseFloat(document.getElementById(`batch-issue-${cardId}-usdt`)?.value || 100000);
         
-        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, yesOdds, initialUsdt });
+        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, initialUsdt });
         
         // 필수 필드 검증
         if (!category || !expireDate) {
             alert(`이슈 #${cardIndex + 1}: 카테고리와 결론 결정 기간은 필수입니다.`);
-            return;
+            failCount++;
+            continue;
         }
         
-        // Yes/No 배팅액 계산
-        const yesRatio = yesOdds / 100;
-        const yesBet = Math.floor(initialUsdt * yesRatio);
-        const noBet = initialUsdt - yesBet;
+        if (!koTitle || !enTitle || !zhTitle || !jaTitle) {
+            alert(`이슈 #${cardIndex + 1}: 4개 언어 제목을 모두 입력해주세요.`);
+            failCount++;
+            continue;
+        }
         
-        // 만료일 ISO 형식
-        const expireDateISO = new Date(expireDate).toISOString().slice(0, 16);
+        // 만료일 계산 (며칠 뒤인지)
+        const today = new Date();
+        const expire = new Date(expireDate);
+        const expireDays = Math.ceil((expire - today) / (1000 * 60 * 60 * 24));
         
-        // 언어별 이슈 생성
-        const languages = [
-            { code: 'ko', title: koTitle, name: '한국어' },
-            { code: 'en', title: enTitle, name: 'English' },
-            { code: 'zh', title: zhTitle, name: '中文' },
-            { code: 'ja', title: jaTitle, name: '日本語' }
-        ];
+        // 서버로 전송할 데이터
+        const issueData = {
+            title_ko: koTitle,
+            title_en: enTitle,
+            title_zh: zhTitle,
+            title_ja: jaTitle,
+            category: category,
+            initial_usdt: initialUsdt,
+            expire_days: expireDays > 0 ? expireDays : 1
+        };
         
-        languages.forEach(lang => {
-            if (lang.title) {
-                const newIssue = {
-                    id: `${Date.now()}-${lang.code}-${cardIndex}-${Math.random().toString(36).substr(2, 9)}`,
-                    title: lang.title,
-                    description: description || `${lang.name} - Issue ${cardIndex + 1}`,
-                    category: category,
-                    image: 'https://via.placeholder.com/400x200?text=EventBET',
-                    expireDate: expireDateISO,
-                    status: 'active',
-                    yesBet: yesBet,
-                    noBet: noBet,
-                    initialUsdt: initialUsdt,
-                    language: lang.code,
-                    createdAt: new Date().toISOString()
-                };
-                
-                newIssues.push(newIssue);
-                addedCount++;
-                console.log(`Added: ${lang.name} - ${lang.title}`);
+        try {
+            const response = await fetch('/api/issues', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(issueData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`✅ Issue ${cardIndex + 1} 등록 성공:`, result.id);
+                successCount++;
+            } else {
+                console.error(`❌ Issue ${cardIndex + 1} 등록 실패:`, result.error);
+                failCount++;
             }
-        });
-    });
-    
-    if (newIssues.length === 0) {
-        alert('입력된 이슈가 없습니다. 최소 1개 언어의 제목을 입력해주세요.');
-        return;
+        } catch (error) {
+            console.error(`❌ Issue ${cardIndex + 1} 전송 오류:`, error);
+            failCount++;
+        }
     }
     
-    // 새 이슈를 앞에 추가
-    issues = [...newIssues, ...issues];
-    
-    // 관리자 localStorage에만 저장
-    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
-    
-    // 저장 확인
-    const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    console.log('✅ Saved to localStorage:', saved.length, 'issues');
-    console.log('✅ New issues added:', newIssues.length);
-    console.log('✅ First issue:', saved[0]);
-    
-    alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 관리자 페이지에 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n"메인 사이트 일괄 등록" 버튼으로 메인 사이트에 표시하세요!`);
-    
-    // 모달 닫기
-    closeBatchIssueModal();
-    
-    // 이슈 목록 새로고침
-    loadRegisteredIssues();
+    // 결과 메시지
+    if (successCount > 0) {
+        alert(`✅ 완료!\n\n성공: ${successCount}개\n실패: ${failCount}개\n\n메인 페이지를 새로고침하여 확인하세요!`);
+        
+        // 모달 닫기
+        closeBatchIssueModal();
+        
+        // 이슈 목록 새로고침
+        loadRegisteredIssues();
+    } else {
+        alert(`❌ 모든 이슈 등록에 실패했습니다.\n\n실패: ${failCount}개`);
+    }
 }
 
 // ========== 전체 등록 (관리자 → 메인 사이트) ==========

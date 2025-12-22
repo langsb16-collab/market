@@ -280,18 +280,6 @@ const generateEvents = () => {
 
 // ✅ Events will be generated in DOMContentLoaded
 let events = []
-            }
-        })
-        
-        // Add admin events at the beginning
-        events = [...adminEvents, ...events]
-        console.log(`EventBET: ✅ Added ${adminEvents.length} admin issues, total events: ${events.length}`)
-    } catch (error) {
-        console.error('EventBET: Error converting issues:', error)
-    }
-} else {
-    console.log('EventBET: No admin issues found in localStorage')
-}
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
@@ -372,6 +360,19 @@ function setupEventListeners() {
     
     const submitIssueBtn = document.getElementById('submit-issue-btn')
     if (submitIssueBtn) submitIssueBtn.addEventListener('click', openSubmitIssueModal)
+    
+    // Close submit modal buttons
+    const closeSubmitModal = document.getElementById('close-submit-modal')
+    if (closeSubmitModal) closeSubmitModal.addEventListener('click', closeSubmitIssueModal)
+    
+    const cancelSubmitBtn = document.getElementById('cancel-submit-btn')
+    if (cancelSubmitBtn) cancelSubmitBtn.addEventListener('click', closeSubmitIssueModal)
+    
+    // Issue form submission
+    const issueForm = document.getElementById('issue-form')
+    if (issueForm) {
+        issueForm.addEventListener('submit', handleIssueSubmit)
+    }
     
     const exploreButton = document.getElementById('explore-button')
     if (exploreButton) {
@@ -771,132 +772,9 @@ function closeBetModal() {
 // Open submit issue modal
 function openSubmitIssueModal() {
     const modal = document.getElementById('submit-issue-modal')
-    const modalContent = document.getElementById('submit-modal-content')
+    if (!modal) return
     
-    if (!modal || !modalContent) return
-    
-    modalContent.innerHTML = `
-        <form id="issue-form" class="space-y-4">
-            ${!currentWallet ? `
-            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
-                <p class="text-sm text-yellow-700">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    이슈를 제출하려면 지갑을 연결해주세요
-                </p>
-                <button type="button" onclick="document.getElementById('connect-wallet').click(); closeSubmitIssueModal();"
-                        class="mt-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm">
-                    <i class="fas fa-wallet mr-2"></i>
-                    지갑 연결
-                </button>
-            </div>
-            ` : ''}
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">이슈 제목 (한국어) *</label>
-                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Issue Title (English) *</label>
-                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">问题标题 (中文) *</label>
-                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">問題タイトル (日本語) *</label>
-                    <input type="text" required ${!currentWallet ? 'disabled' : ''}
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">설명 (선택사항)</label>
-                <textarea rows="3" ${!currentWallet ? 'disabled' : ''}
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">결과 옵션 *</label>
-                    <select required ${!currentWallet ? 'disabled' : ''}
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="yes-no">예/아니오 (Yes/No)</option>
-                        <option value="custom">커스텀 옵션</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">배팅 한도 (개수) *</label>
-                    <input type="number" min="1" max="1000" value="100" required ${!currentWallet ? 'disabled' : ''}
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">암호화폐 선택 *</label>
-                <div class="flex gap-4">
-                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="BTC" required ${!currentWallet ? 'disabled' : ''} class="mr-2">
-                        <i class="fab fa-bitcoin text-yellow-500 mr-1"></i> BTC
-                    </label>
-                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="ETH" ${!currentWallet ? 'disabled' : ''} class="mr-2">
-                        <i class="fab fa-ethereum text-blue-500 mr-1"></i> ETH
-                    </label>
-                    <label class="flex items-center ${!currentWallet ? 'opacity-50' : ''}">
-                        <input type="radio" name="crypto" value="USDT" ${!currentWallet ? 'disabled' : ''} class="mr-2">
-                        <i class="fas fa-dollar-sign text-green-500 mr-1"></i> USDT
-                    </label>
-                </div>
-            </div>
-            
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-semibold text-gray-900 mb-3">
-                    <i class="fas fa-lock mr-2 text-gray-600"></i>
-                    운영자 전용 정보
-                </h5>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">지갑 주소 *</label>
-                        <input type="text" value="${currentWallet || ''}" required readonly
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
-                            <input type="email" required ${!currentWallet ? 'disabled' : ''}
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">닉네임 *</label>
-                            <input type="text" required ${!currentWallet ? 'disabled' : ''}
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="submit" ${!currentWallet ? 'disabled' : ''}
-                    class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}">
-                <i class="fas fa-paper-plane mr-2"></i>
-                이슈 제출
-            </button>
-        </form>
-    `
-    
-    const form = document.getElementById('issue-form')
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault()
-            alert('이슈가 성공적으로 제출되었습니다!')
-            closeSubmitIssueModal()
-        })
-    }
-    
+    // Show/hide modal
     modal.classList.remove('hidden')
     modal.classList.add('flex')
 }
@@ -907,6 +785,41 @@ function closeSubmitIssueModal() {
     if (modal) {
         modal.classList.add('hidden')
         modal.classList.remove('flex')
+    }
+}
+
+// Handle issue form submission
+async function handleIssueSubmit(e) {
+    e.preventDefault()
+    
+    const form = e.target
+    const formData = new FormData(form)
+    
+    const issueData = {
+        title_ko: formData.get('title_ko'),
+        title_en: formData.get('title_en'),
+        title_zh: formData.get('title_zh'),
+        title_ja: formData.get('title_ja'),
+        category: formData.get('category') || '정치',
+        initial_usdt: parseInt(formData.get('initial_usdt')) || 100,
+        expire_days: parseInt(formData.get('expire_days')) || 7
+    }
+    
+    try {
+        const response = await axios.post('/api/issues', issueData)
+        
+        if (response.data.success) {
+            alert('이슈가 성공적으로 등록되었습니다!')
+            form.reset()
+            closeSubmitIssueModal()
+            // Reload issues
+            loadIssues()
+        } else {
+            alert('이슈 등록에 실패했습니다: ' + (response.data.error || '알 수 없는 오류'))
+        }
+    } catch (error) {
+        console.error('Issue submission error:', error)
+        alert('이슈 등록 중 오류가 발생했습니다.')
     }
 }
 
