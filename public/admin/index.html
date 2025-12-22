@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="timestamp" content="20251222-042000">
     <title>EventBET 관리자</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
@@ -373,15 +374,20 @@
                     <h2 class="text-2xl font-bold text-gray-800">
                         <i class="fas fa-plus-circle mr-2"></i>이슈 관리
                     </h2>
-                    <button onclick="openBatchIssueModal()" class="btn-primary">
-                        <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
-                    </button>
+                    <div class="flex gap-3">
+                        <button onclick="registerAllIssuesToMainSite()" class="btn-success">
+                            <i class="fas fa-globe mr-2"></i>전체 등록 → 메인 사이트
+                        </button>
+                        <button onclick="openBatchIssueModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                     <p class="text-sm text-blue-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        <strong>입력한 이슈만 등록됩니다.</strong> 1개만 입력해도 등록 가능하며, 최대 5개까지 추가할 수 있습니다.
+                        <strong>"전체 등록 → 메인 사이트"</strong> 버튼을 클릭하면 아래 등록된 모든 이슈가 메인 사이트에 표시됩니다.
                     </p>
                 </div>
                 
@@ -879,7 +885,7 @@
                     <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
                 </button>
                 <button onclick="saveBatchIssues()" class="btn-success">
-                    <i class="fas fa-check mr-2"></i>전체 등록
+                    <i class="fas fa-save mr-2"></i>전체 등록 (관리자+메인)
                 </button>
             </div>
         </div>
