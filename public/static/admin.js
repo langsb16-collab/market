@@ -843,6 +843,7 @@ window.savePopup = function(event) {
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     loadBanners();
+    loadRegisteredIssues(); // 페이지 로드 시 이슈 목록 로드
     
     // 섹션 전환 함수 업데이트
     const originalShowSection = window.showSection;
@@ -860,6 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (section === 'notices') loadNotices();
         if (section === 'popups') loadPopups();
         if (section === 'members') loadMembers();
+        if (section === 'issues') loadRegisteredIssues();
         if (section === 'settlement') loadSettlement();
     };
 });
