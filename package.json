@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/copy-admin.mjs",
     "preview": "wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "deploy:prod": "npm run build && wrangler pages deploy dist --project-name=predictchain --branch=main"
   },
   "dependencies": {
     "hono": "^4.10.5"
