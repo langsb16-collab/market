@@ -213,6 +213,10 @@
                 <i class="fas fa-users"></i>
                 <span>회원 관리</span>
             </div>
+            <div class="sidebar-item" onclick="showSection('issues')">
+                <i class="fas fa-plus-circle"></i>
+                <span>이슈 등록</span>
+            </div>
             <div class="sidebar-item" onclick="showSection('settlement')">
                 <i class="fas fa-calculator"></i>
                 <span>결산 페이지</span>
@@ -359,6 +363,29 @@
             </div>
         </div>
         
+        <!-- 이슈 등록 -->
+        <div id="issues-section" class="content-section">
+            <div class="card">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-plus-circle mr-2"></i>이슈 관리
+                </h2>
+                
+                <div class="mb-6">
+                    <button onclick="openBatchIssueModal()" class="btn-primary">
+                        <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
+                    </button>
+                </div>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>입력한 이슈만 등록됩니다.</strong> 1개만 입력해도 등록 가능하며, 최대 5개까지 추가할 수 있습니다.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        
         <!-- 결산 페이지 -->
         <div id="settlement-section" class="content-section">
             <div class="card">
@@ -417,6 +444,9 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-gray-800">등록된 이슈 목록</h3>
                         <div class="flex gap-2">
+                            <button onclick="openIssueModal()" class="btn-primary">
+                                <i class="fas fa-plus mr-2"></i>이슈 등록
+                            </button>
                             <select id="issue-status-filter" onchange="filterIssues()" class="px-4 py-2 border border-gray-300 rounded-lg">
                                 <option value="">전체 상태</option>
                                 <option value="active">진행중</option>
@@ -579,6 +609,133 @@
         </div>
     </div>
     
+    <!-- 이슈 등록 모달 -->
+    <div id="issue-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">📝 이슈 일괄 등록</h3>
+                <button onclick="closeIssueModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    반드시 이슈의 내용을 등록할 때, 한국어를 만든 후, 영어만들고, 중국어, 일본어를 만들어주세요. 최대 5개 이슈까지 한번에 등록할 수 있습니다.
+                </p>
+            </div>
+            
+            <form onsubmit="saveBatchIssues(event)" id="batch-issue-form">
+                <div id="issue-boxes-container">
+                    <!-- 이슈 #1 -->
+                    <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm" id="issue-box-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-bold text-gray-800">📝 이슈 #1</h4>
+                            <button type="button" onclick="removeIssueBox(1)" class="text-red-500 hover:text-red-700" style="display:none;">
+                                <i class="fas fa-times-circle text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 카테고리 -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2 text-purple-700">
+                                🟣 카테고리 *
+                            </label>
+                            <select id="issue-1-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                                <option value="정치">정치</option>
+                                <option value="crypto">암호화폐</option>
+                                <option value="sports">스포츠</option>
+                                <option value="entertainment">엔터테인먼트</option>
+                                <option value="economy">경제</option>
+                                <option value="science">과학/기술</option>
+                                <option value="climate">기후/환경</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 4개 국어 제목 (2x2 그리드) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-3 text-gray-800">
+                                H 제목 (4개 언어 입력) *
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                                    <input type="text" id="issue-1-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="예: 비트코인이 $150K 도달?" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 en English</label>
+                                    <input type="text" id="issue-1-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="e.g., Bitcoin reaches $150K?">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 cn 中文</label>
+                                    <input type="text" id="issue-1-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="例：比特币突破$150K？">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 jp 日本語</label>
+                                    <input type="text" id="issue-1-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="例：ビットコインが$150K突破？">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 큰 내용 설명 (선택) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">큰 내용 설명 (선택)</label>
+                            <textarea id="issue-1-description" rows="3" 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" 
+                                      placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
+                        </div>
+                        
+                        <!-- 공통 설정 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-red-700">
+                                    🟥 결론 설정 기간 *
+                                </label>
+                                <input type="date" id="issue-1-date" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-green-700">
+                                    🟩 Yes 배당률 (%)
+                                </label>
+                                <input type="number" id="issue-1-yes-odds" value="50" min="0" max="100" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                                    🟨 전체 배팅액 (USDT)
+                                </label>
+                                <input type="number" id="issue-1-usdt" value="100000" min="0" step="1000" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 버튼 -->
+                <div class="flex justify-between items-center">
+                    <button type="button" onclick="addNewIssueBox()" class="btn-success">
+                        <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
+                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeIssueModal()" class="btn-secondary px-6">
+                            취소
+                        </button>
+                        <button type="submit" class="btn-primary px-6">
+                            <i class="fas fa-save mr-2"></i>전체 등록
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- 팝업 추가/수정 모달 -->
     <div id="popup-modal" class="modal">
         <div class="modal-content">
@@ -673,6 +830,33 @@
                     <button type="button" onclick="closePopupModal()" class="btn-danger flex-1">취소</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- 이슈 일괄 등록 모달 -->
+    <div id="batch-issue-modal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-4 border-b">
+                <h3 class="text-2xl font-bold">
+                    <i class="fas fa-file-alt text-green-600 mr-2"></i>이슈 일괄 등록
+                </h3>
+                <button onclick="closeBatchIssueModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div id="batch-issues-container">
+                <!-- 이슈 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+            
+            <div class="flex justify-between mt-6 pt-4 border-t sticky bottom-0 bg-white">
+                <button onclick="addIssueCard()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
+                </button>
+                <button onclick="saveBatchIssues()" class="btn-success">
+                    <i class="fas fa-check mr-2"></i>전체 등록
+                </button>
+            </div>
         </div>
     </div>
     

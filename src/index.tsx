@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   GITHUB_TOKEN: string
@@ -10,6 +11,11 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // Enable CORS
 app.use('/api/*', cors())
+
+// Serve static files
+app.use('/static/*', serveStatic({ root: './' }))
+app.use('/admin/*', serveStatic({ root: './' }))
+app.use('/*', serveStatic({ root: './' }))
 
 // GitHub Gist configuration
 const GIST_FILENAME = 'eventbet-issues.json'
@@ -250,6 +256,15 @@ app.delete('/api/issues/:id', async (c) => {
     console.error('Error deleting issue:', error)
     return c.json({ success: false, error: String(error) }, 500)
   }
+})
+
+// Admin routes
+app.get('/admin', (c) => {
+  return c.redirect('/admin/index.html')
+})
+
+app.get('/admin/', (c) => {
+  return c.redirect('/admin/index.html')
 })
 
 // Default route
