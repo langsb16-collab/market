@@ -1,0 +1,3 @@
+# Redirect cashiq.my to www.cashiq.my
+http://cashiq.my/* https://www.cashiq.my/:splat 301!
+https://cashiq.my/* https://www.cashiq.my/:splat 301!
