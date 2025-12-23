@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   GITHUB_TOKEN: string
@@ -230,11 +229,86 @@ app.delete('/api/issues/:id', async (c) => {
   }
 })
 
-// Static files ONLY for non-API paths
-app.get('/static/*', serveStatic({ root: './' }))
-app.get('/admin/*', serveStatic({ root: './' }))
-app.get('/admin', (c) => c.redirect('/admin/'))
-app.get('/', (c) => c.redirect('/index.html'))
-app.get('/*', serveStatic({ root: './' }))
+app.post('/api/issues/batch', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { issues: batchIssues } = body
+    
+    if (!Array.isArray(batchIssues) || batchIssues.length === 0) {
+      return c.json({ success: false, error: 'Invalid batch data' }, 400)
+    }
+    
+    const gistId = c.env.GIST_ID || 'YOUR_GIST_ID_HERE'
+    const token = c.env.GITHUB_TOKEN
+    
+    if (!token) {
+      return c.json({ success: false, error: 'GitHub token not configured' }, 500)
+    }
+    
+    const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    })
+    
+    let currentIssues: any[] = []
+    if (gistResponse.ok) {
+      const gistData = await gistResponse.json() as any
+      const fileContent = gistData.files[GIST_FILENAME]?.content
+      if (fileContent) {
+        const parsed = JSON.parse(fileContent)
+        currentIssues = parsed.items || []
+      }
+    }
+    
+    const newIssues = batchIssues.map((issue: any) => ({
+      id: `iss_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      title_ko: issue.title_ko || '',
+      title_en: issue.title_en || '',
+      title_zh: issue.title_zh || '',
+      title_ja: issue.title_ja || '',
+      category: issue.category || 'politics',
+      initial_usdt: issue.initial_usdt || 100000,
+      yes_bet: Math.floor((issue.initial_usdt || 100000) * 0.5),
+      no_bet: Math.floor((issue.initial_usdt || 100000) * 0.5),
+      expire_days: issue.expire_days || 25,
+      expire_date: new Date(Date.now() + (issue.expire_days || 25) * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }))
+    
+    currentIssues.unshift(...newIssues)
+    
+    const updateResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        files: {
+          [GIST_FILENAME]: {
+            content: JSON.stringify({
+              version: 1,
+              updatedAt: new Date().toISOString(),
+              items: currentIssues
+            }, null, 2)
+          }
+        }
+      })
+    })
+    
+    if (!updateResponse.ok) {
+      return c.json({ success: false, error: 'Failed to update Gist' }, 500)
+    }
+    
+    return c.json({ success: true, count: newIssues.length })
+  } catch (error) {
+    return c.json({ success: false, error: String(error) }, 500)
+  }
+})
 
 export default app
