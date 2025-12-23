@@ -1498,7 +1498,7 @@ function removeIssueCard(cardId) {
 }
 
 async function saveBatchIssues() {
-    console.log('=== saveBatchIssues 시작 (서버 API 사용) ===');
+    console.log('=== saveBatchIssues 시작 (배치 API 사용) ===');
     
     const container = document.getElementById('batch-issues-container');
     const cards = container.querySelectorAll('.issue-card');
@@ -1508,10 +1508,9 @@ async function saveBatchIssues() {
         return;
     }
     
-    let successCount = 0;
-    let failCount = 0;
+    const issues = [];
     
-    // 각 카드별로 서버 API로 전송
+    // 각 카드별로 데이터 수집
     for (let cardIndex = 0; cardIndex < cards.length; cardIndex++) {
         const card = cards[cardIndex];
         const cardId = card.dataset.cardId;
@@ -1536,14 +1535,12 @@ async function saveBatchIssues() {
         // 필수 필드 검증
         if (!category || !expireDate) {
             alert(`이슈 #${cardIndex + 1}: 카테고리와 결론 결정 기간은 필수입니다.`);
-            failCount++;
-            continue;
+            return;
         }
         
         if (!koTitle || !enTitle || !zhTitle || !jaTitle) {
             alert(`이슈 #${cardIndex + 1}: 4개 언어 제목을 모두 입력해주세요.`);
-            failCount++;
-            continue;
+            return;
         }
         
         // 만료일 계산 (며칠 뒤인지)
@@ -1551,8 +1548,8 @@ async function saveBatchIssues() {
         const expire = new Date(expireDate);
         const expireDays = Math.ceil((expire - today) / (1000 * 60 * 60 * 24));
         
-        // 서버로 전송할 데이터
-        const issueData = {
+        // 이슈 데이터 추가
+        issues.push({
             title_ko: koTitle,
             title_en: enTitle,
             title_zh: zhTitle,
@@ -1560,43 +1557,37 @@ async function saveBatchIssues() {
             category: category,
             initial_usdt: initialUsdt,
             expire_days: expireDays > 0 ? expireDays : 1
-        };
-        
-        try {
-            const response = await fetch('/api/issues', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(issueData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                console.log(`✅ Issue ${cardIndex + 1} 등록 성공:`, result.id);
-                successCount++;
-            } else {
-                console.error(`❌ Issue ${cardIndex + 1} 등록 실패:`, result.error);
-                failCount++;
-            }
-        } catch (error) {
-            console.error(`❌ Issue ${cardIndex + 1} 전송 오류:`, error);
-            failCount++;
-        }
+        });
     }
     
-    // 결과 메시지
-    if (successCount > 0) {
-        alert(`✅ 완료!\n\n성공: ${successCount}개\n실패: ${failCount}개\n\n메인 페이지를 새로고침하여 확인하세요!`);
+    try {
+        console.log('배치 API 호출:', issues);
+        const response = await fetch('/api/issues/batch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ issues: issues })
+        });
         
-        // 모달 닫기
-        closeBatchIssueModal();
+        const result = await response.json();
         
-        // 이슈 목록 새로고침
-        loadRegisteredIssues();
-    } else {
-        alert(`❌ 모든 이슈 등록에 실패했습니다.\n\n실패: ${failCount}개`);
+        if (result.success) {
+            console.log(`✅ 배치 등록 성공:`, result.count);
+            alert(`✅ 완료!\n\n성공: ${result.count}개 이슈 등록\n\n메인 페이지를 새로고침하여 확인하세요!`);
+            
+            // 모달 닫기
+            closeBatchIssueModal();
+            
+            // 이슈 목록 새로고침
+            loadRegisteredIssues();
+        } else {
+            console.error(`❌ 배치 등록 실패:`, result.error);
+            alert(`❌ 등록 실패\n\n${result.error || '알 수 없는 오류'}`);
+        }
+    } catch (error) {
+        console.error(`❌ 배치 API 오류:`, error);
+        alert(`❌ API 오류\n\n${error.message || '서버 오류 발생'}`);
     }
 }
 
