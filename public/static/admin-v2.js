@@ -1605,3 +1605,11 @@ async function registerAllIssuesToMainSite() {
         alert('❌ 등록 실패: ' + error.message);
     }
 }
+
+// ========== 전역 함수 노출 (onclick 핸들러용) ==========
+window.editRegisteredIssue = editRegisteredIssue;
+window.deleteRegisteredIssue = deleteRegisteredIssue;
+window.openBatchIssueModal = openBatchIssueModal;
+window.closeBatchIssueModal = closeBatchIssueModal;
+window.addIssueCard = addIssueCard;
+window.removeIssueCard = removeIssueCard;
