@@ -1,17 +1,27 @@
 import { mkdirSync, cpSync, existsSync } from "node:fs";
 import path from "node:path";
 
-const src = path.resolve("public/admin");
-const dst = path.resolve("dist/admin");
+// Copy admin folder
+const adminSrc = path.resolve("public/admin");
+const adminDst = path.resolve("dist/admin");
 
-if (!existsSync(src)) {
-  console.error("[copy-admin] ❌ source not found:", src);
+if (!existsSync(adminSrc)) {
+  console.error("[copy-admin] ❌ admin source not found:", adminSrc);
   process.exit(1);
 }
 
-mkdirSync(dst, { recursive: true });
+mkdirSync(adminDst, { recursive: true });
+cpSync(adminSrc, adminDst, { recursive: true });
+console.log("[copy-admin] ✅ copied:", adminSrc, "->", adminDst);
 
-// Node 18+에서 cpSync 사용 가능
-cpSync(src, dst, { recursive: true });
+// Copy static folder
+const staticSrc = path.resolve("public/static");
+const staticDst = path.resolve("dist/static");
 
-console.log("[copy-admin] ✅ copied:", src, "->", dst);
+if (existsSync(staticSrc)) {
+  mkdirSync(staticDst, { recursive: true });
+  cpSync(staticSrc, staticDst, { recursive: true });
+  console.log("[copy-admin] ✅ copied:", staticSrc, "->", staticDst);
+} else {
+  console.warn("[copy-admin] ⚠️ static source not found:", staticSrc);
+}
