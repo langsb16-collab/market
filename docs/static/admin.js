@@ -15,6 +15,10 @@ function showSection(section) {
     if (section === 'notices') loadNotices();
     if (section === 'popups') loadPopups();
     if (section === 'members') loadMembers();
+    if (section === 'issues') {
+        loadBatchIssuesForm();
+        loadRegisteredIssues();
+    }
 }
 
 // ========== 배너 관리 ==========
@@ -839,6 +843,7 @@ window.savePopup = function(event) {
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     loadBanners();
+    loadRegisteredIssues(); // 페이지 로드 시 이슈 목록 로드
     
     // 섹션 전환 함수 업데이트
     const originalShowSection = window.showSection;
@@ -856,6 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (section === 'notices') loadNotices();
         if (section === 'popups') loadPopups();
         if (section === 'members') loadMembers();
+        if (section === 'issues') loadRegisteredIssues();
         if (section === 'settlement') loadSettlement();
     };
 });
@@ -1018,378 +1024,533 @@ function previewPopupUrl() {
     }
 }
 
-// 4개국어 일괄 이슈 등록
-let issueBoxCount = 1;
+// ============================================
+// 📌 이슈 등록 기능
+// ============================================
 
-function addNewIssueBox() {
-    if (issueBoxCount >= 5) {
-        alert('최대 5개까지만 등록할 수 있습니다.');
-        return;
-    }
-    issueBoxCount++;
+function openIssueModal() {
+    const modal = document.getElementById('issue-modal');
+    modal.classList.add('active');
     
-    const container = document.getElementById('issue-boxes-container');
-    const newBox = document.createElement('div');
-    newBox.className = 'border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm';
-    newBox.id = `issue-box-${issueBoxCount}`;
-    newBox.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-lg font-bold text-gray-800">📝 이슈 #${issueBoxCount}</h4>
-            <button type="button" onclick="removeIssueBox(${issueBoxCount})" class="text-red-500 hover:text-red-700">
-                <i class="fas fa-times-circle text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2 text-purple-700">🟣 카테고리 *</label>
-            <select id="issue-${issueBoxCount}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                <option value="정치">정치</option>
-                <option value="crypto">암호화폐</option>
-                <option value="sports">스포츠</option>
-                <option value="entertainment">엔터테인먼트</option>
-                <option value="economy">경제</option>
-                <option value="science">과학/기술</option>
-                <option value="climate">기후/환경</option>
-                <option value="other">기타</option>
-            </select>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-3 text-gray-800">H 제목 (4개 언어 입력) *</label>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
-                    <input type="text" id="issue-${issueBoxCount}-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="예: 비트코인이 $150K 도달?" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 en English</label>
-                    <input type="text" id="issue-${issueBoxCount}-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="e.g., Bitcoin reaches $150K?">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 cn 中文</label>
-                    <input type="text" id="issue-${issueBoxCount}-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：比特币突破$150K？">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 jp 日本語</label>
-                    <input type="text" id="issue-${issueBoxCount}-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="例：ビットコインが$150K突破？">
-                </div>
-            </div>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2 text-gray-700">큰 내용 설명 (선택)</label>
-            <textarea id="issue-${issueBoxCount}-description" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
-            <div>
-                <label class="block text-sm font-semibold mb-2 text-red-700">🟥 결론 설정 기간 *</label>
-                <input type="date" id="issue-${issueBoxCount}-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold mb-2 text-green-700">🟩 Yes 배당률 (%)</label>
-                <input type="number" id="issue-${issueBoxCount}-yes-odds" value="50" min="0" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold mb-2 text-yellow-700">🟨 전체 배팅액 (USDT)</label>
-                <input type="number" id="issue-${issueBoxCount}-usdt" value="100000" min="0" step="1000" class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-            </div>
-        </div>
-    `;
-    container.appendChild(newBox);
+    // 폼 초기화
+    document.getElementById('issue-title').value = '';
+    document.getElementById('issue-description').value = '';
+    document.getElementById('issue-category').value = '';
+    document.getElementById('issue-expiredate').value = '';
+    document.getElementById('issue-image').value = '';
+    
+    // 기본 만료일을 7일 후로 설정
+    const defaultExpireDate = new Date();
+    defaultExpireDate.setDate(defaultExpireDate.getDate() + 7);
+    const formattedDate = defaultExpireDate.toISOString().slice(0, 16);
+    document.getElementById('issue-expiredate').value = formattedDate;
 }
 
-function removeIssueBox(id) {
-    if (issueBoxCount <= 1) {
-        alert('최소 1개는 남겨야 합니다.');
-        return;
-    }
-    const box = document.getElementById(`issue-box-${id}`);
-    if (box) {
-        box.remove();
-        issueBoxCount--;
-    }
+function closeIssueModal() {
+    document.getElementById('issue-modal').classList.remove('active');
 }
 
-async function saveBatchIssues(event) {
+function saveIssue(event) {
     event.preventDefault();
     
-    const issues = [];
-    for (let i = 1; i <= 5; i++) {
-        const box = document.getElementById(`issue-box-${i}`);
-        if (!box) continue;
-        
-        const ko = document.getElementById(`issue-${i}-ko`)?.value.trim();
-        const en = document.getElementById(`issue-${i}-en`)?.value.trim();
-        const zh = document.getElementById(`issue-${i}-zh`)?.value.trim();
-        const ja = document.getElementById(`issue-${i}-ja`)?.value.trim();
-        const category = document.getElementById(`issue-${i}-category`)?.value;
-        const description = document.getElementById(`issue-${i}-description`)?.value.trim();
-        const date = document.getElementById(`issue-${i}-date`)?.value;
-        const yesOdds = document.getElementById(`issue-${i}-yes-odds`)?.value || 50;
-        const usdt = document.getElementById(`issue-${i}-usdt`)?.value || 100000;
-        
-        if (ko && category && date) {
-            issues.push({
-                title_ko: ko,
-                title_en: en || ko,
-                title_zh: zh || ko,
-                title_ja: ja || ko,
-                category,
-                description,
-                expire_date: new Date(date).toISOString(),
-                yes_odds: parseFloat(yesOdds),
-                initial_usdt: parseFloat(usdt)
-            });
-        }
-    }
+    const title = document.getElementById('issue-title').value.trim();
+    const description = document.getElementById('issue-description').value.trim();
+    const category = document.getElementById('issue-category').value;
+    const expireDate = document.getElementById('issue-expiredate').value;
+    const image = document.getElementById('issue-image').value.trim();
     
-    if (issues.length === 0) {
-        alert('최소 1개 이슈를 입력하세요.');
+    if (!title || !category || !expireDate) {
+        alert('필수 항목을 모두 입력해주세요.');
         return;
     }
     
-    // localStorage에 저장
-    const existingIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    issues.forEach(issue => {
-        existingIssues.push({
-            ...issue,
-            id: `iss_${Date.now()}_${Math.random()}`,
-            status: 'active',
-            yes_bet: Math.floor(issue.initial_usdt * (issue.yes_odds / 100)),
-            no_bet: Math.floor(issue.initial_usdt * ((100 - issue.yes_odds) / 100)),
-            createdAt: new Date().toISOString()
-        });
-    });
-    localStorage.setItem('eventbet_issues', JSON.stringify(existingIssues));
+    // 만료일이 현재 시간보다 이후인지 확인
+    if (new Date(expireDate) <= new Date()) {
+        alert('만료일은 현재 시간 이후여야 합니다.');
+        return;
+    }
     
-    alert(`✅ ${issues.length}개 이슈가 등록되었습니다!`);
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    
+    const newIssue = {
+        id: Date.now().toString(),
+        title: title,
+        description: description,
+        category: category,
+        image: image || 'https://via.placeholder.com/400x200?text=EventBET',
+        expireDate: expireDate,
+        status: 'active',
+        yesBet: 0,
+        noBet: 0,
+        createdAt: new Date().toISOString()
+    };
+    
+    issues.unshift(newIssue);
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('이슈가 성공적으로 등록되었습니다!');
     closeIssueModal();
-    location.reload();
+    loadIssues();
 }
 
-// ========== 이슈 일괄 등록 모달 ==========
+// ============================================
+// 📌 이슈 일괄 등록 기능 (4개 국어 x 5개 = 20개)
+// ============================================
+
+function loadBatchIssuesForm() {
+    // 등록된 이슈 목록 로드
+    loadRegisteredIssues();
+}
+
+// 등록된 이슈 목록 로드
+function loadRegisteredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const tbody = document.getElementById('registered-issues-list');
+    
+    if (!tbody) return;
+    
+    if (issues.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = issues.map((issue, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td class="max-w-xs truncate">${issue.title}</td>
+            <td>${issue.category}</td>
+            <td>
+                ${issue.language === 'ko' ? '🇰🇷 한국어' : 
+                  issue.language === 'en' ? '🇺🇸 English' : 
+                  issue.language === 'zh' ? '🇨🇳 中文' : 
+                  issue.language === 'ja' ? '🇯🇵 日本語' : issue.language || 'N/A'}
+            </td>
+            <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
+            <td class="text-green-600 font-bold">${issue.yesBet?.toLocaleString() || 0} USDT</td>
+            <td class="text-red-600 font-bold">${issue.noBet?.toLocaleString() || 0} USDT</td>
+            <td>
+                <span class="px-2 py-1 rounded text-xs ${issue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                    ${issue.status === 'active' ? '진행중' : '종료됨'}
+                </span>
+            </td>
+            <td>
+                <button onclick="editRegisteredIssue(${index})" class="btn-warning mr-2">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteRegisteredIssue(${index})" class="btn-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 등록된 이슈 편집
+function editRegisteredIssue(index) {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issue = issues[index];
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 일괄 등록 모달 열기
+    openBatchIssueModal();
+    
+    // 기존 데이터로 채우기
+    setTimeout(() => {
+        const container = document.getElementById('batch-issues-container');
+        container.innerHTML = '';
+        
+        issueCardCount++;
+        const cardId = issueCardCount;
+        
+        const cardHtml = `
+            <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm issue-card" data-card-id="${cardId}" data-edit-index="${index}">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-bold text-gray-800">📝 이슈 편집</h4>
+                </div>
+                
+                <!-- 카테고리 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-purple-700">
+                        🟣 카테고리 *
+                    </label>
+                    <select id="batch-issue-${cardId}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                        <option value="정치" ${issue.category === '정치' ? 'selected' : ''}>정치</option>
+                        <option value="crypto" ${issue.category === 'crypto' ? 'selected' : ''}>암호화폐</option>
+                        <option value="sports" ${issue.category === 'sports' ? 'selected' : ''}>스포츠</option>
+                        <option value="entertainment" ${issue.category === 'entertainment' ? 'selected' : ''}>엔터테인먼트</option>
+                        <option value="economy" ${issue.category === 'economy' ? 'selected' : ''}>경제</option>
+                        <option value="science" ${issue.category === 'science' ? 'selected' : ''}>과학/기술</option>
+                        <option value="climate" ${issue.category === 'climate' ? 'selected' : ''}>기후/환경</option>
+                        <option value="other" ${issue.category === 'other' ? 'selected' : ''}>기타</option>
+                    </select>
+                </div>
+                
+                <!-- 제목 (단일 언어) -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-gray-800">
+                        📝 제목 (${issue.language === 'ko' ? '🇰🇷 한국어' : 
+                                  issue.language === 'en' ? '🇺🇸 English' : 
+                                  issue.language === 'zh' ? '🇨🇳 中文' : 
+                                  issue.language === 'ja' ? '🇯🇵 日本語' : '제목'}) *
+                    </label>
+                    <input type="text" id="batch-issue-${cardId}-title" value="${issue.title}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                    <input type="hidden" id="batch-issue-${cardId}-language" value="${issue.language}">
+                </div>
+                
+                <!-- 내용 설명 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2 text-gray-700">내용 설명 (선택)</label>
+                    <textarea id="batch-issue-${cardId}-description" rows="3" 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm">${issue.description || ''}</textarea>
+                </div>
+                
+                <!-- 공통 설정 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-red-700">
+                            🟥 결론 결정 기간 *
+                        </label>
+                        <input type="date" id="batch-issue-${cardId}-date" value="${issue.expireDate?.split('T')[0] || ''}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-green-700">
+                            🟩 Yes 배팅액 (USDT)
+                        </label>
+                        <input type="number" id="batch-issue-${cardId}-yes-bet" value="${issue.yesBet || 0}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                            🟨 No 배팅액 (USDT)
+                        </label>
+                        <input type="number" id="batch-issue-${cardId}-no-bet" value="${issue.noBet || 0}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', cardHtml);
+    }, 100);
+}
+
+// 등록된 이슈 삭제
+function deleteRegisteredIssue(index) {
+    if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
+    
+    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    issues.splice(index, 1);
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    alert('이슈가 삭제되었습니다.');
+    loadRegisteredIssues();
+}
+
+// 일괄 등록 모달 열기
+function openBatchIssueModal() {
+    const modal = document.getElementById('batch-issue-modal');
+    if (!modal) {
+        console.error('batch-issue-modal not found');
+        return;
+    }
+    
+    modal.classList.add('active');
+    
+    // 초기 이슈 카드 1개 생성
+    const container = document.getElementById('batch-issues-container');
+    container.innerHTML = '';
+    addIssueCard();
+}
+
+// 일괄 등록 모달 닫기
+function closeBatchIssueModal() {
+    const modal = document.getElementById('batch-issue-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// 이슈 카드 추가
 let issueCardCount = 0;
 
-function openBatchIssueModal() {
-    document.getElementById('batch-issue-modal').style.display = 'flex';
-    issueCardCount = 0;
-    document.getElementById('batch-issues-container').innerHTML = '';
-    addIssueCard(); // 첫 번째 카드 자동 추가
-}
-
-function closeBatchIssueModal() {
-    document.getElementById('batch-issue-modal').style.display = 'none';
-}
-
 function addIssueCard() {
-    if (issueCardCount >= 5) {
-        alert('⚠️ 최대 5개까지만 추가할 수 있습니다.');
+    const container = document.getElementById('batch-issues-container');
+    const currentCards = container.querySelectorAll('.issue-card');
+    
+    if (currentCards.length >= 5) {
+        alert('최대 5개의 이슈만 등록할 수 있습니다.');
         return;
     }
     
     issueCardCount++;
-    const container = document.getElementById('batch-issues-container');
+    const cardId = issueCardCount;
     
     const cardHtml = `
-        <div class="border-2 border-gray-200 rounded-xl p-6 mb-6 bg-white shadow-sm" id="issue-card-${issueCardCount}">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="text-lg font-bold text-blue-600">
-                    <i class="fas fa-file-alt mr-2"></i>이슈 #${issueCardCount}
-                </h4>
-                <button onclick="removeIssueCard(${issueCardCount})" class="text-red-500 hover:text-red-700">
+        <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm issue-card" data-card-id="${cardId}">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-bold text-gray-800">📝 이슈 #${cardId}</h4>
+                <button type="button" onclick="removeIssueCard(${cardId})" class="text-red-500 hover:text-red-700">
                     <i class="fas fa-times-circle text-xl"></i>
                 </button>
             </div>
             
             <!-- 카테고리 -->
             <div class="mb-4">
-                <label class="block text-sm font-bold mb-2">
-                    <i class="fas fa-folder text-purple-600 mr-1"></i>카테고리 *
+                <label class="block text-sm font-semibold mb-2 text-purple-700">
+                    🟣 카테고리 *
                 </label>
-                <select id="category-${issueCardCount}" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    <option value="">선택</option>
-                    <option value="crypto">💰 암호화폐</option>
-                    <option value="politics">🏛️ 정치</option>
-                    <option value="sports">⚽ 스포츠</option>
-                    <option value="entertainment">🎬 엔터테인먼트</option>
-                    <option value="economy">📊 경제</option>
-                    <option value="science">🔬 과학/기술</option>
-                    <option value="climate">🌍 기후/환경</option>
-                    <option value="other">📌 기타</option>
+                <select id="batch-issue-${cardId}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    <option value="정치">정치</option>
+                    <option value="crypto">암호화폐</option>
+                    <option value="sports">스포츠</option>
+                    <option value="entertainment">엔터테인먼트</option>
+                    <option value="economy">경제</option>
+                    <option value="science">과학/기술</option>
+                    <option value="climate">기후/환경</option>
+                    <option value="other">기타</option>
                 </select>
             </div>
             
-            <!-- 4개 언어 제목 -->
+            <!-- 4개 국어 제목 (2x2 그리드) -->
             <div class="mb-4">
-                <label class="block text-sm font-bold mb-2">
-                    <i class="fas fa-heading text-green-600 mr-1"></i>제목 (4개 언어 필수) *
+                <label class="block text-sm font-semibold mb-3 text-gray-800">
+                    📝 제목 (4개 언어 입력) *
                 </label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs text-gray-600">🇰🇷 한국어</label>
-                        <input type="text" id="title-ko-${issueCardCount}" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
-                            placeholder="예: 비트코인이 $150K 돌파?" required>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                        <input type="text" id="batch-issue-${cardId}-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="예: 비트코인이 $150K 도달?" required>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-600">🇺🇸 English</label>
-                        <input type="text" id="title-en-${issueCardCount}" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
-                            placeholder="e.g., Bitcoin reaches $150K?" required>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 English</label>
+                        <input type="text" id="batch-issue-${cardId}-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="e.g., Bitcoin reaches $150K?" required>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-600">🇨🇳 中文</label>
-                        <input type="text" id="title-zh-${issueCardCount}" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
-                            placeholder="例如：比特币突破$150K？" required>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 中文</label>
+                        <input type="text" id="batch-issue-${cardId}-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="例：比特币突破$150K？" required>
                     </div>
                     <div>
-                        <label class="text-xs text-gray-600">🇯🇵 日本語</label>
-                        <input type="text" id="title-ja-${issueCardCount}" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
-                            placeholder="例：ビットコイン$150K突破？" required>
+                        <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 日本語</label>
+                        <input type="text" id="batch-issue-${cardId}-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                               placeholder="例：ビットコインが$150K突破？" required>
                     </div>
                 </div>
             </div>
             
             <!-- 내용 설명 (선택) -->
             <div class="mb-4">
-                <label class="block text-sm font-bold mb-2">
-                    <i class="fas fa-align-left text-blue-600 mr-1"></i>내용 설명 (선택)
-                </label>
-                <textarea id="description-${issueCardCount}" rows="3" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg" 
-                    placeholder="이슈에 대한 간단한 설명..."></textarea>
+                <label class="block text-sm font-semibold mb-2 text-gray-700">내용 설명 (선택)</label>
+                <textarea id="batch-issue-${cardId}-description" rows="3" 
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" 
+                          placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
             </div>
             
-            <!-- 설정 그리드 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- 공통 설정 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
                 <div>
-                    <label class="block text-sm font-bold mb-2">
-                        <i class="fas fa-calendar text-red-600 mr-1"></i>결론 결정 기간 *
+                    <label class="block text-sm font-semibold mb-2 text-red-700">
+                        🟥 결론 결정 기간 *
                     </label>
-                    <input type="datetime-local" id="expiredate-${issueCardCount}" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                    <input type="date" id="batch-issue-${cardId}-date" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-2">
-                        <i class="fas fa-percentage text-green-600 mr-1"></i>Yes 배팅 비율 (%)
+                    <label class="block text-sm font-semibold mb-2 text-green-700">
+                        🟩 Yes 배팅 비율 (%)
                     </label>
-                    <input type="number" id="yes-odds-${issueCardCount}" value="50" min="0" max="100" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="number" id="batch-issue-${cardId}-yes-odds" value="50" min="0" max="100" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-2">
-                        <i class="fas fa-coins text-yellow-600 mr-1"></i>초기 배팅액 (USDT)
+                    <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                        🟨 초기 배팅액 (USDT)
                     </label>
-                    <input type="number" id="initial-usdt-${issueCardCount}" value="100000" min="0" step="1000" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="number" id="batch-issue-${cardId}-usdt" value="100000" min="0" step="1000" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                 </div>
             </div>
         </div>
     `;
     
     container.insertAdjacentHTML('beforeend', cardHtml);
+    
+    // 기본 날짜를 7일 후로 설정
+    const dateInput = document.getElementById(`batch-issue-${cardId}-date`);
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 7);
+    dateInput.value = defaultDate.toISOString().split('T')[0];
 }
 
+// 이슈 카드 삭제
 function removeIssueCard(cardId) {
-    const card = document.getElementById(`issue-card-${cardId}`);
+    const card = document.querySelector(`.issue-card[data-card-id="${cardId}"]`);
     if (card) {
         card.remove();
-        issueCardCount--;
-        
-        // 카드 번호 재정렬
-        const cards = document.querySelectorAll('[id^="issue-card-"]');
-        cards.forEach((card, index) => {
-            const newIndex = index + 1;
-            const oldId = card.id.match(/\d+/)[0];
-            
-            // ID 업데이트
-            card.id = `issue-card-${newIndex}`;
-            card.querySelector('h4').innerHTML = `<i class="fas fa-file-alt mr-2"></i>이슈 #${newIndex}`;
-            
-            // 내부 input ID도 업데이트
-            card.querySelectorAll('[id]').forEach(el => {
-                const currentId = el.id;
-                el.id = currentId.replace(/-\d+$/, `-${newIndex}`);
-            });
-            
-            // 삭제 버튼 onclick 업데이트
-            card.querySelector('button').onclick = () => removeIssueCard(newIndex);
-        });
-        
-        issueCardCount = cards.length;
     }
+    
+    // 남은 카드 번호 재정렬
+    const container = document.getElementById('batch-issues-container');
+    const cards = container.querySelectorAll('.issue-card');
+    cards.forEach((card, index) => {
+        const title = card.querySelector('h4');
+        if (title) {
+            title.textContent = `📝 이슈 #${index + 1}`;
+        }
+    });
 }
 
-function saveBatchIssues() {
-    const issues = [];
+async function saveBatchIssues() {
+    console.log('=== saveBatchIssues 시작 ===');
     
-    for (let i = 1; i <= issueCardCount; i++) {
-        const card = document.getElementById(`issue-card-${i}`);
-        if (!card) continue;
-        
-        const category = document.getElementById(`category-${i}`).value;
-        const titleKo = document.getElementById(`title-ko-${i}`).value.trim();
-        const titleEn = document.getElementById(`title-en-${i}`).value.trim();
-        const titleZh = document.getElementById(`title-zh-${i}`).value.trim();
-        const titleJa = document.getElementById(`title-ja-${i}`).value.trim();
-        const description = document.getElementById(`description-${i}`).value.trim();
-        const expiredate = document.getElementById(`expiredate-${i}`).value;
-        const yesOdds = parseInt(document.getElementById(`yes-odds-${i}`).value);
-        const initialUsdt = parseInt(document.getElementById(`initial-usdt-${i}`).value);
-        
-        // 필수 필드 검증
-        if (!category) {
-            alert(`⚠️ 이슈 #${i}: 카테고리를 선택해주세요.`);
-            return;
-        }
-        if (!titleKo || !titleEn || !titleZh || !titleJa) {
-            alert(`⚠️ 이슈 #${i}: 4개 언어 제목을 모두 입력해주세요.`);
-            return;
-        }
-        if (!expiredate) {
-            alert(`⚠️ 이슈 #${i}: 결론 결정 기간을 선택해주세요.`);
-            return;
-        }
-        
-        // 4개 언어별로 각각 이슈 생성
-        const languages = [
-            { code: 'ko', title: titleKo, name: '한국어' },
-            { code: 'en', title: titleEn, name: 'English' },
-            { code: 'zh', title: titleZh, name: '中文' },
-            { code: 'ja', title: titleJa, name: '日本語' }
-        ];
-        
-        languages.forEach(lang => {
-            issues.push({
-                id: Date.now() + Math.random(),
-                category: category,
-                language: lang.code,
-                title: lang.title,
-                description: description || `${lang.name} 버전`,
-                expiredate: expiredate,
-                yes_odds: yesOdds,
-                initial_usdt: initialUsdt,
-                yes_bet: Math.floor(initialUsdt * (yesOdds / 100)),
-                no_bet: Math.floor(initialUsdt * ((100 - yesOdds) / 100)),
-                createdAt: new Date().toISOString()
-            });
-        });
-    }
+    const container = document.getElementById('batch-issues-container');
+    const cards = container.querySelectorAll('.issue-card');
     
-    if (issues.length === 0) {
-        alert('⚠️ 등록할 이슈가 없습니다. 최소 1개 이상의 이슈를 추가해주세요.');
+    if (cards.length === 0) {
+        alert('등록할 이슈가 없습니다.');
         return;
     }
     
-    // localStorage에 저장
-    const existingIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    existingIssues.push(...issues);
-    localStorage.setItem('eventbet_issues', JSON.stringify(existingIssues));
+    // 기존 이슈 불러오기 (localStorage에서)
+    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('기존 이슈:', issues.length, '개');
     
-    alert(`✅ ${issues.length}개 이슈가 등록되었습니다!\n(${issueCardCount}개 이슈 x 4개 언어 = ${issues.length}개)`);
+    const newIssues = [];
+    let addedCount = 0;
+    
+    // 각 카드별로 처리
+    cards.forEach((card, cardIndex) => {
+        const cardId = card.dataset.cardId;
+        
+        // 카테고리
+        const category = document.getElementById(`batch-issue-${cardId}-category`)?.value;
+        
+        // 4개 언어
+        const koTitle = document.getElementById(`batch-issue-${cardId}-ko`)?.value?.trim();
+        const enTitle = document.getElementById(`batch-issue-${cardId}-en`)?.value?.trim();
+        const zhTitle = document.getElementById(`batch-issue-${cardId}-zh`)?.value?.trim();
+        const jaTitle = document.getElementById(`batch-issue-${cardId}-ja`)?.value?.trim();
+        
+        // 설명
+        const description = document.getElementById(`batch-issue-${cardId}-description`)?.value?.trim();
+        
+        // 날짜
+        const expireDate = document.getElementById(`batch-issue-${cardId}-date`)?.value;
+        
+        // Yes 비율
+        const yesOdds = parseFloat(document.getElementById(`batch-issue-${cardId}-yes-odds`)?.value || 50);
+        
+        // 초기 USDT
+        const initialUsdt = parseFloat(document.getElementById(`batch-issue-${cardId}-usdt`)?.value || 100000);
+        
+        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, yesOdds, initialUsdt });
+        
+        // 필수 필드 검증
+        if (!category || !expireDate) {
+            alert(`이슈 #${cardIndex + 1}: 카테고리와 결론 결정 기간은 필수입니다.`);
+            return;
+        }
+        
+        // Yes/No 배팅액 계산
+        const yesRatio = yesOdds / 100;
+        const yesBet = Math.floor(initialUsdt * yesRatio);
+        const noBet = initialUsdt - yesBet;
+        
+        // 만료일 ISO 형식
+        const expireDateISO = new Date(expireDate).toISOString().slice(0, 16);
+        
+        // 언어별 이슈 생성
+        const languages = [
+            { code: 'ko', title: koTitle, name: '한국어' },
+            { code: 'en', title: enTitle, name: 'English' },
+            { code: 'zh', title: zhTitle, name: '中文' },
+            { code: 'ja', title: jaTitle, name: '日本語' }
+        ];
+        
+        languages.forEach(lang => {
+            if (lang.title) {
+                const newIssue = {
+                    id: `${Date.now()}-${lang.code}-${cardIndex}-${Math.random().toString(36).substr(2, 9)}`,
+                    title: lang.title,
+                    description: description || `${lang.name} - Issue ${cardIndex + 1}`,
+                    category: category,
+                    image: 'https://via.placeholder.com/400x200?text=EventBET',
+                    expireDate: expireDateISO,
+                    status: 'active',
+                    yesBet: yesBet,
+                    noBet: noBet,
+                    initialUsdt: initialUsdt,
+                    language: lang.code,
+                    createdAt: new Date().toISOString()
+                };
+                
+                newIssues.push(newIssue);
+                addedCount++;
+                console.log(`Added: ${lang.name} - ${lang.title}`);
+            }
+        });
+    });
+    
+    if (newIssues.length === 0) {
+        alert('입력된 이슈가 없습니다. 최소 1개 언어의 제목을 입력해주세요.');
+        return;
+    }
+    
+    // 새 이슈를 앞에 추가
+    issues = [...newIssues, ...issues];
+    
+    // 관리자 localStorage에만 저장
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    
+    // 저장 확인
+    const saved = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('✅ Saved to localStorage:', saved.length, 'issues');
+    console.log('✅ New issues added:', newIssues.length);
+    console.log('✅ First issue:', saved[0]);
+    
+    alert(`✅ 성공!\n\n총 ${addedCount}개의 이슈가 관리자 페이지에 등록되었습니다.\n전체 ${saved.length}개 이슈 저장됨.\n\n"메인 사이트 일괄 등록" 버튼으로 메인 사이트에 표시하세요!`);
+    
+    // 모달 닫기
     closeBatchIssueModal();
-    location.reload();
+    
+    // 이슈 목록 새로고침
+    loadRegisteredIssues();
+}
+
+// ========== 전체 등록 (관리자 → 메인 사이트) ==========
+async function registerAllIssuesToMainSite() {
+    console.log('=== 메인 사이트 일괄 등록 시작 ===');
+    
+    // 관리자 화면의 모든 이슈 가져오기
+    const adminIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    
+    if (adminIssues.length === 0) {
+        alert('등록할 이슈가 없습니다.\n\n먼저 "이슈 일괄 등록" 버튼으로 이슈를 등록해주세요.');
+        return;
+    }
+    
+    // 확인 메시지
+    if (!confirm(`✅ 메인 사이트에 ${adminIssues.length}개의 이슈를 등록하시겠습니까?\n\n이슈는 즉시 메인 사이트에 표시됩니다.`)) {
+        return;
+    }
+    
+    try {
+        // ✅ 메인 사이트도 같은 localStorage 키를 사용하므로 이미 공유됨
+        // 추가 작업 불필요 - eventbet_issues는 이미 관리자와 메인이 공유
+        
+        console.log(`✅ ${adminIssues.length}개 이슈가 메인 사이트에서 이미 사용 가능합니다.`);
+        
+        alert(`✅ 완료!\n\n총 ${adminIssues.length}개의 이슈가 메인 사이트에서 표시됩니다.\n\n메인 페이지를 새로고침(Ctrl+Shift+R)하여 확인하세요!`);
+        
+    } catch (error) {
+        console.error('메인 사이트 등록 실패:', error);
+        alert('❌ 등록 실패: ' + error.message);
+    }
 }
