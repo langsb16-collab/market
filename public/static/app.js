@@ -13,6 +13,66 @@ let currentSortBy = 'date' // 'date', 'volume', 'participants'
 
 console.log('EventBET: Variables initialized')
 
+// ========== 카테고리 표준 맵 (한글 → 영문 키 통일) ==========
+const CATEGORY_MAP = {
+  "전체": "all",
+  "정치": "politics",
+  "장치": "politics",  // 오타 대응
+  "스포츠": "sports",
+  "기술": "technology",
+  "암호화폐": "cryptocurrency",
+  "crypto": "cryptocurrency",
+  "엔터테인먼트": "entertainment",
+  "경제": "economy",
+  "과학": "science",
+  "기후": "climate",
+  // 영문은 그대로 통과
+  "all": "all",
+  "politics": "politics",
+  "sports": "sports",
+  "technology": "technology",
+  "cryptocurrency": "cryptocurrency",
+  "entertainment": "entertainment",
+  "economy": "economy",
+  "science": "science",
+  "climate": "climate"
+};
+
+// ========== 숫자 파싱 유틸리티 (콤마, 문자 제거) ==========
+function toNumber(v) {
+  if (v == null) return 0;
+  // "29,802 USDT" → "29802"
+  const n = String(v).replace(/[^\d.]/g, "");
+  return n ? Number(n) : 0;
+}
+
+// ========== Yes/No 퍼센트 계산 (실제 베팅액 기반) ==========
+function calcYesNoPercent(issue) {
+  // 여러 필드명 지원 (yesAmount, yesBet, yes_pool 등)
+  const yes = toNumber(issue.yesAmount ?? issue.yesBet ?? issue.yes_pool ?? 0);
+  const no = toNumber(issue.noAmount ?? issue.noBet ?? issue.no_pool ?? 0);
+  
+  const total = yes + no;
+  if (total <= 0) {
+    console.warn('EventBET: Issue has zero total bet', issue.id, issue.title);
+    return { yesPct: "50.0", noPct: "50.0", yes: 0, no: 0, total: 0 };
+  }
+  
+  const yesPct = (yes / total * 100).toFixed(1);
+  const noPct = (no / total * 100).toFixed(1);
+  
+  console.log('EventBET: Calculated %', issue.id, 'Yes:', yesPct + '%', 'No:', noPct + '%', 'Total:', total);
+  
+  return { yesPct, noPct, yes, no, total };
+}
+
+// ========== 이슈 정규화 함수 (카테고리 키 통일) ==========
+function normalizeIssue(issue) {
+  const cat = issue.categoryKey || issue.category_slug || issue.category;
+  const categoryKey = CATEGORY_MAP[cat] || cat || "technology";
+  return { ...issue, categoryKey };
+}
+
 // Get date within next 30 days
 const getRandomDateWithinMonth = () => {
     const today = new Date()
@@ -280,6 +340,7 @@ const generateEvents = () => {
                 id: issue.id || id++,
                 category_id: category.id,
                 category_slug: categorySlug,
+                categoryKey: categorySlug,  // ✅ 정규화된 키 추가
                 title_ko: issue.title,
                 title_en: issue.title,
                 title_zh: issue.title,
@@ -296,7 +357,9 @@ const generateEvents = () => {
                     { id: id * 2, name: '아니오', probability: 1 - probYes }
                 ],
                 isAdminIssue: true,
-                // 원본 배팅 금액 저장
+                // ✅ 원본 배팅 금액 저장 (여러 필드명 지원)
+                yesAmount: yesBet,
+                noAmount: noBet,
                 yesBet: yesBet,
                 noBet: noBet
             })
@@ -497,7 +560,8 @@ function getFilteredEvents() {
     let filtered = events
     
     if (currentCategory !== 'all') {
-        filtered = filtered.filter(e => e.category_slug === currentCategory)
+        // ✅ categoryKey 우선 사용 (정규화된 키)
+        filtered = filtered.filter(e => (e.categoryKey || e.category_slug) === currentCategory)
     }
     
     const searchInput = document.getElementById('search-input')
@@ -575,7 +639,13 @@ function renderCategories() {
     
     container.innerHTML = allCategories.map(category => {
         const isActive = currentCategory === category.slug
-        const categoryCount = category.slug === 'all' ? events.length : events.filter(e => e.category_slug === category.slug).length
+        // ✅ categoryKey로 카운트 (정규화된 키 사용)
+        const categoryCount = category.slug === 'all' 
+            ? events.length 
+            : events.filter(e => (e.categoryKey || e.category_slug) === category.slug).length
+        
+        console.log('EventBET: Category count', category.slug, ':', categoryCount);
+        
         return `
         <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
              onclick="filterByCategory('${category.slug}')">
@@ -674,8 +744,11 @@ function renderMarkets() {
         card += '</div>'
         
         if (hasOutcomes) {
+            // ✅ 실제 베팅액 기반으로 퍼센트 계산
+            const percentCalc = calcYesNoPercent(event);
+            
             card += '<div class="grid grid-cols-2 gap-1.5">'
-            event.outcomes.slice(0, 2).forEach(outcome => {
+            event.outcomes.slice(0, 2).forEach((outcome, idx) => {
                 const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
                 const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                 const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
@@ -683,11 +756,15 @@ function renderMarkets() {
                 const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
                 const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
                 
+                // ✅ calcYesNoPercent 결과 사용 (실제 베팅액 기반)
+                const displayPercent = isYes ? percentCalc.yesPct : percentCalc.noPct;
+                const barWidth = isYes ? parseFloat(percentCalc.yesPct) : parseFloat(percentCalc.noPct);
+                
                 card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
-                card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + (outcome.probability * 100) + '%; transition: width 0.3s ease;"></div>'
+                card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + barWidth + '%; transition: width 0.3s ease;"></div>'
                 card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
                 card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
-                card += '<span class="text-base font-bold ' + percentColor + '">' + (outcome.probability * 100).toFixed(1) + '%</span>'
+                card += '<span class="text-base font-bold ' + percentColor + '">' + displayPercent + '%</span>'
                 card += '</div>'
                 card += '</div>'
             })
