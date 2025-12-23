@@ -1544,16 +1544,23 @@ function loadRegisteredIssues() {
         const statusText = status === 'active' ? '진행중' : '종료됨';
         const statusClass = status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
         
+        // Yes/No 배팅 비율 계산
+        const yesBet = Number(issue.yesBet) || 0;
+        const noBet = Number(issue.noBet) || 0;
+        const total = yesBet + noBet;
+        const yesPercent = total > 0 ? ((yesBet / total) * 100).toFixed(1) : 50.0;
+        const noPercent = total > 0 ? ((noBet / total) * 100).toFixed(1) : 50.0;
+        
         return `
-            <tr>
+            <tr data-issue-index="${index}">
                 <td>${index + 1}</td>
                 <td>
                     ${issue.title}
                     ${issue.language ? `<br><small class="text-gray-500">[${issue.language.toUpperCase()}]</small>` : ''}
                 </td>
-                <td>${(issue.yesBet + issue.noBet).toLocaleString()} USDT</td>
-                <td class="text-green-600">${issue.yesBet.toLocaleString()} USDT</td>
-                <td class="text-red-600">${issue.noBet.toLocaleString()} USDT</td>
+                <td>${total.toLocaleString()} USDT</td>
+                <td class="text-green-600">${yesBet.toLocaleString()} USDT (${yesPercent}%)</td>
+                <td class="text-red-600">${noBet.toLocaleString()} USDT (${noPercent}%)</td>
                 <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
                 <td>
                     <span class="px-2 py-1 rounded text-xs font-semibold ${statusClass}">
@@ -1562,10 +1569,10 @@ function loadRegisteredIssues() {
                 </td>
                 <td>
                     <div class="flex space-x-2">
-                        <button onclick="editIssue(${index})" class="btn-warning" title="편집">
+                        <button class="btn-warning issue-edit-btn" data-index="${index}" title="편집">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="deleteIssue(${index})" class="btn-danger" title="삭제">
+                        <button class="btn-danger issue-delete-btn" data-index="${index}" title="삭제">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -1573,6 +1580,34 @@ function loadRegisteredIssues() {
             </tr>
         `;
     }).join('');
+    
+    // 이벤트 위임: 테이블 전체에 한 번만 바인딩
+    setupIssueTableEvents();
+}
+
+// ========== 이슈 테이블 이벤트 설정 (이벤트 위임) ==========
+function setupIssueTableEvents() {
+    const tbody = document.getElementById('issues-list');
+    if (!tbody) return;
+    
+    // 기존 이벤트 제거 (중복 방지)
+    tbody.removeEventListener('click', handleIssueTableClick);
+    
+    // 새 이벤트 추가
+    tbody.addEventListener('click', handleIssueTableClick);
+}
+
+function handleIssueTableClick(e) {
+    const editBtn = e.target.closest('.issue-edit-btn');
+    const deleteBtn = e.target.closest('.issue-delete-btn');
+    
+    if (editBtn) {
+        const index = parseInt(editBtn.dataset.index);
+        editIssue(index);
+    } else if (deleteBtn) {
+        const index = parseInt(deleteBtn.dataset.index);
+        deleteIssue(index);
+    }
 }
 
 // ========== 이슈 편집 ==========

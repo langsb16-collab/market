@@ -209,6 +209,32 @@ const eventTemplates = {
     ]
 }
 
+// ========== 카테고리 표준화 맵 (CRITICAL) ==========
+const CATEGORY_STANDARD_MAP = {
+    // 영어 → 영어
+    'politics': 'politics',
+    'sports': 'sports',
+    'technology': 'technology',
+    'cryptocurrency': 'cryptocurrency',
+    'crypto': 'cryptocurrency',  // 별칭
+    'entertainment': 'entertainment',
+    'economy': 'economy',
+    'science': 'science',
+    'climate': 'climate',
+    // 한국어 → 영어
+    '정치': 'politics',
+    '장치': 'politics',  // 오타 대응
+    '스포츠': 'sports',
+    '기술': 'technology',
+    '암호화폐': 'cryptocurrency',
+    '엔터테인먼트': 'entertainment',
+    '경제': 'economy',
+    '과학': 'science',
+    '기후': 'climate',
+    // 기타
+    'other': 'technology'
+}
+
 // Generate 450 events (50 per category)
 const generateEvents = () => {
     console.log('EventBET: generateEvents() called')
@@ -228,30 +254,25 @@ const generateEvents = () => {
     if (storedIssues.length > 0) {
         console.log('EventBET: Converting admin issues to events...')
         console.log('EventBET: storedIssues:', storedIssues)
+        
         storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
             console.log('EventBET: Processing issue:', issue.category, issue.title)
-            const categoryMap = {
-                'cryptocurrency': 'cryptocurrency',
-                'crypto': 'cryptocurrency',
-                'politics': 'politics',
-                '정치': 'politics',
-                'sports': 'sports',
-                'entertainment': 'entertainment',
-                'economy': 'economy',
-                'science': 'science',
-                'technology': 'technology',
-                'climate': 'climate',
-                'other': 'technology'
-            }
-            const categorySlug = categoryMap[issue.category] || 'technology'
+            
+            // ✅ 카테고리 표준화
+            const categorySlug = CATEGORY_STANDARD_MAP[issue.category] || 'technology'
             console.log('EventBET: Mapped category:', issue.category, '->', categorySlug)
+            
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
-            const yesBet = issue.yesBet || 0
-            const noBet = issue.noBet || 0
+            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL)
+            const yesBet = Number(issue.yesBet) || 0
+            const noBet = Number(issue.noBet) || 0
             const totalBet = yesBet + noBet
             const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
+            
+            console.log('EventBET: Betting -', 'Yes:', yesBet, 'No:', noBet, 'Prob:', probYes)
+            
+            const totalUsdt = issue.initialUsdt || totalBet || 60
             const volume = totalUsdt * 10000
             const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
             
@@ -274,7 +295,10 @@ const generateEvents = () => {
                     { id: id * 2 - 1, name: '예', probability: probYes },
                     { id: id * 2, name: '아니오', probability: 1 - probYes }
                 ],
-                isAdminIssue: true
+                isAdminIssue: true,
+                // 원본 배팅 금액 저장
+                yesBet: yesBet,
+                noBet: noBet
             })
         })
         console.log('EventBET: Added', allEvents.length, 'admin issues')
