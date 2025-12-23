@@ -1305,14 +1305,14 @@ function addIssueCard() {
                     🟣 카테고리 *
                 </label>
                 <select id="batch-issue-${cardId}-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    <option value="정치">정치</option>
-                    <option value="crypto">암호화폐</option>
+                    <option value="politics">정치</option>
+                    <option value="cryptocurrency">암호화폐</option>
                     <option value="sports">스포츠</option>
                     <option value="entertainment">엔터테인먼트</option>
                     <option value="economy">경제</option>
                     <option value="science">과학/기술</option>
                     <option value="climate">기후/환경</option>
-                    <option value="other">기타</option>
+                    <option value="technology">기술</option>
                 </select>
             </div>
             
@@ -1522,6 +1522,189 @@ async function saveBatchIssues() {
     
     // 이슈 목록 새로고침
     loadRegisteredIssues();
+}
+
+// ========== 등록된 이슈 목록 로드 ==========
+function loadRegisteredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const tbody = document.getElementById('issues-list');
+    
+    if (!tbody) {
+        console.log('issues-list 테이블을 찾을 수 없습니다.');
+        return;
+    }
+    
+    if (issues.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = issues.map((issue, index) => {
+        const status = issue.status || 'active';
+        const statusText = status === 'active' ? '진행중' : '종료됨';
+        const statusClass = status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+        
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    ${issue.title}
+                    ${issue.language ? `<br><small class="text-gray-500">[${issue.language.toUpperCase()}]</small>` : ''}
+                </td>
+                <td>${(issue.yesBet + issue.noBet).toLocaleString()} USDT</td>
+                <td class="text-green-600">${issue.yesBet.toLocaleString()} USDT</td>
+                <td class="text-red-600">${issue.noBet.toLocaleString()} USDT</td>
+                <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
+                <td>
+                    <span class="px-2 py-1 rounded text-xs font-semibold ${statusClass}">
+                        ${statusText}
+                    </span>
+                </td>
+                <td>
+                    <div class="flex space-x-2">
+                        <button onclick="editIssue(${index})" class="btn-warning" title="편집">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteIssue(${index})" class="btn-danger" title="삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ========== 이슈 편집 ==========
+function editIssue(index) {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issue = issues[index];
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 편집 프롬프트
+    const newTitle = prompt('이슈 제목을 수정하세요:', issue.title);
+    if (newTitle === null) return; // 취소
+    
+    const newYesBet = prompt('Yes 베팅액을 수정하세요 (USDT):', issue.yesBet);
+    if (newYesBet === null) return; // 취소
+    
+    const newNoBet = prompt('No 베팅액을 수정하세요 (USDT):', issue.noBet);
+    if (newNoBet === null) return; // 취소
+    
+    // 업데이트
+    issues[index] = {
+        ...issue,
+        title: newTitle.trim(),
+        yesBet: parseInt(newYesBet) || issue.yesBet,
+        noBet: parseInt(newNoBet) || issue.noBet
+    };
+    
+    // 저장
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    loadRegisteredIssues();
+    alert('✅ 이슈가 수정되었습니다.');
+}
+
+// ========== 이슈 삭제 ==========
+function deleteIssue(index) {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issue = issues[index];
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    if (!confirm(`정말 이 이슈를 삭제하시겠습니까?\n\n제목: ${issue.title}\n언어: ${issue.language || '알 수 없음'}`)) {
+        return;
+    }
+    
+    // 삭제
+    issues.splice(index, 1);
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    loadRegisteredIssues();
+    alert('✅ 이슈가 삭제되었습니다.');
+}
+
+// ========== 이슈 필터링 ==========
+function filterIssues() {
+    const statusFilter = document.getElementById('issue-status-filter')?.value || '';
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    
+    const filteredIssues = statusFilter ? 
+        issues.filter(issue => issue.status === statusFilter) : 
+        issues;
+    
+    const tbody = document.getElementById('issues-list');
+    if (!tbody) return;
+    
+    if (filteredIssues.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">해당 조건의 이슈가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filteredIssues.map((issue, index) => {
+        const status = issue.status || 'active';
+        const statusText = status === 'active' ? '진행중' : '종료됨';
+        const statusClass = status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+        
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    ${issue.title}
+                    ${issue.language ? `<br><small class="text-gray-500">[${issue.language.toUpperCase()}]</small>` : ''}
+                </td>
+                <td>${(issue.yesBet + issue.noBet).toLocaleString()} USDT</td>
+                <td class="text-green-600">${issue.yesBet.toLocaleString()} USDT</td>
+                <td class="text-red-600">${issue.noBet.toLocaleString()} USDT</td>
+                <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
+                <td>
+                    <span class="px-2 py-1 rounded text-xs font-semibold ${statusClass}">
+                        ${statusText}
+                    </span>
+                </td>
+                <td>
+                    <div class="flex space-x-2">
+                        <button onclick="editIssue(${issues.indexOf(issue)})" class="btn-warning" title="편집">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteIssue(${issues.indexOf(issue)})" class="btn-danger" title="삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ========== 만기일자 일괄 종료 ==========
+function settleAllExpiredIssues() {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const now = new Date();
+    
+    let expiredCount = 0;
+    issues.forEach(issue => {
+        const expireDate = new Date(issue.expireDate);
+        if (expireDate <= now && issue.status === 'active') {
+            issue.status = 'settled';
+            expiredCount++;
+        }
+    });
+    
+    if (expiredCount === 0) {
+        alert('만기가 된 이슈가 없습니다.');
+        return;
+    }
+    
+    localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    loadRegisteredIssues();
+    alert(`✅ ${expiredCount}개의 이슈가 종료되었습니다.`);
 }
 
 // ========== 전체 등록 (관리자 → 메인 사이트) ==========
