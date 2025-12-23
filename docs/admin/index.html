@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventBET 관리자</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, post-check=0, pre-check=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="cache-control" content="no-cache">
+    <meta name="expires" content="0">
+    <meta name="pragma" content="no-cache">
+    <meta name="timestamp" content="<?php echo time(); ?>">
+    <title>EventBET 관리자 - v2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -118,7 +126,13 @@
         }
         
         .content-section.active {
-            display: block;
+            display: block !important;
+        }
+        
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-left: 4px solid #ffffff;
         }
         
         table {
@@ -197,27 +211,27 @@
         </div>
         
         <div class="py-4">
-            <div class="sidebar-item active" onclick="showSection('banners')">
+            <div class="sidebar-item" data-section="banners-section">
                 <i class="fas fa-image"></i>
                 <span>배너 관리</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('notices')">
+            <div class="sidebar-item" data-section="notices-section">
                 <i class="fas fa-bullhorn"></i>
                 <span>공지 관리</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('popups')">
+            <div class="sidebar-item" data-section="popups-section">
                 <i class="fas fa-window-maximize"></i>
                 <span>팝업 관리</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('members')">
+            <div class="sidebar-item" data-section="members-section">
                 <i class="fas fa-users"></i>
                 <span>회원 관리</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('issues')">
+            <div class="sidebar-item" data-section="issues-section">
                 <i class="fas fa-plus-circle"></i>
                 <span>이슈 등록</span>
             </div>
-            <div class="sidebar-item" onclick="showSection('settlement')">
+            <div class="sidebar-item" data-section="settlement-section">
                 <i class="fas fa-calculator"></i>
                 <span>결산 페이지</span>
             </div>
@@ -238,9 +252,17 @@
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">배너 관리</h2>
-                    <button onclick="openBannerModal()" class="btn-success">
-                        <i class="fas fa-plus mr-2"></i>배너 추가
-                    </button>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="openBatchIssueModal()" style="background: linear-gradient(180deg, #FF9500 0%, #FF8000 100%); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 15px;">
+                            <i class="fas fa-plus-circle mr-2"></i>이슈 일괄 등록
+                        </button>
+                        <button onclick="registerAllIssuesToMainSiteNow()" style="background: linear-gradient(180deg, #34C759 0%, #28A745 100%); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 15px;">
+                            <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
+                        </button>
+                        <button onclick="openBannerModal()" class="btn-success">
+                            <i class="fas fa-plus mr-2"></i>배너 추가
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
@@ -366,12 +388,36 @@
         <!-- 이슈 등록 -->
         <div id="issues-section" class="content-section">
             <div class="card">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">
                     <i class="fas fa-plus-circle mr-2"></i>이슈 관리
                 </h2>
                 
-                <div class="mb-6">
-                    <button onclick="openBatchIssueModal()" class="btn-primary">
+                <!-- 버튼 그룹 (최상단 배치) -->
+                <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                    <button onclick="registerAllIssuesToMainSite()" 
+                            style="background: linear-gradient(180deg, #34C759 0%, #28A745 100%); 
+                                   color: white; 
+                                   padding: 14px 28px; 
+                                   border-radius: 10px; 
+                                   border: none; 
+                                   font-size: 17px; 
+                                   font-weight: 700; 
+                                   cursor: pointer;
+                                   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+                                   transition: all 0.2s;">
+                        <i class="fas fa-rocket mr-2"></i>메인 사이트 일괄 등록
+                    </button>
+                    <button onclick="openBatchIssueModal()" 
+                            style="background: linear-gradient(180deg, #007aff 0%, #0051d5 100%); 
+                                   color: white; 
+                                   padding: 14px 28px; 
+                                   border-radius: 10px; 
+                                   border: none; 
+                                   font-size: 17px; 
+                                   font-weight: 700; 
+                                   cursor: pointer;
+                                   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+                                   transition: all 0.2s;">
                         <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
                     </button>
                 </div>
@@ -379,8 +425,31 @@
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                     <p class="text-sm text-blue-800">
                         <i class="fas fa-info-circle mr-2"></i>
-                        <strong>입력한 이슈만 등록됩니다.</strong> 1개만 입력해도 등록 가능하며, 최대 5개까지 추가할 수 있습니다.
+                        <strong>"메인 사이트 일괄 등록"</strong> 버튼을 클릭하면 아래 등록된 모든 이슈가 메인 사이트에 표시됩니다.
                     </p>
+                </div>
+                
+                <!-- 등록된 이슈 목록 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">등록된 이슈 목록</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>제목</th>
+                                <th>카테고리</th>
+                                <th>언어</th>
+                                <th>만기일</th>
+                                <th>Yes 베팅</th>
+                                <th>No 베팅</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registered-issues-list">
+                            <!-- 등록된 이슈가 여기에 표시됩니다 -->
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
@@ -628,15 +697,109 @@
             
             <form onsubmit="saveBatchIssues(event)" id="batch-issue-form">
                 <div id="issue-boxes-container">
+                    <!-- 이슈 #1 -->
+                    <div class="border-2 border-green-500 rounded-xl p-6 mb-6 bg-white shadow-sm" id="issue-box-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-bold text-gray-800">📝 이슈 #1</h4>
+                            <button type="button" onclick="removeIssueBox(1)" class="text-red-500 hover:text-red-700" style="display:none;">
+                                <i class="fas fa-times-circle text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 카테고리 -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2 text-purple-700">
+                                🟣 카테고리 *
+                            </label>
+                            <select id="issue-1-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                                <option value="정치">정치</option>
+                                <option value="crypto">암호화폐</option>
+                                <option value="sports">스포츠</option>
+                                <option value="entertainment">엔터테인먼트</option>
+                                <option value="economy">경제</option>
+                                <option value="science">과학/기술</option>
+                                <option value="climate">기후/환경</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 4개 국어 제목 (2x2 그리드) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-3 text-gray-800">
+                                H 제목 (4개 언어 입력) *
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇰🇷 한국어</label>
+                                    <input type="text" id="issue-1-ko" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="예: 비트코인이 $150K 도달?" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇺🇸 en English</label>
+                                    <input type="text" id="issue-1-en" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="e.g., Bitcoin reaches $150K?">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇨🇳 cn 中文</label>
+                                    <input type="text" id="issue-1-zh" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="例：比特币突破$150K？">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-gray-600">🇯🇵 jp 日本語</label>
+                                    <input type="text" id="issue-1-ja" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                           placeholder="例：ビットコインが$150K突破？">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 큰 내용 설명 (선택) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-2 text-gray-700">큰 내용 설명 (선택)</label>
+                            <textarea id="issue-1-description" rows="3" 
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm" 
+                                      placeholder="이슈에 대한 상세한 설명을 입력하세요..."></textarea>
+                        </div>
+                        
+                        <!-- 공통 설정 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-red-700">
+                                    🟥 결론 설정 기간 *
+                                </label>
+                                <input type="date" id="issue-1-date" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-green-700">
+                                    🟩 Yes 배당률 (%)
+                                </label>
+                                <input type="number" id="issue-1-yes-odds" value="50" min="0" max="100" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2 text-yellow-700">
+                                    🟨 전체 배팅액 (USDT)
+                                </label>
+                                <input type="number" id="issue-1-usdt" value="100000" min="0" step="1000" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- 버튼 -->
                 <div class="flex justify-between items-center">
-                    <button type="button" onclick="addNewIssueBox()" class="btn-primary">
+                    <button type="button" onclick="addNewIssueBox()" class="btn-success">
                         <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
                     </button>
-                    <button type="submit" class="btn-success px-8">
-                        <i class="fas fa-check mr-2"></i>전체 등록
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeIssueModal()" class="btn-secondary px-6">
+                            취소
+                        </button>
+                        <button type="submit" class="btn-primary px-6">
+                            <i class="fas fa-save mr-2"></i>전체 등록
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -755,17 +918,55 @@
                 <!-- 이슈 카드들이 여기에 동적으로 추가됩니다 -->
             </div>
             
-            <div class="flex justify-between mt-6 pt-4 border-t sticky bottom-0 bg-white">
-                <button onclick="addIssueCard()" class="btn-primary">
+            <div class="flex justify-between mt-6 pt-4 border-t sticky bottom-0 bg-white gap-3">
+                <button onclick="addIssueCard()" class="btn-primary flex-1" style="font-size: 16px; font-weight: 700;">
                     <i class="fas fa-plus mr-2"></i>이슈 추가 (최대 5개)
                 </button>
-                <button onclick="saveMultipleIssues()" class="btn-success">
-                    <i class="fas fa-check mr-2"></i>전체 등록
+                <button onclick="saveBatchIssues()" class="btn-success flex-1" style="font-size: 16px; font-weight: 700;">
+                    <i class="fas fa-check-circle mr-2"></i>전체 등록
                 </button>
             </div>
         </div>
     </div>
     
-    <script src="/static/admin.js?v=1766449039006<?php echo time(); ?>"></script>
+    <script src="/static/admin-v2.js?v=1766449318123"></script>
+    <script>
+    // 메인 사이트 일괄 등록 함수 (HTML 내장)
+    function registerAllIssuesToMainSiteNow() {
+        console.log('=== 메인 사이트 일괄 등록 시작 ===');
+        
+        try {
+            // localStorage에서 관리자 이슈 가져오기
+            const adminIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+            
+            if (adminIssues.length === 0) {
+                alert('등록할 이슈가 없습니다.\n\n먼저 "이슈 등록" 메뉴에서 이슈를 등록해주세요.');
+                return;
+            }
+            
+            // 확인 메시지
+            if (!confirm('총 ' + adminIssues.length + '개의 이슈를 메인 사이트에 등록하시겠습니까?\n\n등록된 이슈는 즉시 메인 페이지에 표시됩니다.')) {
+                return;
+            }
+            
+            // localStorage는 이미 공유되므로 추가 작업 불필요
+            console.log('✅ 이슈가 메인 사이트에서 사용 가능합니다:', adminIssues.length, '개');
+            
+            alert('✅ 완료!\n\n총 ' + adminIssues.length + '개의 이슈가 메인 사이트에 등록되었습니다.\n\n메인 페이지를 새로고침(Ctrl+Shift+R)하여 확인하세요!');
+            
+        } catch (error) {
+            console.error('메인 사이트 등록 실패:', error);
+            alert('❌ 등록 실패: ' + error.message);
+        }
+    }
+    </script>
+    
+    <!-- API 연동 스크립트 (새로 추가) -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="/static/admin-api.js?v=1766449308532"></script>
+    
+    <!-- GitHub PC-휴대폰 동기화 시스템 -->
+    <script src="/static/github-sync.js?v=20251222"></script>
+    <script src="/static/admin-sync-integration.js?v=1766449308532"></script>
 </body>
 </html>
