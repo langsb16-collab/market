@@ -11,5 +11,5 @@ export default defineConfig({
       entry: 'src/index.tsx'
     })
   ],
-  publicDir: 'docs'  // docs 폴더를 public으로 사용
+  publicDir: 'public'  // public 폴더를 사용
 })
