@@ -229,16 +229,19 @@ const generateEvents = () => {
         console.log('EventBET: Converting admin issues to events...')
         storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
             const categoryMap = {
-                'crypto': 'crypto',
+                'cryptocurrency': 'cryptocurrency',
+                'crypto': 'cryptocurrency',
                 'politics': 'politics',
+                '정치': 'politics',
                 'sports': 'sports',
                 'entertainment': 'entertainment',
                 'economy': 'economy',
                 'science': 'science',
+                'technology': 'technology',
                 'climate': 'climate',
-                'other': 'other'
+                'other': 'technology'
             }
-            const categorySlug = categoryMap[issue.category] || 'other'
+            const categorySlug = categoryMap[issue.category] || 'technology'
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
             const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60

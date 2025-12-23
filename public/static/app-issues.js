@@ -1,5 +1,5 @@
 // Load admin issues from API and display on main page
-async function loadAdminIssues() {
+window.loadAdminIssues = async function loadAdminIssues() {
     try {
         const response = await fetch('/api/issues')
         const data = await response.json()
