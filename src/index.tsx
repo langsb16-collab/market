@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { serveStatic } from 'hono/cloudflare-workers'
 
 type Bindings = {
   GITHUB_TOKEN: string
@@ -12,6 +13,10 @@ const GIST_FILENAME = 'eventbet-issues.json'
 
 // CORS for API
 app.use('/api/*', cors())
+
+// Serve static files - MUST be before API routes to ensure proper file serving
+app.use('/static/*', serveStatic({ root: './' }))
+app.use('/admin/*', serveStatic({ root: './' }))
 
 // API Routes - BEFORE any static
 app.get('/api/issues', async (c) => {
@@ -320,5 +325,8 @@ app.post('/api/issues/batch', async (c) => {
     return c.json({ success: false, error: String(error) }, 500)
   }
 })
+
+// Serve static files - fallback for other paths
+app.use('/*', serveStatic({ root: './' }))
 
 export default app
