@@ -46,6 +46,10 @@
       if (typeof loadBatchIssuesForm === 'function') loadBatchIssuesForm();
       if (typeof loadRegisteredIssues === 'function') loadRegisteredIssues();
     }
+    if (section === 'settlement') {
+      if (typeof loadRegisteredIssues === 'function') loadRegisteredIssues();
+      if (typeof loadSettlement === 'function') loadSettlement();
+    }
   }
 
   function bindSidebar() {

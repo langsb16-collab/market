@@ -227,7 +227,9 @@ const generateEvents = () => {
     // ✅ 활성 이슈를 이벤트 형식으로 변환하여 추가
     if (storedIssues.length > 0) {
         console.log('EventBET: Converting admin issues to events...')
+        console.log('EventBET: storedIssues:', storedIssues)
         storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
+            console.log('EventBET: Processing issue:', issue.category, issue.title)
             const categoryMap = {
                 'cryptocurrency': 'cryptocurrency',
                 'crypto': 'cryptocurrency',
@@ -242,6 +244,7 @@ const generateEvents = () => {
                 'other': 'technology'
             }
             const categorySlug = categoryMap[issue.category] || 'technology'
+            console.log('EventBET: Mapped category:', issue.category, '->', categorySlug)
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
             const totalUsdt = issue.initialUsdt || (issue.yesBet + issue.noBet) || 60
