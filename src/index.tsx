@@ -46,7 +46,8 @@ app.post('/api/issues', async (c) => {
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'EventBET-App'
       }
     })
     
@@ -84,7 +85,8 @@ app.post('/api/issues', async (c) => {
       headers: {
         'Authorization': `token ${token}`,
         'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'EventBET-App'
       },
       body: JSON.stringify({
         files: {
@@ -100,7 +102,9 @@ app.post('/api/issues', async (c) => {
     })
     
     if (!updateResponse.ok) {
-      return c.json({ success: false, error: 'Failed to update Gist' }, 500)
+      const errorText = await updateResponse.text()
+      console.error('Gist update failed:', updateResponse.status, errorText)
+      return c.json({ success: false, error: `Failed to update Gist: ${updateResponse.status} - ${errorText}` }, 500)
     }
     
     return c.json({ success: true, id: newIssue.id })
@@ -124,7 +128,8 @@ app.put('/api/issues/:id', async (c) => {
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'EventBET-App'
       }
     })
     
@@ -188,7 +193,8 @@ app.delete('/api/issues/:id', async (c) => {
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'EventBET-App'
       }
     })
     
@@ -248,7 +254,8 @@ app.post('/api/issues/batch', async (c) => {
     const gistResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: {
         'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'EventBET-App'
       }
     })
     
@@ -286,7 +293,8 @@ app.post('/api/issues/batch', async (c) => {
       headers: {
         'Authorization': `token ${token}`,
         'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'EventBET-App'
       },
       body: JSON.stringify({
         files: {
@@ -302,7 +310,9 @@ app.post('/api/issues/batch', async (c) => {
     })
     
     if (!updateResponse.ok) {
-      return c.json({ success: false, error: 'Failed to update Gist' }, 500)
+      const errorText = await updateResponse.text()
+      console.error('Gist update failed:', updateResponse.status, errorText)
+      return c.json({ success: false, error: `Failed to update Gist: ${updateResponse.status} - ${errorText}` }, 500)
     }
     
     return c.json({ success: true, count: newIssues.length })
