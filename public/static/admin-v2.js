@@ -1290,61 +1290,6 @@ async function loadRegisteredIssues() {
 function editRegisteredIssue(issueId) {
     alert(`이슈 편집 기능\n\n이슈 ID: ${issueId}\n\n현재는 삭제 후 재등록으로 수정할 수 있습니다.`);
 }
-                        <option value="science" ${issue.category === 'science' ? 'selected' : ''}>과학/기술</option>
-                        <option value="climate" ${issue.category === 'climate' ? 'selected' : ''}>기후/환경</option>
-                        <option value="other" ${issue.category === 'other' ? 'selected' : ''}>기타</option>
-                    </select>
-                </div>
-                
-                <!-- 제목 (단일 언어) -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2 text-gray-800">
-                        📝 제목 (${issue.language === 'ko' ? '🇰🇷 한국어' : 
-                                  issue.language === 'en' ? '🇺🇸 English' : 
-                                  issue.language === 'zh' ? '🇨🇳 中文' : 
-                                  issue.language === 'ja' ? '🇯🇵 日本語' : '제목'}) *
-                    </label>
-                    <input type="text" id="batch-issue-${cardId}-title" value="${issue.title}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
-                    <input type="hidden" id="batch-issue-${cardId}-language" value="${issue.language}">
-                </div>
-                
-                <!-- 내용 설명 -->
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-2 text-gray-700">내용 설명 (선택)</label>
-                    <textarea id="batch-issue-${cardId}-description" rows="3" 
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm">${issue.description || ''}</textarea>
-                </div>
-                
-                <!-- 공통 설정 -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 rounded-lg p-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-red-700">
-                            🟥 결론 결정 기간 *
-                        </label>
-                        <input type="date" id="batch-issue-${cardId}-date" value="${issue.expireDate?.split('T')[0] || ''}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-green-700">
-                            🟩 Yes 배팅액 (USDT)
-                        </label>
-                        <input type="number" id="batch-issue-${cardId}-yes-bet" value="${issue.yesBet || 0}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-yellow-700">
-                            🟨 No 배팅액 (USDT)
-                        </label>
-                        <input type="number" id="batch-issue-${cardId}-no-bet" value="${issue.noBet || 0}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        container.insertAdjacentHTML('beforeend', cardHtml);
-    }, 100);
-}
 
 // 등록된 이슈 삭제
 // 등록된 이슈 삭제 (서버 API 사용)
