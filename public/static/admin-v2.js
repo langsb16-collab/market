@@ -1559,10 +1559,13 @@ async function saveBatchIssues() {
         // 날짜
         const expireDate = document.getElementById(`batch-issue-${cardId}-date`)?.value;
         
+        // Yes 비율 (%)
+        const yesOdds = parseFloat(document.getElementById(`batch-issue-${cardId}-yes-odds`)?.value || 50);
+        
         // 초기 USDT
         const initialUsdt = parseFloat(document.getElementById(`batch-issue-${cardId}-usdt`)?.value || 100000);
         
-        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, initialUsdt });
+        console.log(`Card ${cardIndex + 1}:`, { category, koTitle, enTitle, zhTitle, jaTitle, expireDate, yesOdds, initialUsdt });
         
         // 필수 필드 검증
         if (!category || !expireDate) {
@@ -1574,6 +1577,10 @@ async function saveBatchIssues() {
             alert(`이슈 #${cardIndex + 1}: 4개 언어 제목을 모두 입력해주세요.`);
             return;
         }
+        
+        // Yes/No 베팅액 계산 (비율에 따라 분배)
+        const yesBet = Math.floor(initialUsdt * (yesOdds / 100));
+        const noBet = Math.floor(initialUsdt * ((100 - yesOdds) / 100));
         
         // 만료일 계산 (며칠 뒤인지)
         const today = new Date();
