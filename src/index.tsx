@@ -36,7 +36,7 @@ app.post('/api/issues', async (c) => {
     const body = await c.req.json()
     const { title_ko, title_en, title_zh, title_ja, category, initial_usdt, expire_days } = body
     
-    const gistId = c.env.GIST_ID || 'YOUR_GIST_ID_HERE'
+    const gistId = c.env.GIST_ID || '5543e3d9f6259e02813fe78cc93e2126'
     const token = c.env.GITHUB_TOKEN
     
     if (!token) {
@@ -107,7 +107,7 @@ app.post('/api/issues', async (c) => {
       return c.json({ success: false, error: `Failed to update Gist: ${updateResponse.status} - ${errorText}` }, 500)
     }
     
-    return c.json({ success: true, id: newIssue.id })
+    return c.json({ success: true, id: newIssue.id, issue: newIssue })
   } catch (error) {
     return c.json({ success: false, error: String(error) }, 500)
   }
