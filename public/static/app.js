@@ -80,6 +80,44 @@ const getRandomDateWithinMonth = () => {
     return futureDate.toISOString().split('T')[0]
 }
 
+// Language normalization function
+function normalizeLang(raw) {
+    const v = String(raw || '').toLowerCase();
+    if (v === 'ko' || v === 'kr' || v.includes('kr') || v.includes('ko')) return 'ko';
+    if (v === 'en') return 'en';
+    if (v === 'zh' || v.includes('cn')) return 'zh';
+    if (v === 'ja' || v.includes('jp')) return 'ja';
+    return 'ko';
+}
+
+// Pick title based on current language
+function pickTitle(event, lang) {
+    const key = `title_${lang}`;
+    return (
+        event?.[key] ||
+        event?.title_ko ||
+        event?.title_en ||
+        event?.title_zh ||
+        event?.title_ja ||
+        event?.title ||
+        'No title'
+    );
+}
+
+// Pick description based on current language
+function pickDescription(event, lang) {
+    const key = `description_${lang}`;
+    return (
+        event?.[key] ||
+        event?.description_ko ||
+        event?.description_en ||
+        event?.description_zh ||
+        event?.description_ja ||
+        event?.description ||
+        ''
+    );
+}
+
 // Translations (abbreviated)
 const translations = {
     ko: {
@@ -428,9 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme()
     
     const savedLang = localStorage.getItem('preferred_language') || 'ko'
-    currentLang = savedLang
+    currentLang = normalizeLang(savedLang)
+    localStorage.setItem('preferred_language', currentLang)
     const langSelector = document.getElementById('language-selector')
-    if (langSelector) langSelector.value = savedLang
+    if (langSelector) langSelector.value = currentLang
     
     setupEventListeners()
     updateUITexts()
@@ -450,7 +489,7 @@ function setupEventListeners() {
     const langSelector = document.getElementById('language-selector')
     if (langSelector) {
         langSelector.addEventListener('change', (e) => {
-            currentLang = e.target.value
+            currentLang = normalizeLang(e.target.value)
             localStorage.setItem('preferred_language', currentLang)
             updateUITexts()
             renderMarkets()
@@ -699,12 +738,12 @@ const getCategoryName = (category) => {
 
 // Get event title
 const getEventTitle = (event) => {
-    return event[`title_${currentLang}`] || event.title_en
+    return pickTitle(event, currentLang)
 }
 
 // Get event description
 const getEventDescription = (event) => {
-    return event[`description_${currentLang}`] || event.description_en
+    return pickDescription(event, currentLang)
 }
 
 // Get outcome name (translate yes/no based on current language)

@@ -370,11 +370,21 @@
                     <i class="fas fa-plus-circle mr-2"></i>이슈 관리
                 </h2>
                 
-                <div class="mb-6">
+                <div class="mb-6 flex gap-3">
                     <button onclick="openBatchIssueModal()" class="btn-success">
                         <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
                     </button>
+                    <button onclick="openMainWithCacheBust()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-bold transition-all">
+                        <i class="fas fa-rocket mr-2"></i>메인 사이트에서 바로 확인
+                    </button>
                 </div>
+                
+                <script>
+                function openMainWithCacheBust() {
+                    const url = `/?v=${Date.now()}`;
+                    window.open(url, '_blank', 'noopener');
+                }
+                </script>
                 
                 <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                     <p class="text-sm text-blue-800">
