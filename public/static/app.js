@@ -344,18 +344,26 @@ const CATEGORY_STANDARD_MAP = {
 }
 
 // Generate 450 events (50 per category)
-const generateEvents = () => {
+const generateEvents = async () => {
     console.log('EventBET: generateEvents() called')
     const allEvents = []
     let id = 1
     
-    // ✅ 먼저 localStorage에서 관리자 등록 이슈를 읽어옴
+    // ✅ API에서 관리자 등록 이슈를 가져옴
     let storedIssues = []
     try {
-        storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
-        console.log('EventBET: Found', storedIssues.length, 'issues in localStorage')
+        console.log('EventBET: Fetching issues from API...')
+        const response = await fetch('/api/issues')
+        const data = await response.json()
+        
+        if (data.success && Array.isArray(data.issues)) {
+            storedIssues = data.issues
+            console.log('EventBET: Loaded', storedIssues.length, 'issues from API')
+        } else {
+            console.warn('EventBET: API returned no issues')
+        }
     } catch (error) {
-        console.error('EventBET: Error reading localStorage:', error)
+        console.error('EventBET: Error fetching from API:', error)
     }
     
     // ✅ 활성 이슈를 이벤트 형식으로 변환하여 추가
@@ -364,7 +372,7 @@ const generateEvents = () => {
         console.log('EventBET: storedIssues:', storedIssues)
         
         storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
-            console.log('EventBET: Processing issue:', issue.category, issue.title)
+            console.log('EventBET: Processing issue:', issue)
             
             // ✅ 카테고리 표준화
             const categorySlug = CATEGORY_STANDARD_MAP[issue.category] || 'technology'
@@ -373,14 +381,14 @@ const generateEvents = () => {
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
             // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL) - 모든 필드명 지원
-            const yesBet = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? 0)
-            const noBet = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? 0)
+            const yesBet = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? issue.initial_usdt ?? 0) / 2
+            const noBet = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? issue.initial_usdt ?? 0) / 2
             const totalBet = yesBet + noBet
             const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
             
             console.log('EventBET: Betting -', 'Yes:', yesBet, 'No:', noBet, 'Prob:', probYes)
             
-            const totalUsdt = issue.initialUsdt || totalBet || 60
+            const totalUsdt = issue.initial_usdt || totalBet || 60
             const volume = totalUsdt * 10000
             const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
             
@@ -389,15 +397,15 @@ const generateEvents = () => {
                 category_id: category.id,
                 category_slug: categorySlug,
                 categoryKey: categorySlug,  // ✅ 정규화된 키 추가
-                title_ko: issue.title,
-                title_en: issue.title,
-                title_zh: issue.title,
-                title_ja: issue.title,
-                description_ko: issue.description || issue.title,
-                description_en: issue.description || issue.title,
-                description_zh: issue.description || issue.title,
-                description_ja: issue.description || issue.title,
-                resolve_date: issue.expireDate,
+                title_ko: issue.title_ko || issue.title || '제목 없음',
+                title_en: issue.title_en || issue.title || 'No title',
+                title_zh: issue.title_zh || issue.title || '无标题',
+                title_ja: issue.title_ja || issue.title || 'タイトルなし',
+                description_ko: issue.description_ko || issue.description || '',
+                description_en: issue.description_en || issue.description || '',
+                description_zh: issue.description_zh || issue.description || '',
+                description_ja: issue.description_ja || issue.description || '',
+                resolve_date: issue.expire_date || issue.expireDate,
                 total_volume: volume,
                 participants: participants,
                 outcomes: [
@@ -442,24 +450,14 @@ let events = []
 
 // Initialize app
 console.log('EventBET: Setting up DOMContentLoaded listener')
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('EventBET: DOMContentLoaded fired!')
     
-    // ✅ localStorage에서 이슈를 먼저 읽어온 후 이벤트 생성
-    console.log('EventBET: Checking localStorage for issues...')
-    let storedIssues = []
-    try {
-        storedIssues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]')
-        console.log('EventBET: Found', storedIssues.length, 'issues in localStorage')
-        if (storedIssues.length > 0) {
-            console.log('EventBET: First stored issue:', storedIssues[0])
-        }
-    } catch (e) {
-        console.error('EventBET: localStorage error:', e)
-    }
+    // ✅ API에서 이슈를 먼저 로드한 후 이벤트 생성
+    console.log('EventBET: Loading events from API...')
     
-    // ✅ DOM이 준비된 후에 이벤트 생성
-    events = generateEvents()
+    // ✅ DOM이 준비된 후에 이벤트 생성 (async 함수 호출)
+    events = await generateEvents()
     
     console.log('EventBET: Total events available:', events.length)
     console.log('EventBET: First 3 events:', events.slice(0, 3))
