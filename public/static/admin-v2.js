@@ -2086,3 +2086,6 @@ async function updateIssueByIndex(editIndex, payload) {
   }
   return data;
 }
+
+// ===== PATCH: 중복 함수 방지 - 전역 바인딩 강제 =====
+window.loadRegisteredIssues = loadRegisteredIssues;
