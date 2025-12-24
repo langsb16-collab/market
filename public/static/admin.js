@@ -593,11 +593,17 @@ function loadIssues() {
                 </td>
                 <td>
                     ${issue.status !== 'settled' ? `
-                        <button onclick="settleIssue('${issue.id}', 'yes')" class="btn-success mr-2">
-                            YES 승리
+                        <button onclick="editIssue('${issue.id}')" class="btn-warning mr-1" title="수정">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="settleIssue('${issue.id}', 'no')" class="btn-danger">
-                            NO 승리
+                        <button onclick="deleteIssue('${issue.id}')" class="btn-danger mr-2" title="삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button onclick="settleIssue('${issue.id}', 'yes')" class="btn-success mr-1" title="YES 승리">
+                            <i class="fas fa-check"></i> YES
+                        </button>
+                        <button onclick="settleIssue('${issue.id}', 'no')" class="btn-danger" title="NO 승리">
+                            <i class="fas fa-times"></i> NO
                         </button>
                     ` : `
                         <span class="text-sm text-gray-600">결과: ${issue.result === 'yes' ? 'YES' : 'NO'}</span>
@@ -653,6 +659,67 @@ function settleIssue(issueId, result) {
     alert('정산이 완료되었습니다.');
     loadIssues();
     updateSettlementStats();
+}
+
+// 이슈 수정
+function editIssue(issueId) {
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issue = issues.find(i => i.id === issueId);
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 이슈 수정 모달 열기 (일괄 등록 모달 재사용)
+    openBatchIssueModal();
+    
+    // 이슈 데이터 채우기
+    setTimeout(() => {
+        // 기존 이슈 박스 초기화
+        const container = document.getElementById('batch-issues-container');
+        container.innerHTML = '';
+        issueBoxCount = 0;
+        
+        // 수정할 이슈로 박스 생성
+        addIssueCard();
+        
+        // 데이터 채우기
+        document.getElementById('issue-1-category').value = issue.category || '정치';
+        document.getElementById('issue-1-ko').value = issue.title_ko || issue.title || '';
+        document.getElementById('issue-1-en').value = issue.title_en || '';
+        document.getElementById('issue-1-zh').value = issue.title_zh || '';
+        document.getElementById('issue-1-ja').value = issue.title_ja || '';
+        document.getElementById('issue-1-description').value = issue.description || '';
+        document.getElementById('issue-1-date').value = issue.expireDate ? new Date(issue.expireDate).toISOString().split('T')[0] : '';
+        document.getElementById('issue-1-yes-odds').value = issue.yesOdds || 50;
+        document.getElementById('issue-1-usdt').value = (issue.yesBet || 0) + (issue.noBet || 0);
+        
+        // 수정 모드 표시
+        const modal = document.querySelector('#batch-issue-modal .modal-content h3');
+        if (modal) {
+            modal.innerHTML = '<i class="fas fa-edit text-blue-600 mr-2"></i>이슈 수정';
+        }
+        
+        // 이슈 ID 저장 (수정 시 사용)
+        document.getElementById('batch-issues-container').setAttribute('data-edit-id', issueId);
+        
+        // 추가 버튼 숨기기
+        document.querySelector('[onclick="addIssueCard()"]').style.display = 'none';
+    }, 100);
+}
+
+// 이슈 삭제
+function deleteIssue(issueId) {
+    if (!confirm('이 이슈를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    
+    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const filteredIssues = issues.filter(i => i.id !== issueId);
+    
+    localStorage.setItem('eventbet_issues', JSON.stringify(filteredIssues));
+    alert('이슈가 삭제되었습니다.');
+    loadIssues();
+    loadRegisteredIssues();
 }
 
 // 만기일자 일괄 종료

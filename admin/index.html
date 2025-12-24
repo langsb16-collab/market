@@ -371,7 +371,7 @@
                 </h2>
                 
                 <div class="mb-6">
-                    <button onclick="openBatchIssueModal()" class="btn-primary">
+                    <button onclick="openBatchIssueModal()" class="btn-success">
                         <i class="fas fa-plus mr-2"></i>이슈 일괄 등록
                     </button>
                 </div>
@@ -381,6 +381,33 @@
                         <i class="fas fa-info-circle mr-2"></i>
                         <strong>입력한 이슈만 등록됩니다.</strong> 1개만 입력해도 등록 가능하며, 최대 5개까지 추가할 수 있습니다.
                     </p>
+                </div>
+                
+                <!-- 등록된 이슈 목록 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-list mr-2"></i>등록된 이슈 목록 (최대 10개 표시)
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>이슈 제목</th>
+                                    <th>카테고리</th>
+                                    <th>YES 금액</th>
+                                    <th>NO 금액</th>
+                                    <th>비율</th>
+                                    <th>만기일</th>
+                                    <th>상태</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registered-issues-list">
+                                <!-- 이슈 목록이 여기에 표시됩니다 -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>
