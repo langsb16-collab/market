@@ -25,6 +25,7 @@ window.loadAdminIssues = async function loadAdminIssues() {
                 id: issue.id,
                 category_id: 1,
                 category_slug: issue.category,
+                categoryKey: issue.category, // 카테고리 정규화용
                 title_ko: issue.title_ko,
                 title_en: issue.title_en,
                 title_zh: issue.title_zh,
@@ -36,6 +37,11 @@ window.loadAdminIssues = async function loadAdminIssues() {
                 resolve_date: issue.expire_date,
                 total_volume: volume,
                 participants: participants,
+                // ✅ 베팅액 필드 추가 (calcYesNoPercent가 읽을 수 있도록)
+                yesBet: yesBet,
+                noBet: noBet,
+                yes_bet: yesBet,
+                no_bet: noBet,
                 outcomes: [
                     { id: issue.id * 2 - 1, name: '예', probability: probYes },
                     { id: issue.id * 2, name: '아니오', probability: 1 - probYes }
@@ -56,6 +62,9 @@ if (typeof events !== 'undefined' && Array.isArray(events)) {
     loadAdminIssues().then(adminEvents => {
         events.unshift(...adminEvents)
         console.log(`Total events: ${events.length}`)
+        if (typeof renderCategories === 'function') {
+            renderCategories()
+        }
         if (typeof renderMarkets === 'function') {
             renderMarkets()
         }

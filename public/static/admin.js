@@ -840,6 +840,8 @@ window.savePopup = function(event) {
     alert('팝업이 저장되었습니다.');
 };
 
+
+
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     loadBanners();
@@ -1105,6 +1107,7 @@ function loadBatchIssuesForm() {
 // 등록된 이슈 목록 로드
 function loadRegisteredIssues() {
     const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    window.issues = issues; // ✅ 전역 저장
     const tbody = document.getElementById('registered-issues-list');
     
     if (!tbody) return;
@@ -1147,7 +1150,7 @@ function loadRegisteredIssues() {
 
 // 등록된 이슈 편집
 function editRegisteredIssue(index) {
-    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issues = window.issues || [];
     const issue = issues[index];
     
     if (!issue) {
@@ -1243,9 +1246,18 @@ function editRegisteredIssue(index) {
 function deleteRegisteredIssue(index) {
     if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
     
-    let issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    const issues = window.issues || [];
+    const issue = issues[index];
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // localStorage에서 삭제
     issues.splice(index, 1);
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    window.issues = issues;
     
     alert('이슈가 삭제되었습니다.');
     loadRegisteredIssues();
@@ -1366,8 +1378,16 @@ function addIssueCard() {
                     <label class="block text-sm font-semibold mb-2 text-green-700">
                         🟩 Yes 배팅 비율 (%)
                     </label>
-                    <input type="number" id="batch-issue-${cardId}-yes-odds" value="50" min="0" max="100" 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                    <input type="number" id="batch-issue-${cardId}-yes-odds" value="60" min="0" max="100" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                           onchange="document.getElementById('batch-issue-${cardId}-no-odds').value = 100 - this.value">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-red-700">
+                        🟥 No 배팅 비율 (%)
+                    </label>
+                    <input type="number" id="batch-issue-${cardId}-no-odds" value="40" min="0" max="100" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg" readonly>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-2 text-yellow-700">
@@ -1590,77 +1610,121 @@ function setupIssueTableEvents() {
     const tbody = document.getElementById('issues-list');
     if (!tbody) return;
     
+    console.log('✅ Setting up issue table events...');
+    
     // 기존 이벤트 제거 (중복 방지)
     tbody.removeEventListener('click', handleIssueTableClick);
     
     // 새 이벤트 추가
     tbody.addEventListener('click', handleIssueTableClick);
+    
+    console.log('✅ Issue table events set up complete');
 }
 
 function handleIssueTableClick(e) {
+    console.log('Click detected:', e.target);
+    
     const editBtn = e.target.closest('.issue-edit-btn');
     const deleteBtn = e.target.closest('.issue-delete-btn');
     
+    console.log('Edit button:', editBtn, 'Delete button:', deleteBtn);
+    
     if (editBtn) {
         const index = parseInt(editBtn.dataset.index);
+        console.log('Editing issue index:', index);
         editIssue(index);
-    } else if (deleteBtn) {
+        return;
+    }
+    
+    if (deleteBtn) {
         const index = parseInt(deleteBtn.dataset.index);
+        console.log('Deleting issue index:', index);
         deleteIssue(index);
+        return;
     }
 }
 
 // ========== 이슈 편집 ==========
 function editIssue(index) {
+    console.log('=== editIssue called with index:', index);
+    
     const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('Total issues:', issues.length);
+    
     const issue = issues[index];
     
     if (!issue) {
+        console.error('Issue not found at index:', index);
         alert('이슈를 찾을 수 없습니다.');
         return;
     }
     
+    console.log('Editing issue:', issue);
+    
     // 편집 프롬프트
     const newTitle = prompt('이슈 제목을 수정하세요:', issue.title);
-    if (newTitle === null) return; // 취소
+    if (newTitle === null) {
+        console.log('Edit cancelled by user');
+        return; // 취소
+    }
     
-    const newYesBet = prompt('Yes 베팅액을 수정하세요 (USDT):', issue.yesBet);
-    if (newYesBet === null) return; // 취소
+    const newYesBet = prompt('Yes 베팅액을 수정하세요 (USDT):', issue.yesBet || 0);
+    if (newYesBet === null) {
+        console.log('Edit cancelled by user');
+        return; // 취소
+    }
     
-    const newNoBet = prompt('No 베팅액을 수정하세요 (USDT):', issue.noBet);
-    if (newNoBet === null) return; // 취소
+    const newNoBet = prompt('No 베팅액을 수정하세요 (USDT):', issue.noBet || 0);
+    if (newNoBet === null) {
+        console.log('Edit cancelled by user');
+        return; // 취소
+    }
     
     // 업데이트
     issues[index] = {
         ...issue,
         title: newTitle.trim(),
-        yesBet: parseInt(newYesBet) || issue.yesBet,
-        noBet: parseInt(newNoBet) || issue.noBet
+        yesBet: parseInt(newYesBet) || 0,
+        noBet: parseInt(newNoBet) || 0
     };
+    
+    console.log('Updated issue:', issues[index]);
     
     // 저장
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    console.log('✅ Issue saved to localStorage');
+    
     loadRegisteredIssues();
     alert('✅ 이슈가 수정되었습니다.');
 }
 
 // ========== 이슈 삭제 ==========
 function deleteIssue(index) {
+    console.log('=== deleteIssue called with index:', index);
+    
     const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
+    console.log('Total issues:', issues.length);
+    
     const issue = issues[index];
     
     if (!issue) {
+        console.error('Issue not found at index:', index);
         alert('이슈를 찾을 수 없습니다.');
         return;
     }
     
+    console.log('Deleting issue:', issue);
+    
     if (!confirm(`정말 이 이슈를 삭제하시겠습니까?\n\n제목: ${issue.title}\n언어: ${issue.language || '알 수 없음'}`)) {
+        console.log('Delete cancelled by user');
         return;
     }
     
     // 삭제
     issues.splice(index, 1);
     localStorage.setItem('eventbet_issues', JSON.stringify(issues));
+    console.log('✅ Issue deleted, remaining:', issues.length);
+    
     loadRegisteredIssues();
     alert('✅ 이슈가 삭제되었습니다.');
 }
