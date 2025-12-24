@@ -844,8 +844,23 @@ window.savePopup = function(event) {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    loadBanners();
-    loadRegisteredIssues(); // 페이지 로드 시 이슈 목록 로드
+    // 페이지 로드 시 이슈 섹션을 기본으로 활성화
+    const issuesSection = document.getElementById('issues-section');
+    const issuesSidebarItem = document.querySelector('[onclick*="issues"]');
+    
+    if (issuesSection && issuesSidebarItem) {
+        // 모든 섹션 비활성화
+        document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        
+        // 이슈 섹션 활성화
+        issuesSection.classList.add('active');
+        issuesSidebarItem.classList.add('active');
+        
+        // 이슈 목록 로드
+        loadRegisteredIssues();
+        loadBatchIssuesForm();
+    }
     
     // 섹션 전환 함수 업데이트
     const originalShowSection = window.showSection;
@@ -863,7 +878,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (section === 'notices') loadNotices();
         if (section === 'popups') loadPopups();
         if (section === 'members') loadMembers();
-        if (section === 'issues') loadRegisteredIssues();
+        if (section === 'issues') {
+            loadRegisteredIssues();
+            loadBatchIssuesForm();
+        }
         if (section === 'settlement') loadSettlement();
     };
 });
