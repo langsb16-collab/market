@@ -48,9 +48,8 @@ function toNumber(v) {
 
 // ========== Yes/No 퍼센트 계산 (실제 베팅액 기반) ==========
 function calcYesNoPercent(issue) {
-  // 여러 필드명 지원 (yesAmount, yesBet, yes_pool 등)
-  const yes = toNumber(issue.yesAmount ?? issue.yesBet ?? issue.yes_pool ?? 0);
-  const no = toNumber(issue.noAmount ?? issue.noBet ?? issue.no_pool ?? 0);
+  const yes = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? 0);
+  const no = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? 0);
   
   const total = yes + no;
   if (total <= 0) {
@@ -324,9 +323,9 @@ const generateEvents = () => {
             
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL)
-            const yesBet = Number(issue.yesBet) || 0
-            const noBet = Number(issue.noBet) || 0
+            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL) - 모든 필드명 지원
+            const yesBet = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? 0)
+            const noBet = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? 0)
             const totalBet = yesBet + noBet
             const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
             
@@ -357,11 +356,13 @@ const generateEvents = () => {
                     { id: id * 2, name: '아니오', probability: 1 - probYes }
                 ],
                 isAdminIssue: true,
-                // ✅ 원본 배팅 금액 저장 (여러 필드명 지원)
+                // ✅ 원본 배팅 금액 저장 (모든 필드명 지원)
                 yesAmount: yesBet,
                 noAmount: noBet,
                 yesBet: yesBet,
-                noBet: noBet
+                noBet: noBet,
+                yes_bet: yesBet,
+                no_bet: noBet
             })
         })
         console.log('EventBET: Added', allEvents.length, 'admin issues')
