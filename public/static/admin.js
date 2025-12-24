@@ -1105,47 +1105,87 @@ function loadBatchIssuesForm() {
 }
 
 // 등록된 이슈 목록 로드
-function loadRegisteredIssues() {
-    const issues = JSON.parse(localStorage.getItem('eventbet_issues') || '[]');
-    window.issues = issues; // ✅ 전역 저장
-    const tbody = document.getElementById('registered-issues-list');
-    
-    if (!tbody) return;
-    
-    if (issues.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
-        return;
+async function loadRegisteredIssues() {
+    try {
+        const response = await fetch('/api/issues');
+        const data = await response.json();
+        const issues = data.success ? data.issues : [];
+        
+        window.issues = issues; // ✅ 전역 저장
+        const tbody = document.getElementById('registered-issues-list');
+        
+        if (!tbody) return;
+        
+        if (issues.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = issues.map((issue, index) => {
+            const yesBet = Number(issue.yes_bet) || Number(issue.yesBet) || 0;
+            const noBet = Number(issue.no_bet) || Number(issue.noBet) || 0;
+            
+            return `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="max-w-xs truncate">${issue.title_ko || issue.title || ''}</td>
+                <td>${issue.category}</td>
+                <td class="text-green-600 font-bold">${yesBet.toLocaleString()} USDT</td>
+                <td class="text-red-600 font-bold">${noBet.toLocaleString()} USDT</td>
+                <td>${new Date(issue.expire_date || issue.expireDate).toLocaleDateString('ko-KR')}</td>
+                <td>
+                    <span class="px-2 py-1 rounded text-xs ${issue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                        ${issue.status === 'active' ? '진행중' : '종료됨'}
+                    </span>
+                </td>
+                <td>
+                    <button onclick="editRegisteredIssueFromAPI('${issue.id}')" class="btn-warning mr-2">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteRegisteredIssueFromAPI('${issue.id}')" class="btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load issues:', error);
+        const tbody = document.getElementById('registered-issues-list');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-red-500 py-8">이슈를 불러오는데 실패했습니다.</td></tr>';
+        }
     }
+}
+
+
+// API 기반 이슈 편집
+async function editRegisteredIssueFromAPI(issueId) {
+    alert(`편집 기능: 이슈 ID ${issueId}\n준비 중입니다.`);
+    // TODO: 편집 모달 구현
+}
+
+// API 기반 이슈 삭제
+async function deleteRegisteredIssueFromAPI(issueId) {
+    if (!confirm('이 이슈를 삭제하시겠습니까?')) return;
     
-    tbody.innerHTML = issues.map((issue, index) => `
-        <tr>
-            <td>${index + 1}</td>
-            <td class="max-w-xs truncate">${issue.title}</td>
-            <td>${issue.category}</td>
-            <td>
-                ${issue.language === 'ko' ? '🇰🇷 한국어' : 
-                  issue.language === 'en' ? '🇺🇸 English' : 
-                  issue.language === 'zh' ? '🇨🇳 中文' : 
-                  issue.language === 'ja' ? '🇯🇵 日本語' : issue.language || 'N/A'}
-            </td>
-            <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
-            <td class="text-green-600 font-bold">${issue.yesBet?.toLocaleString() || 0} USDT</td>
-            <td class="text-red-600 font-bold">${issue.noBet?.toLocaleString() || 0} USDT</td>
-            <td>
-                <span class="px-2 py-1 rounded text-xs ${issue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
-                    ${issue.status === 'active' ? '진행중' : '종료됨'}
-                </span>
-            </td>
-            <td>
-                <button onclick="editRegisteredIssue(${index})" class="btn-warning mr-2">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteRegisteredIssue(${index})" class="btn-danger">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    try {
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('이슈가 삭제되었습니다.');
+            loadRegisteredIssues(); // 목록 새로고침
+        } else {
+            alert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+    }
 }
 
 // 등록된 이슈 편집
