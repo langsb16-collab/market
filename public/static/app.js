@@ -99,6 +99,8 @@ const translations = {
         showingMarkets: '개 마켓 표시 중',
         totalMarkets: '전체',
         individual: '개',
+        yes: '예',
+        no: '아니오',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -117,6 +119,8 @@ const translations = {
         showingMarkets: 'markets shown',
         totalMarkets: 'Total',
         individual: '',
+        yes: 'Yes',
+        no: 'No',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -135,6 +139,8 @@ const translations = {
         showingMarkets: '个市场',
         totalMarkets: '总计',
         individual: '个',
+        yes: '是',
+        no: '否',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -153,6 +159,8 @@ const translations = {
         showingMarkets: '件のマーケット',
         totalMarkets: '合計',
         individual: '件',
+        yes: 'はい',
+        no: 'いいえ',
     }
 }
 
@@ -352,8 +360,24 @@ const generateEvents = () => {
                 total_volume: volume,
                 participants: participants,
                 outcomes: [
-                    { id: id * 2 - 1, name: '예', probability: probYes },
-                    { id: id * 2, name: '아니오', probability: 1 - probYes }
+                    { 
+                        id: id * 2 - 1, 
+                        name_ko: '예',
+                        name_en: 'Yes',
+                        name_zh: '是',
+                        name_ja: 'はい',
+                        name: '예',
+                        probability: probYes 
+                    },
+                    { 
+                        id: id * 2, 
+                        name_ko: '아니오',
+                        name_en: 'No',
+                        name_zh: '否',
+                        name_ja: 'いいえ',
+                        name: '아니오',
+                        probability: 1 - probYes 
+                    }
                 ],
                 isAdminIssue: true,
                 // ✅ 원본 배팅 금액 저장 (모든 필드명 지원)
@@ -683,6 +707,18 @@ const getEventDescription = (event) => {
     return event[`description_${currentLang}`] || event.description_en
 }
 
+// Get outcome name (translate yes/no based on current language)
+const getOutcomeName = (outcomeName) => {
+    const name = String(outcomeName).toLowerCase()
+    if (name === 'yes' || name === '예' || name === '是' || name === 'はい') {
+        return translations[currentLang].yes
+    }
+    if (name === 'no' || name === '아니오' || name === '否' || name === 'いいえ') {
+        return translations[currentLang].no
+    }
+    return outcomeName
+}
+
 // Get event image with category-specific variety
 const getEventImage = (categorySlug, eventId) => {
     const imageIdsByCategory = {
@@ -750,8 +786,10 @@ function renderMarkets() {
             
             card += '<div class="grid grid-cols-2 gap-1.5">'
             event.outcomes.slice(0, 2).forEach((outcome, idx) => {
-                const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
-                const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
+                // 다국어 outcome 이름 가져오기
+                const outcomeName = outcome[`name_${currentLang}`] || outcome.name || getOutcomeName(outcome.name)
+                const isYes = outcome.name_ko === '예' || outcome.name === '예' || outcome.name === 'yes' || outcome.name === 'Yes' || outcome.name === '是' || outcome.name === 'はい'
+                const isNo = outcome.name_ko === '아니오' || outcome.name === '아니오' || outcome.name === 'no' || outcome.name === 'No' || outcome.name === '否' || outcome.name === 'いいえ'
                 const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
                 const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
                 const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
@@ -764,7 +802,7 @@ function renderMarkets() {
                 card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
                 card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + barWidth + '%; transition: width 0.3s ease;"></div>'
                 card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
-                card += '<span class="font-bold text-xs ' + textColor + '">' + outcome.name + '</span>'
+                card += '<span class="font-bold text-xs ' + textColor + '">' + outcomeName + '</span>'
                 card += '<span class="text-base font-bold ' + percentColor + '">' + displayPercent + '%</span>'
                 card += '</div>'
                 card += '</div>'
@@ -844,8 +882,9 @@ function openBetModal(eventId) {
                 ` : ''}
                 <div class="grid grid-cols-1 gap-3">
                     ${event.outcomes.map(outcome => {
-                        const isYes = outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
-                        const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
+                        const outcomeName = getOutcomeName(outcome.name)
+                        const isYes = outcome.name === 'yes' || outcome.name === '예' || outcome.name.toLowerCase().includes('yes') || outcome.name === '是' || outcome.name === 'はい'
+                        const isNo = outcome.name === 'no' || outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
                         const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
                         const betSide = isYes ? 'yes' : isNo ? 'no' : 'unknown'
@@ -854,7 +893,7 @@ function openBetModal(eventId) {
                                 onclick="placeBetFromModal('${event.id}', '${betSide}')"
                                 ${!currentWallet ? 'disabled' : ''}>
                             <div class="flex justify-between items-center">
-                                <span class="font-bold ${textColor}">${outcome.name}</span>
+                                <span class="font-bold ${textColor}">${outcomeName}</span>
                                 <span class="text-2xl font-bold ${textColor}">${(outcome.probability * 100).toFixed(1)}%</span>
                             </div>
                         </button>
