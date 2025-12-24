@@ -1428,14 +1428,14 @@ function editRegisteredIssue(index) {
                         <label class="block text-sm font-semibold mb-2 text-green-700">
                             🟩 Yes 배팅액 (USDT)
                         </label>
-                        <input type="number" id="batch-issue-${cardId}-yes-bet" value="${issue.yesBet || 0}"
+                        <input type="number" id="batch-issue-${cardId}-yes-bet" value="${issue.yes_bet || issue.yesBet || 0}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-2 text-yellow-700">
                             🟨 No 배팅액 (USDT)
                         </label>
-                        <input type="number" id="batch-issue-${cardId}-no-bet" value="${issue.noBet || 0}"
+                        <input type="number" id="batch-issue-${cardId}-no-bet" value="${issue.no_bet || issue.noBet || 0}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg">
                     </div>
                 </div>
