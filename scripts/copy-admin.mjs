@@ -1,4 +1,4 @@
-import { mkdirSync, cpSync, existsSync } from "node:fs";
+import { mkdirSync, cpSync, existsSync, copyFileSync } from "node:fs";
 import path from "node:path";
 
 // Copy admin folder
@@ -24,4 +24,15 @@ if (existsSync(staticSrc)) {
   console.log("[copy-admin] ✅ copied:", staticSrc, "->", staticDst);
 } else {
   console.warn("[copy-admin] ⚠️ static source not found:", staticSrc);
+}
+
+// Copy admin-new.html
+const adminNewSrc = path.resolve("public/admin-new.html");
+const adminNewDst = path.resolve("dist/admin-new.html");
+
+if (existsSync(adminNewSrc)) {
+  copyFileSync(adminNewSrc, adminNewDst);
+  console.log("[copy-admin] ✅ copied:", adminNewSrc, "->", adminNewDst);
+} else {
+  console.warn("[copy-admin] ⚠️ admin-new.html not found:", adminNewSrc);
 }
