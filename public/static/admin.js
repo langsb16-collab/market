@@ -1117,13 +1117,16 @@ async function loadRegisteredIssues() {
         if (!tbody) return;
         
         if (issues.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
             return;
         }
         
         tbody.innerHTML = issues.map((issue, index) => {
             const yesBet = Number(issue.yes_bet) || Number(issue.yesBet) || 0;
             const noBet = Number(issue.no_bet) || Number(issue.noBet) || 0;
+            const total = yesBet + noBet;
+            const yesRatio = total > 0 ? ((yesBet / total) * 100).toFixed(1) : 50.0;
+            const noRatio = total > 0 ? ((noBet / total) * 100).toFixed(1) : 50.0;
             
             return `
             <tr>
@@ -1132,6 +1135,16 @@ async function loadRegisteredIssues() {
                 <td>${issue.category}</td>
                 <td class="text-green-600 font-bold">${yesBet.toLocaleString()} USDT</td>
                 <td class="text-red-600 font-bold">${noBet.toLocaleString()} USDT</td>
+                <td>
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">
+                            ${yesRatio}%
+                        </div>
+                        <div class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">
+                            ${noRatio}%
+                        </div>
+                    </div>
+                </td>
                 <td>${new Date(issue.expire_date || issue.expireDate).toLocaleDateString('ko-KR')}</td>
                 <td>
                     <span class="px-2 py-1 rounded text-xs ${issue.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
@@ -1139,10 +1152,13 @@ async function loadRegisteredIssues() {
                     </span>
                 </td>
                 <td>
-                    <button onclick="editRegisteredIssueFromAPI('${issue.id}')" class="btn-warning mr-2">
+                    <button onclick="openAdjustRatioModal('${issue.id}')" class="btn-primary mr-2" title="비율 조정">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
+                    <button onclick="editRegisteredIssueFromAPI('${issue.id}')" class="btn-warning mr-2" title="편집">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteRegisteredIssueFromAPI('${issue.id}')" class="btn-danger">
+                    <button onclick="deleteRegisteredIssueFromAPI('${issue.id}')" class="btn-danger" title="삭제">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -1153,11 +1169,141 @@ async function loadRegisteredIssues() {
         console.error('Failed to load issues:', error);
         const tbody = document.getElementById('registered-issues-list');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-red-500 py-8">이슈를 불러오는데 실패했습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-red-500 py-8">이슈를 불러오는데 실패했습니다.</td></tr>';
         }
     }
 }
 
+
+
+// ========== 비율 조정 모달 ==========
+function openAdjustRatioModal(issueId) {
+    const issue = window.issues.find(i => i.id === issueId);
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    const yesBet = Number(issue.yes_bet) || Number(issue.yesBet) || 0;
+    const noBet = Number(issue.no_bet) || Number(issue.noBet) || 0;
+    const total = yesBet + noBet;
+    const yesRatio = total > 0 ? ((yesBet / total) * 100).toFixed(1) : 50.0;
+    
+    document.getElementById('adjust-issue-id').value = issueId;
+    document.getElementById('adjust-issue-title').textContent = issue.title_ko || issue.title || '';
+    document.getElementById('current-yes-bet').textContent = yesBet.toLocaleString();
+    document.getElementById('current-no-bet').textContent = noBet.toLocaleString();
+    document.getElementById('current-yes-ratio').textContent = yesRatio + '%';
+    document.getElementById('current-no-ratio').textContent = (100 - yesRatio).toFixed(1) + '%';
+    
+    document.getElementById('yes-ratio-slider').value = yesRatio;
+    document.getElementById('yes-ratio-value').textContent = yesRatio + '%';
+    document.getElementById('new-yes-bet').value = yesBet;
+    document.getElementById('new-no-bet').value = noBet;
+    
+    document.getElementById('adjust-ratio-modal').classList.add('active');
+}
+
+function closeAdjustRatioModal() {
+    document.getElementById('adjust-ratio-modal').classList.remove('active');
+}
+
+function updateRatioPreview() {
+    const yesRatio = parseFloat(document.getElementById('yes-ratio-slider').value);
+    const noRatio = (100 - yesRatio).toFixed(1);
+    document.getElementById('yes-ratio-value').textContent = yesRatio.toFixed(1) + '%';
+}
+
+function updateAmountPreview() {
+    const yesBet = parseFloat(document.getElementById('new-yes-bet').value) || 0;
+    const noBet = parseFloat(document.getElementById('new-no-bet').value) || 0;
+    const total = yesBet + noBet;
+    
+    if (total > 0) {
+        const yesRatio = ((yesBet / total) * 100).toFixed(1);
+        const noRatio = ((noBet / total) * 100).toFixed(1);
+        document.getElementById('preview-yes-ratio').textContent = yesRatio;
+        document.getElementById('preview-no-ratio').textContent = noRatio;
+        document.getElementById('amount-preview').classList.remove('hidden');
+    } else {
+        document.getElementById('amount-preview').classList.add('hidden');
+    }
+}
+
+async function applyRatioAdjustment() {
+    const issueId = document.getElementById('adjust-issue-id').value;
+    const issue = window.issues.find(i => i.id === issueId);
+    
+    if (!issue) {
+        alert('이슈를 찾을 수 없습니다.');
+        return;
+    }
+    
+    const yesRatio = parseFloat(document.getElementById('yes-ratio-slider').value);
+    const noRatio = 100 - yesRatio;
+    
+    const currentYesBet = Number(issue.yes_bet) || Number(issue.yesBet) || 0;
+    const currentNoBet = Number(issue.no_bet) || Number(issue.noBet) || 0;
+    const total = currentYesBet + currentNoBet;
+    
+    const newYesBet = Math.round(total * (yesRatio / 100));
+    const newNoBet = Math.round(total * (noRatio / 100));
+    
+    if (!confirm(`비율을 YES ${yesRatio.toFixed(1)}% / NO ${noRatio.toFixed(1)}%로 변경하시겠습니까?\n\nYES: ${newYesBet.toLocaleString()} USDT\nNO: ${newNoBet.toLocaleString()} USDT`)) {
+        return;
+    }
+    
+    await updateIssueBets(issueId, newYesBet, newNoBet);
+}
+
+async function applyAmountAdjustment() {
+    const issueId = document.getElementById('adjust-issue-id').value;
+    const newYesBet = parseFloat(document.getElementById('new-yes-bet').value) || 0;
+    const newNoBet = parseFloat(document.getElementById('new-no-bet').value) || 0;
+    
+    if (newYesBet < 0 || newNoBet < 0) {
+        alert('금액은 0 이상이어야 합니다.');
+        return;
+    }
+    
+    const total = newYesBet + newNoBet;
+    const yesRatio = total > 0 ? ((newYesBet / total) * 100).toFixed(1) : 50;
+    const noRatio = total > 0 ? ((newNoBet / total) * 100).toFixed(1) : 50;
+    
+    if (!confirm(`금액을 변경하시겠습니까?\n\nYES: ${newYesBet.toLocaleString()} USDT (${yesRatio}%)\nNO: ${newNoBet.toLocaleString()} USDT (${noRatio}%)`)) {
+        return;
+    }
+    
+    await updateIssueBets(issueId, newYesBet, newNoBet);
+}
+
+async function updateIssueBets(issueId, yesBet, noBet) {
+    try {
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                yes_bet: yesBet,
+                no_bet: noBet
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ 비율이 성공적으로 변경되었습니다!');
+            closeAdjustRatioModal();
+            loadRegisteredIssues(); // 목록 새로고침
+        } else {
+            alert('❌ 변경 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('❌ 변경 중 오류가 발생했습니다.');
+    }
+}
 
 // API 기반 이슈 편집
 async function editRegisteredIssueFromAPI(issueId) {

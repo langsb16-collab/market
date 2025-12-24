@@ -396,13 +396,14 @@
                                 <th>카테고리</th>
                                 <th>YES 금액</th>
                                 <th>NO 금액</th>
+                                <th>YES 비율</th>
                                 <th>만기일</th>
                                 <th>상태</th>
                                 <th>관리</th>
                             </tr>
                         </thead>
                         <tbody id="registered-issues-list">
-                            <tr><td colspan="8" class="text-center text-gray-500 py-8">이슈를 불러오는 중...</td></tr>
+                            <tr><td colspan="9" class="text-center text-gray-500 py-8">이슈를 불러오는 중...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -874,6 +875,116 @@
                 </button>
                 <button onclick="saveBatchIssues()" class="btn-success">
                     <i class="fas fa-check mr-2"></i>전체 등록
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 비율 조정 모달 -->
+    <div id="adjust-ratio-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">
+                    <i class="fas fa-sliders-h text-blue-600 mr-2"></i>Yes/No 비율 조정
+                </h3>
+                <button onclick="closeAdjustRatioModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <input type="hidden" id="adjust-issue-id">
+            
+            <div class="mb-6">
+                <label class="block text-sm font-bold mb-2">이슈 제목</label>
+                <p id="adjust-issue-title" class="text-gray-700 bg-gray-50 p-3 rounded"></p>
+            </div>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    비율을 직접 조정하거나, 금액을 입력하여 Yes/No 베팅액을 변경할 수 있습니다.
+                </p>
+            </div>
+            
+            <!-- 현재 상태 -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-sm font-bold mb-3 text-gray-700">📊 현재 상태</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-600">YES 금액 (USDT)</label>
+                        <p id="current-yes-bet" class="text-lg font-bold text-green-600">0</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">NO 금액 (USDT)</label>
+                        <p id="current-no-bet" class="text-lg font-bold text-red-600">0</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">YES 비율</label>
+                        <p id="current-yes-ratio" class="text-lg font-bold text-green-600">50%</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">NO 비율</label>
+                        <p id="current-no-ratio" class="text-lg font-bold text-red-600">50%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 방법 1: 비율로 조정 -->
+            <div class="mb-6">
+                <h4 class="text-sm font-bold mb-3">
+                    <i class="fas fa-percentage text-purple-600 mr-1"></i>방법 1: 비율로 조정
+                </h4>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">YES 비율 (%)</label>
+                    <input type="range" id="yes-ratio-slider" min="0" max="100" value="50" 
+                           class="w-full" oninput="updateRatioPreview()">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>0%</span>
+                        <span id="yes-ratio-value" class="font-bold text-green-600">50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                <button onclick="applyRatioAdjustment()" class="btn-primary w-full">
+                    <i class="fas fa-check mr-2"></i>비율 적용
+                </button>
+            </div>
+            
+            <div class="border-t pt-6"></div>
+            
+            <!-- 방법 2: 금액으로 조정 -->
+            <div class="mb-6">
+                <h4 class="text-sm font-bold mb-3">
+                    <i class="fas fa-coins text-yellow-600 mr-1"></i>방법 2: 금액으로 직접 설정
+                </h4>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">YES 금액 (USDT)</label>
+                        <input type="number" id="new-yes-bet" min="0" step="100"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                               placeholder="0" oninput="updateAmountPreview()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">NO 금액 (USDT)</label>
+                        <input type="number" id="new-no-bet" min="0" step="100"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                               placeholder="0" oninput="updateAmountPreview()">
+                    </div>
+                </div>
+                <div id="amount-preview" class="bg-yellow-50 p-3 rounded mb-4 hidden">
+                    <p class="text-sm font-semibold text-yellow-800">
+                        <i class="fas fa-eye mr-1"></i>미리보기: 
+                        YES <span id="preview-yes-ratio">50</span>% / 
+                        NO <span id="preview-no-ratio">50</span>%
+                    </p>
+                </div>
+                <button onclick="applyAmountAdjustment()" class="btn-success w-full">
+                    <i class="fas fa-check mr-2"></i>금액 적용
+                </button>
+            </div>
+            
+            <div class="flex space-x-3 mt-6">
+                <button onclick="closeAdjustRatioModal()" class="btn-danger flex-1">
+                    <i class="fas fa-times mr-2"></i>취소
                 </button>
             </div>
         </div>
