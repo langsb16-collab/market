@@ -1105,7 +1105,8 @@ function loadBatchIssuesForm() {
 }
 
 // 등록된 이슈 목록 로드 (API 기반)
-async function loadRegisteredIssues() {
+// ===== 이 함수는 사용하지 않음 (1723줄 버전 사용) =====
+async function loadRegisteredIssues_legacy() {
     const tbody = document.getElementById('registered-issues-list');
     
     if (!tbody) {
@@ -1730,7 +1731,7 @@ async function loadRegisteredIssues() {
     
     try {
         const issues = await fetchAdminIssues();
-        window.issues = issues; // 전역 저장
+        window.issues = issues; // ✅ 전역 저장 (edit/delete가 동일 데이터 참조)
         
         if (issues.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-8">등록된 이슈가 없습니다.</td></tr>';
@@ -1745,51 +1746,49 @@ async function loadRegisteredIssues() {
 }
 
 function renderIssuesTable(issues, tbody) {
-    
     tbody.innerHTML = issues.map((issue, index) => {
         const status = issue.status || 'active';
         const statusText = status === 'active' ? '진행중' : '종료됨';
         const statusClass = status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
         
-        // Yes/No 배팅 비율 계산
-        const yesBet = Number(issue.yesBet) || 0;
-        const noBet = Number(issue.noBet) || 0;
+        // ✅ PATCH 2: 필드명 양쪽 다 읽기 (snake_case + camelCase)
+        const yesBet = Number(issue.yes_bet ?? issue.yesBet ?? 0);
+        const noBet = Number(issue.no_bet ?? issue.noBet ?? 0);
         const total = yesBet + noBet;
         const yesPercent = total > 0 ? ((yesBet / total) * 100).toFixed(1) : 50.0;
         const noPercent = total > 0 ? ((noBet / total) * 100).toFixed(1) : 50.0;
         
+        const title = issue.title_ko ?? issue.title ?? 'No title';
+        const category = issue.category ?? issue.categoryKey ?? 'N/A';
+        const expireDate = issue.expire_date ?? issue.expireDate ?? issue.resolve_date ?? new Date().toISOString();
+        
         return `
             <tr data-issue-index="${index}">
                 <td>${index + 1}</td>
-                <td>
-                    ${issue.title}
-                    ${issue.language ? `<br><small class="text-gray-500">[${issue.language.toUpperCase()}]</small>` : ''}
-                </td>
+                <td class="max-w-xs truncate">${title}</td>
+                <td>${category}</td>
                 <td>${total.toLocaleString()} USDT</td>
-                <td class="text-green-600">${yesBet.toLocaleString()} USDT (${yesPercent}%)</td>
-                <td class="text-red-600">${noBet.toLocaleString()} USDT (${noPercent}%)</td>
-                <td>${new Date(issue.expireDate).toLocaleDateString('ko-KR')}</td>
+                <td class="text-green-600 font-bold">${yesBet.toLocaleString()} USDT (${yesPercent}%)</td>
+                <td class="text-red-600 font-bold">${noBet.toLocaleString()} USDT (${noPercent}%)</td>
+                <td>${new Date(expireDate).toLocaleDateString('ko-KR')}</td>
                 <td>
                     <span class="px-2 py-1 rounded text-xs font-semibold ${statusClass}">
                         ${statusText}
                     </span>
                 </td>
                 <td>
-                    <div class="flex space-x-2">
-                        <button class="btn-warning issue-edit-btn" data-index="${index}" title="편집">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-danger issue-delete-btn" data-index="${index}" title="삭제">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                    <button onclick="editRegisteredIssue(${index})" class="btn-warning mr-2">
+                        🟠
+                    </button>
+                    <button onclick="deleteRegisteredIssue(${index})" class="btn-danger">
+                        🔴
+                    </button>
                 </td>
             </tr>
         `;
     }).join('');
-    
-    // 이벤트 위임: 테이블 전체에 한 번만 바인딩
-    setupIssueTableEvents();
+}
+    }).join('');
 }
 
 // ========== 이슈 테이블 이벤트 설정 (이벤트 위임) ==========
