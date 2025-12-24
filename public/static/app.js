@@ -380,9 +380,9 @@ const generateEvents = async () => {
             
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL) - 모든 필드명 지원
-            const yesBet = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? issue.initial_usdt ?? 0) / 2
-            const noBet = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? issue.initial_usdt ?? 0) / 2
+            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL) - 실제 배팅 데이터 사용
+            const yesBet = toNumber(issue.yes_bet ?? issue.yesBet ?? issue.yesAmount ?? 0)
+            const noBet = toNumber(issue.no_bet ?? issue.noBet ?? issue.noAmount ?? 0)
             const totalBet = yesBet + noBet
             const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
             
