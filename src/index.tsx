@@ -141,8 +141,10 @@ app.post('/api/issues', async (c) => {
     
     // 2) 새 이슈 만들기
     const initial_usdt = toNum(body.initial_usdt ?? body.initialBet ?? 60, 60)
-    const yes_bet = toNum(body.yes_bet, Math.floor(initial_usdt * 0.5))
-    const no_bet = toNum(body.no_bet, Math.floor(initial_usdt * 0.5))
+    // ✅ yes_bet이 제공되지 않으면 랜덤 비율 생성 (30-70% 범위)
+    const randomYesRatio = body.yes_bet === undefined ? (0.3 + Math.random() * 0.4) : 0.5
+    const yes_bet = toNum(body.yes_bet, Math.floor(initial_usdt * randomYesRatio))
+    const no_bet = toNum(body.no_bet, initial_usdt - yes_bet)
     
     const newIssue = {
       id: `iss_${Date.now()}`,
@@ -310,8 +312,10 @@ app.post('/api/issues/batch', async (c) => {
     
     const newIssues = batchIssues.map((issue: any) => {
       const initial_usdt = toNum(issue.initial_usdt, 100000)
-      const yes_bet = toNum(issue.yes_bet, Math.floor(initial_usdt * 0.5))
-      const no_bet = toNum(issue.no_bet, Math.floor(initial_usdt * 0.5))
+      // ✅ yes_bet이 제공되지 않으면 랜덤 비율 생성 (30-70% 범위)
+      const randomYesRatio = issue.yes_bet === undefined ? (0.3 + Math.random() * 0.4) : 0.5
+      const yes_bet = toNum(issue.yes_bet, Math.floor(initial_usdt * randomYesRatio))
+      const no_bet = toNum(issue.no_bet, initial_usdt - yes_bet)
       
       return {
         id: `iss_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
