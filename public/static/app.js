@@ -142,6 +142,9 @@ const translations = {
         individual: '개',
         yes: '예',
         no: '아니오',
+        notice: '공지',
+        login: '로그인',
+        register: '회원가입',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -162,6 +165,9 @@ const translations = {
         individual: '',
         yes: 'Yes',
         no: 'No',
+        notice: 'Notice',
+        login: 'Login',
+        register: 'Register',
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -182,6 +188,9 @@ const translations = {
         individual: '个',
         yes: '是',
         no: '否',
+        notice: '公告',
+        login: '登录',
+        register: '注册',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -202,6 +211,9 @@ const translations = {
         individual: '件',
         yes: 'はい',
         no: 'いいえ',
+        notice: '通知',
+        login: 'ログイン',
+        register: '登録',
     }
 }
 
@@ -583,8 +595,18 @@ function updateUITexts() {
             : t.connectWallet
     }
     
-    const submitIssueText = document.getElementById('submit-issue-text')
-    if (submitIssueText) submitIssueText.textContent = t.submitIssue
+    // Update all button texts with translation
+    const noticeBtnText = document.getElementById('notice-btn-text')
+    if (noticeBtnText) noticeBtnText.textContent = t.notice
+    
+    const submitIssueBtnText = document.getElementById('submit-issue-btn-text')
+    if (submitIssueBtnText) submitIssueBtnText.textContent = t.submitIssue
+    
+    const loginBtnText = document.getElementById('login-btn-text')
+    if (loginBtnText) loginBtnText.textContent = t.login
+    
+    const registerBtnText = document.getElementById('register-btn-text')
+    if (registerBtnText) registerBtnText.textContent = t.register
     
     const heroTitle = document.getElementById('hero-title')
     if (heroTitle) heroTitle.textContent = t.title
