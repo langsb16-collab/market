@@ -250,6 +250,51 @@ app.delete('/api/issues/:id', async (c) => {
   }
 })
 
+// ===== PATCH: POST /api/bets - 베팅 누적 업데이트 =====
+app.post('/api/bets', async (c) => {
+  try {
+    const body = await c.req.json<any>()
+    const issueId = String(body.issue_id || '')
+    const side = String(body.side || '').toLowerCase()
+    const amount = toNum(body.amount, 0)
+
+    if (!issueId || (side !== 'yes' && side !== 'no') || !Number.isFinite(amount) || amount <= 0) {
+      return c.json({ success: false, error: 'INVALID_INPUT' }, 400)
+    }
+
+    const store = await readGistIssues(c)
+    const items = store.items.slice()
+    const idx = items.findIndex((x: any) => String(x.id) === issueId)
+    
+    if (idx === -1) {
+      return c.json({ success: false, error: 'NOT_FOUND' }, 404)
+    }
+
+    const cur = items[idx]
+    const yes = toNum(cur.yes_bet, 0)
+    const no = toNum(cur.no_bet, 0)
+
+    items[idx] = {
+      ...cur,
+      yes_bet: side === 'yes' ? yes + amount : yes,
+      no_bet: side === 'no' ? no + amount : no,
+      updated_at: nowIso(),
+    }
+
+    const nextStore = {
+      version: toNum(store.version, 1) + 1,
+      updatedAt: nowIso(),
+      items
+    }
+    
+    await writeGistIssues(c, nextStore)
+
+    return c.json({ success: true, issue: items[idx] })
+  } catch (e: any) {
+    return c.json({ success: false, error: e?.message || 'BET_FAILED' }, 500)
+  }
+})
+
 // Batch POST (기존 로직 유지하되 헬퍼 사용)
 app.post('/api/issues/batch', async (c) => {
   try {

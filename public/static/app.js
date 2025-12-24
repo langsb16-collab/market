@@ -848,8 +848,10 @@ function openBetModal(eventId) {
                         const isNo = outcome.name === '아니오' || outcome.name.toLowerCase().includes('no') || outcome.name === '否' || outcome.name === 'いいえ'
                         const bgColor = isYes ? 'bg-green-50 hover:bg-green-100' : isNo ? 'bg-red-50 hover:bg-red-100' : 'bg-blue-50 hover:bg-blue-100'
                         const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
+                        const betSide = isYes ? 'yes' : isNo ? 'no' : 'unknown'
                         return `
                         <button class="w-full ${bgColor} border-2 border-transparent hover:border-gray-300 rounded-lg p-4 transition-all ${!currentWallet ? 'opacity-50 cursor-not-allowed' : ''}"
+                                onclick="placeBetFromModal('${event.id}', '${betSide}')"
                                 ${!currentWallet ? 'disabled' : ''}>
                             <div class="flex justify-between items-center">
                                 <span class="font-bold ${textColor}">${outcome.name}</span>
@@ -943,3 +945,52 @@ document.addEventListener('click', (e) => {
         closeSubmitIssueModal()
     }
 })
+
+// ===== PATCH: 베팅 처리 함수 =====
+function placeBetFromModal(eventId, side) {
+  try {
+    // 테스트용 베팅액: 1000 USDT 고정 (나중에 입력창으로 변경 가능)
+    const amount = 1000;
+
+    fetch('/api/bets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issue_id: String(eventId),
+        side: side,        // 'yes' | 'no'
+        amount: Number(amount)
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.success !== true) {
+        alert('베팅 처리 실패: ' + (data?.error || 'unknown'));
+        return;
+      }
+
+      // 최신 데이터 다시 로드 → 비율/카테고리 즉시 갱신
+      if (typeof window.loadAdminIssues === 'function') {
+        window.loadAdminIssues().then(() => {
+          if (typeof renderCategories === 'function') renderCategories();
+          if (typeof renderMarkets === 'function') renderMarkets();
+        });
+      } else if (typeof loadAdminIssues === 'function') {
+        loadAdminIssues().then(() => {
+          if (typeof renderCategories === 'function') renderCategories();
+          if (typeof renderMarkets === 'function') renderMarkets();
+        });
+      }
+
+      alert('베팅이 반영되었습니다! (' + side.toUpperCase() + ' ' + amount + ' USDT)');
+      closeBetModal();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('베팅 처리 실패(네트워크)');
+    });
+
+  } catch (e) {
+    console.error(e);
+    alert('베팅 처리 실패');
+  }
+}
