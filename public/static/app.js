@@ -97,12 +97,11 @@ function pickTitle(event, lang) {
     const zh = (event.title_zh || event.titleZh || '').trim();
     const ja = (event.title_ja || event.titleJa || '').trim();
 
-    // ✅ 핵심: 한국어 모드(ko)에서는 타 언어로 절대 섞이지 않게 "ko만" 반환
+    // ✅ 핵심: 각 언어 모드에서는 해당 언어만 표시 (절대 섞이지 않음)
     if (lang === 'ko') return ko || '제목 없음';
-
-    if (lang === 'en') return en || ko || 'No title';
-    if (lang === 'zh') return zh || ko || '无标题';
-    if (lang === 'ja') return ja || ko || 'タイトルなし';
+    if (lang === 'en') return en || 'No title';
+    if (lang === 'zh') return zh || '无标题';
+    if (lang === 'ja') return ja || 'タイトルなし';
 
     // 혹시라도 lang이 이상하면 ko로 고정
     return ko || '제목 없음';
