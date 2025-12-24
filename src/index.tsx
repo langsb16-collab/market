@@ -116,8 +116,8 @@ async function writeGistIssues(c: any, data: GistIssuesData): Promise<void> {
 app.use('/api/*', cors())
 
 // Serve static files - MUST be before API routes to ensure proper file serving
-app.get('/static/*', serveStatic({ root: './' }))
-app.get('/admin/*', serveStatic({ root: './' }))
+app.get('/static/*', serveStatic({ root: './static' }))
+app.get('/admin/*', serveStatic({ root: './admin' }))
 
 // ===== PATCH: replace GET /api/issues =====
 app.get('/api/issues', async (c) => {
