@@ -92,16 +92,20 @@ function normalizeLang(raw) {
 
 // Pick title based on current language
 function pickTitle(event, lang) {
-    const key = `title_${lang}`;
-    return (
-        event?.[key] ||
-        event?.title_ko ||
-        event?.title_en ||
-        event?.title_zh ||
-        event?.title_ja ||
-        event?.title ||
-        'No title'
-    );
+    const ko = (event.title_ko || event.titleKo || event.title || '').trim();
+    const en = (event.title_en || event.titleEn || '').trim();
+    const zh = (event.title_zh || event.titleZh || '').trim();
+    const ja = (event.title_ja || event.titleJa || '').trim();
+
+    // ✅ 핵심: 한국어 모드(ko)에서는 타 언어로 절대 섞이지 않게 "ko만" 반환
+    if (lang === 'ko') return ko || '제목 없음';
+
+    if (lang === 'en') return en || ko || 'No title';
+    if (lang === 'zh') return zh || ko || '无标题';
+    if (lang === 'ja') return ja || ko || 'タイトルなし';
+
+    // 혹시라도 lang이 이상하면 ko로 고정
+    return ko || '제목 없음';
 }
 
 // Pick description based on current language
@@ -738,8 +742,12 @@ const getCategoryName = (category) => {
 
 // Get event title
 const getEventTitle = (event) => {
-    return pickTitle(event, currentLang)
-}
+    // currentLang이 어떤 형태로 와도 ko/en/zh/ja 로 강제 정규화
+    const lang = normalizeLang(currentLang);
+    
+    // 제목 선택 (ko일 때는 절대 타 언어로 섞이지 않게)
+    return pickTitle(event, lang);
+};
 
 // Get event description
 const getEventDescription = (event) => {
