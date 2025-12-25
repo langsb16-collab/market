@@ -453,8 +453,12 @@ const generateEvents = async () => {
         console.log('EventBET: Added', allEvents.length, 'admin issues')
     }
     
-    // Shuffle to mix categories
-    return allEvents.sort(() => Math.random() - 0.5)
+    // Sort by created_at (newest first) - 최근 등록 순서로 정렬
+    return allEvents.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.created_at || a.resolve_date)
+        const dateB = new Date(b.createdAt || b.created_at || b.resolve_date)
+        return dateB - dateA // 최신 등록이 먼저 (내림차순)
+    })
 }
 
 // ✅ Events will be generated in DOMContentLoaded
