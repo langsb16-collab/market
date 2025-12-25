@@ -453,12 +453,28 @@ const generateEvents = async () => {
         console.log('EventBET: Added', allEvents.length, 'admin issues')
     }
     
-    // Sort by created_at (newest first) - 최근 등록 순서로 정렬
-    return allEvents.sort((a, b) => {
-        const dateA = new Date(a.createdAt || a.created_at || a.resolve_date)
-        const dateB = new Date(b.createdAt || b.created_at || b.resolve_date)
-        return dateB - dateA // 최신 등록이 먼저 (내림차순)
+    // ✅ Sort by created_at (newest first) - 최근 등록 순서로 정렬 (강제 적용)
+    allEvents.sort((a, b) => {
+        const dateA = new Date(a.created_at || a.createdAt || a.resolve_date || 0)
+        const dateB = new Date(b.created_at || b.createdAt || b.resolve_date || 0)
+        const diff = dateB.getTime() - dateA.getTime() // 최신이 먼저 (내림차순)
+        
+        // 상위 5개 디버깅 로그
+        if (allEvents.indexOf(a) < 5) {
+            console.log(`EventBET: Initial sort - ${a.title_ko?.substring(0, 25)}... | created: ${new Date(a.created_at || a.createdAt).toISOString()}`)
+        }
+        
+        return diff
     })
+    
+    console.log(`EventBET: ✅ Total ${allEvents.length} events sorted by created_at (newest first)`)
+    console.log(`EventBET: Top 3 after sort:`, allEvents.slice(0, 3).map(e => ({
+        title: e.title_ko?.substring(0, 30),
+        category: e.categoryKey || e.category,
+        created: e.created_at || e.createdAt
+    })))
+    
+    return allEvents
 }
 
 // ✅ Events will be generated in DOMContentLoaded
@@ -666,13 +682,21 @@ function getFilteredEvents() {
         )
     }
     
-    // Apply sorting
+    // Apply sorting - 항상 최신 등록 순서 우선 적용
     if (currentSortBy === 'date') {
-        // Sort by created_at (newest first) - 최근 등록 순서
+        // ✅ Sort by created_at (newest first) - 최근 등록 순서 (강제 적용)
         filtered.sort((a, b) => {
-            const dateA = new Date(a.createdAt || a.created_at || a.resolve_date)
-            const dateB = new Date(b.createdAt || b.created_at || b.resolve_date)
-            return dateB - dateA // 최신 등록이 먼저 (내림차순)
+            // created_at 필드 우선 사용 (ISO 8601 형식)
+            const dateA = new Date(a.created_at || a.createdAt || a.resolve_date || 0)
+            const dateB = new Date(b.created_at || b.createdAt || b.resolve_date || 0)
+            const diff = dateB.getTime() - dateA.getTime() // 최신이 먼저 (내림차순)
+            
+            // 디버깅 로그 (상위 3개만 출력)
+            if (filtered.indexOf(a) < 3) {
+                console.log(`EventBET: Sort by date - ${a.title_ko?.substring(0, 20)}... | ${new Date(a.created_at || a.createdAt).toISOString()}`)
+            }
+            
+            return diff
         })
     } else if (currentSortBy === 'volume') {
         // Sort by total_volume (highest first)
