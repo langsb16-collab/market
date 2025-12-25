@@ -664,8 +664,12 @@ function getFilteredEvents() {
     
     // Apply sorting
     if (currentSortBy === 'date') {
-        // Sort by resolve_date (earliest first)
-        filtered.sort((a, b) => new Date(a.resolve_date) - new Date(b.resolve_date))
+        // Sort by created_at (newest first) - 최근 등록 순서
+        filtered.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.created_at || a.resolve_date)
+            const dateB = new Date(b.createdAt || b.created_at || b.resolve_date)
+            return dateB - dateA // 최신 등록이 먼저 (내림차순)
+        })
     } else if (currentSortBy === 'volume') {
         // Sort by total_volume (highest first)
         filtered.sort((a, b) => b.total_volume - a.total_volume)
