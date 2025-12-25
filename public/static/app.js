@@ -418,6 +418,8 @@ const generateEvents = async () => {
                 description_zh: issue.description_zh || issue.description || '',
                 description_ja: issue.description_ja || issue.description || '',
                 resolve_date: issue.expire_date || issue.expireDate,
+                created_at: issue.createdAt || issue.created_at || new Date().toISOString(), // ✅ 등록일 추가
+                createdAt: issue.createdAt || issue.created_at || new Date().toISOString(), // ✅ 등록일 추가
                 total_volume: volume,
                 participants: participants,
                 outcomes: [
