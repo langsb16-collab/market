@@ -456,23 +456,16 @@ const generateEvents = async () => {
     // ✅ Sort by created_at (newest first) - 최근 등록 순서로 정렬 (강제 적용)
     allEvents.sort((a, b) => {
         const dateA = new Date(a.created_at || a.createdAt || a.resolve_date || 0)
-        const dateB = new Date(b.created_at || b.createdAt || b.resolve_date || 0)
-        const diff = dateB.getTime() - dateA.getTime() // 최신이 먼저 (내림차순)
+        const dateB = new Date(b.createdAt || b.created_at || b.resolve_date || 0)
         
-        // 상위 5개 디버깅 로그
-        if (allEvents.indexOf(a) < 5) {
-            console.log(`EventBET: Initial sort - ${a.title_ko?.substring(0, 25)}... | created: ${new Date(a.created_at || a.createdAt).toISOString()}`)
-        }
+        // 안전한 getTime() 처리
+        const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime()
+        const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime()
         
-        return diff
+        return timeB - timeA // 최신이 먼저 (내림차순)
     })
     
     console.log(`EventBET: ✅ Total ${allEvents.length} events sorted by created_at (newest first)`)
-    console.log(`EventBET: Top 3 after sort:`, allEvents.slice(0, 3).map(e => ({
-        title: e.title_ko?.substring(0, 30),
-        category: e.categoryKey || e.category,
-        created: e.created_at || e.createdAt
-    })))
     
     return allEvents
 }
@@ -686,17 +679,14 @@ function getFilteredEvents() {
     if (currentSortBy === 'date') {
         // ✅ Sort by created_at (newest first) - 최근 등록 순서 (강제 적용)
         filtered.sort((a, b) => {
-            // created_at 필드 우선 사용 (ISO 8601 형식)
             const dateA = new Date(a.created_at || a.createdAt || a.resolve_date || 0)
-            const dateB = new Date(b.created_at || b.createdAt || b.resolve_date || 0)
-            const diff = dateB.getTime() - dateA.getTime() // 최신이 먼저 (내림차순)
+            const dateB = new Date(b.createdAt || b.created_at || b.resolve_date || 0)
             
-            // 디버깅 로그 (상위 3개만 출력)
-            if (filtered.indexOf(a) < 3) {
-                console.log(`EventBET: Sort by date - ${a.title_ko?.substring(0, 20)}... | ${new Date(a.created_at || a.createdAt).toISOString()}`)
-            }
+            // 안전한 getTime() 처리
+            const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime()
+            const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime()
             
-            return diff
+            return timeB - timeA // 최신이 먼저 (내림차순)
         })
     } else if (currentSortBy === 'volume') {
         // Sort by total_volume (highest first)
