@@ -64,6 +64,32 @@
                     </div>
                 </div>
                 
+                <!-- Yes/No 초기 비율 설정 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-semibold mb-3 text-blue-800">
+                        <i class="fas fa-percentage mr-2"></i>
+                        Yes/No 초기 비율 설정
+                    </h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Yes 비율 (%)</label>
+                            <input type="number" id="yes_ratio" class="w-full px-4 py-2 border rounded" value="50" min="0" max="100" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">No 비율 (%)</label>
+                            <input type="number" id="no_ratio" class="w-full px-4 py-2 border rounded" value="50" min="0" max="100" required>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        두 비율의 합은 100%가 되어야 합니다. 초기 USDT가 이 비율대로 분배됩니다.
+                    </p>
+                    <div id="ratio-warning" class="hidden mt-2 text-red-600 text-sm">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        비율의 합이 100%가 아닙니다!
+                    </div>
+                </div>
+                
                 <input type="hidden" id="edit_id" value="">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
                     <i class="fas fa-save mr-2"></i>
@@ -193,15 +219,38 @@
         document.getElementById('issueForm').addEventListener('submit', async (e) => {
             e.preventDefault()
             
+            // Yes/No 비율 검증
+            const yesRatio = parseFloat(document.getElementById('yes_ratio').value)
+            const noRatio = parseFloat(document.getElementById('no_ratio').value)
+            const ratioWarning = document.getElementById('ratio-warning')
+            
+            if (Math.abs((yesRatio + noRatio) - 100) > 0.01) {
+                ratioWarning.classList.remove('hidden')
+                alert('❌ Yes와 No 비율의 합이 100%가 되어야 합니다!')
+                return
+            }
+            ratioWarning.classList.add('hidden')
+            
+            // 초기 USDT를 비율대로 분배
+            const initialUsdt = parseFloat(document.getElementById('initial_usdt').value)
+            const yesBet = Math.round(initialUsdt * yesRatio / 100)
+            const noBet = Math.round(initialUsdt * noRatio / 100)
+            
             const formData = {
                 title_ko: document.getElementById('title_ko').value,
                 title_en: document.getElementById('title_en').value,
                 title_zh: document.getElementById('title_zh').value,
                 title_ja: document.getElementById('title_ja').value,
                 category: document.getElementById('category').value,
-                initial_usdt: parseFloat(document.getElementById('initial_usdt').value),
+                initial_usdt: initialUsdt,
+                yes_bet: yesBet,
+                no_bet: noBet,
+                yes_ratio: yesRatio,
+                no_ratio: noRatio,
                 expire_days: parseInt(document.getElementById('expire_days').value)
             }
+            
+            console.log('📝 Submitting issue with ratios:', formData)
             
             try {
                 const response = await fetch(API_BASE, {
@@ -257,6 +306,39 @@
             document.getElementById('submitText').textContent = '등록'
             document.getElementById('cancelBtn').classList.add('hidden')
         }
+        
+        // Yes/No 비율 실시간 검증
+        function validateRatios() {
+            const yesRatio = parseFloat(document.getElementById('yes_ratio').value) || 0
+            const noRatio = parseFloat(document.getElementById('no_ratio').value) || 0
+            const ratioWarning = document.getElementById('ratio-warning')
+            const total = yesRatio + noRatio
+            
+            if (Math.abs(total - 100) > 0.01) {
+                ratioWarning.classList.remove('hidden')
+                ratioWarning.textContent = `⚠️ 비율의 합: ${total.toFixed(1)}% (100%가 되어야 합니다)`
+            } else {
+                ratioWarning.classList.add('hidden')
+            }
+        }
+        
+        // Yes 비율 변경 시 No 비율 자동 조정
+        document.getElementById('yes_ratio').addEventListener('input', (e) => {
+            const yesRatio = parseFloat(e.target.value) || 0
+            if (yesRatio >= 0 && yesRatio <= 100) {
+                document.getElementById('no_ratio').value = (100 - yesRatio).toFixed(0)
+            }
+            validateRatios()
+        })
+        
+        // No 비율 변경 시 Yes 비율 자동 조정
+        document.getElementById('no_ratio').addEventListener('input', (e) => {
+            const noRatio = parseFloat(e.target.value) || 0
+            if (noRatio >= 0 && noRatio <= 100) {
+                document.getElementById('yes_ratio').value = (100 - noRatio).toFixed(0)
+            }
+            validateRatios()
+        })
         
         // Load on page load with better error handling
         console.log('📄 Page script loaded')
