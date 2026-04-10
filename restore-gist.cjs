@@ -50,6 +50,7 @@ for (let i = 1; i <= 150; i++) {
     status: 'active',
     created_at: new Date(Date.now() - i * 60 * 60 * 1000).toISOString(),
     total_volume: Math.floor(Math.random() * 1000000),
+    participants: Math.floor(Math.random() * 9000) + 1000,
     resolution_criteria_en: 'Official results verification',
     resolution_criteria_ko: '공식 결과 확인',
     resolution_criteria_zh: '官方结果验证',
