@@ -55,26 +55,30 @@ for (let i = 1; i <= 150; i++) {
     resolution_criteria_ko: '공식 결과 확인',
     resolution_criteria_zh: '官方结果验证',
     resolution_criteria_ja: '公式結果確認',
-    outcomes: [
-      {
-        id: i * 2 - 1,
-        name_en: 'Yes',
-        name_ko: '예',
-        name_zh: '是',
-        name_ja: 'はい',
-        probability: 0.25 + Math.random() * 0.50,
-        total_bets: Math.floor(Math.random() * 500000)
-      },
-      {
-        id: i * 2,
-        name_en: 'No',
-        name_ko: '아니오',
-        name_zh: '否',
-        name_ja: 'いいえ',
-        probability: 0.25 + Math.random() * 0.50,
-        total_bets: Math.floor(Math.random() * 500000)
-      }
-    ]
+    outcomes: (() => {
+      const yesProb = 0.25 + Math.random() * 0.50;
+      const noProb = 1 - yesProb;
+      return [
+        {
+          id: i * 2 - 1,
+          name_en: 'Yes',
+          name_ko: '예',
+          name_zh: '是',
+          name_ja: 'はい',
+          probability: yesProb,
+          total_bets: Math.floor(Math.random() * 500000)
+        },
+        {
+          id: i * 2,
+          name_en: 'No',
+          name_ko: '아니오',
+          name_zh: '否',
+          name_ja: 'いいえ',
+          probability: noProb,
+          total_bets: Math.floor(Math.random() * 500000)
+        }
+      ];
+    })()
   });
 }
 
