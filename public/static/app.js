@@ -393,16 +393,16 @@ const generateEvents = async () => {
             
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
             
-            // ✅ Yes/No 배팅 금액 기반 확률 계산 (CRITICAL) - 실제 배팅 데이터 사용
-            const yesBet = toNumber(issue.yes_bet ?? issue.yesBet ?? issue.yesAmount ?? 0)
-            const noBet = toNumber(issue.no_bet ?? issue.noBet ?? issue.noAmount ?? 0)
-            const totalBet = yesBet + noBet
-            const probYes = totalBet > 0 ? yesBet / totalBet : 0.5
+            // ✅ API outcomes에서 실제 확률 가져오기
+            const outcome1 = issue.outcomes?.[0]
+            const outcome2 = issue.outcomes?.[1]
+            const probYes = outcome1?.probability ?? 0.5
+            const probNo = outcome2?.probability ?? (1 - probYes)
             
-            console.log('EventBET: Betting -', 'Yes:', yesBet, 'No:', noBet, 'Prob:', probYes)
+            console.log('EventBET: Probability -', 'Yes:', probYes, 'No:', probNo)
             
-            const totalUsdt = issue.initial_usdt || totalBet || 60
-            const volume = totalUsdt * 10000
+            const totalUsdt = issue.total_volume || 600000
+            const volume = totalUsdt
             const participants = Math.floor(volume / 1000) + Math.floor(Math.random() * 100)
             
             allEvents.push({
@@ -440,17 +440,10 @@ const generateEvents = async () => {
                         name_zh: '否',
                         name_ja: 'いいえ',
                         name: '아니오',
-                        probability: 1 - probYes 
+                        probability: probNo 
                     }
                 ],
-                isAdminIssue: true,
-                // ✅ 원본 배팅 금액 저장 (모든 필드명 지원)
-                yesAmount: yesBet,
-                noAmount: noBet,
-                yesBet: yesBet,
-                noBet: noBet,
-                yes_bet: yesBet,
-                no_bet: noBet
+                isAdminIssue: true
             })
         })
         console.log('EventBET: Added', allEvents.length, 'admin issues')
