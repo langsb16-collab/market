@@ -386,8 +386,9 @@ const generateEvents = async () => {
         storedIssues.filter(issue => issue && issue.status === 'active').forEach(issue => {
             console.log('EventBET: Processing issue:', issue)
             
-            // ✅ 카테고리 표준화
-            const categorySlug = CATEGORY_STANDARD_MAP[issue.category] || 'technology'
+            // ✅ 카테고리 표준화 (대소문자 무시)
+            const categoryRaw = (issue.category || 'technology').toLowerCase()
+            const categorySlug = CATEGORY_STANDARD_MAP[categoryRaw] || 'technology'
             console.log('EventBET: Mapped category:', issue.category, '->', categorySlug)
             
             const category = categories.find(c => c.slug === categorySlug) || categories[0]
