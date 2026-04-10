@@ -62,7 +62,7 @@ for (let i = 1; i <= 150; i++) {
         name_ko: '예',
         name_zh: '是',
         name_ja: 'はい',
-        probability: 0.45 + Math.random() * 0.1,
+        probability: 0.25 + Math.random() * 0.50,
         total_bets: Math.floor(Math.random() * 500000)
       },
       {
@@ -71,7 +71,7 @@ for (let i = 1; i <= 150; i++) {
         name_ko: '아니오',
         name_zh: '否',
         name_ja: 'いいえ',
-        probability: 0.45 + Math.random() * 0.1,
+        probability: 0.25 + Math.random() * 0.50,
         total_bets: Math.floor(Math.random() * 500000)
       }
     ]
