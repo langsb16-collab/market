@@ -26,6 +26,15 @@ if (existsSync(staticSrc)) {
   console.warn("[copy-admin] ⚠️ static source not found:", staticSrc);
 }
 
+// Copy index.html
+const indexSrc = path.resolve("public/index.html");
+const indexDst = path.resolve("dist/index.html");
+
+if (existsSync(indexSrc)) {
+  copyFileSync(indexSrc, indexDst);
+  console.log("[copy-admin] ✅ copied:", indexSrc, "->", indexDst);
+}
+
 // Copy admin-new.html
 const adminNewSrc = path.resolve("public/admin-new.html");
 const adminNewDst = path.resolve("dist/admin-new.html");
