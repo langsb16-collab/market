@@ -6,7 +6,11 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "vars": {
-    "GIST_ID": "5543e3d9f6259e02813fe78cc93e2126"
-  }
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cashiq-db",
+      "database_id": "c61bfbe7-d512-4a6b-8e61-c420eeb6a261"
+    }
+  ]
 }
