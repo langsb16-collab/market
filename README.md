@@ -8,8 +8,8 @@
 
 ## 🌐 URL
 - **프로덕션**: https://www.cashiq.my
-- **최신 배포**: https://796c314a.cashiq-e8i.pages.dev
-- **관리자 페이지**: https://796c314a.cashiq-e8i.pages.dev/admin-new (⚠️ `.html` 없이 접속)
+- **최신 배포**: https://b742147c.cashiq-e8i.pages.dev
+- **관리자 페이지**: https://b742147c.cashiq-e8i.pages.dev/admin-new (⚠️ `.html` 없이 접속)
 - **GitHub**: https://github.com/langsb16-collab/market
 
 ## ✅ 완료된 기능
