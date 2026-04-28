@@ -910,11 +910,11 @@ function renderMarkets() {
                 const displayPercent = isYes ? percentCalc.yesPct : percentCalc.noPct;
                 const barWidth = isYes ? parseFloat(percentCalc.yesPct) : parseFloat(percentCalc.noPct);
                 
-                card += '<div class="relative overflow-hidden rounded-lg border ' + btnClass + ' cursor-pointer transition-all duration-300">'
+                card += '<div class="relative overflow-hidden rounded-lg ' + btnClass + ' cursor-pointer transition-all duration-300" style="min-height: 48px;">'
                 card += '<div class="absolute inset-0 ' + barClass + '" style="width: ' + barWidth + '%; transition: width 0.3s ease;"></div>'
-                card += '<div class="relative z-10 flex items-center justify-between p-2">'
-                card += '<span class="font-bold text-sm text-white drop-shadow-md">' + outcomeName + '</span>'
-                card += '<span class="text-lg font-bold text-white drop-shadow-md">' + displayPercent + '%</span>'
+                card += '<div class="relative z-10 flex items-center justify-between p-3">'
+                card += '<span class="font-bold text-base text-white drop-shadow-md">' + outcomeName + '</span>'
+                card += '<span class="text-xl font-bold text-white drop-shadow-md">' + displayPercent + '%</span>'
                 card += '</div>'
                 card += '</div>'
             })
