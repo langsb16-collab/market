@@ -442,7 +442,8 @@ const generateEvents = async () => {
                 description_en: issue.description_en || issue.description || '',
                 description_zh: issue.description_zh || issue.description || '',
                 description_ja: issue.description_ja || issue.description || '',
-                resolve_date: issue.expire_date || issue.expireDate,
+                resolve_date: issue.end_date || issue.resolve_date || issue.expire_date || '미정',
+                end_date: issue.end_date || issue.resolve_date || issue.expire_date || '미정',
                 created_at: issue.createdAt || issue.created_at || new Date().toISOString(), // ✅ 등록일 추가
                 createdAt: issue.createdAt || issue.created_at || new Date().toISOString(), // ✅ 등록일 추가
                 total_volume: volume,
