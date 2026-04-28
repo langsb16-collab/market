@@ -7,9 +7,9 @@
 - **데이터베이스**: Cloudflare D1 (SQLite 기반 분산 데이터베이스)
 
 ## 🌐 URL
-- **프로덕션**: https://www.cashiq.my
-- **최신 배포**: https://8a1c4edf.cashiq-e8i.pages.dev
-- **관리자 페이지**: https://8a1c4edf.cashiq-e8i.pages.dev/admin-new (⚠️ `.html` 없이 접속)
+- **프로덕션 (메인 도메인)**: https://www.cashiq.my ✅
+- **최신 배포 (프리뷰)**: https://8a1c4edf.cashiq-e8i.pages.dev
+- **관리자 페이지**: https://www.cashiq.my/admin-new (⚠️ `.html` 없이 접속)
 - **GitHub**: https://github.com/langsb16-collab/market
 
 ## ✅ 완료된 기능
