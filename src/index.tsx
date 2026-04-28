@@ -349,7 +349,5 @@ app.post('/api/issues/batch', async (c) => {
   }
 })
 
-// Serve static files
-app.use('/*', serveStatic({ root: './' }))
-
+// Serve static files - Cloudflare Pages handles this automatically
 export default app
