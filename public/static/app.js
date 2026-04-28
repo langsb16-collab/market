@@ -887,7 +887,8 @@ function renderMarkets() {
         card += '<div class="flex items-center text-xs text-gray-500 mb-2">'
         card += '<i class="far fa-calendar mr-1 text-xs"></i>'
         const resolveDate = event.end_date || event.resolve_date || event.expire_date || '미정'
-        card += '<span class="text-xs">' + translations[currentLang].resolvesOn + ': ' + resolveDate + '</span>'
+        const formattedDate = resolveDate !== '미정' ? new Date(resolveDate).toLocaleDateString('ko-KR', {year: 'numeric', month: 'long', day: 'numeric'}) : '미정'
+        card += '<span class="text-xs">' + translations[currentLang].resolvesOn + ': ' + formattedDate + '</span>'
         card += '</div>'
         
         if (hasOutcomes) {
