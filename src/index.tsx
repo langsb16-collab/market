@@ -18,6 +18,19 @@ function toNum(v: any, fallback = 0) {
   return Number.isFinite(n) ? n : fallback
 }
 
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let code = ''
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
+}
+
+function generateUserId(): string {
+  return Date.now().toString()
+}
+
 // CORS for API
 app.use('/api/*', cors())
 
@@ -323,6 +336,363 @@ app.delete('/api/issues/:id', async (c) => {
     return c.json({ success: true, id })
   } catch (error: any) {
     console.error('Error deleting issue:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// ========== AUTH ROUTES ==========
+
+// POST /api/auth/register - Register with email
+app.post('/api/auth/register', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { email, name, phone, wallet_address, password, referral_code } = body
+    
+    // Check if user exists
+    const existing = await db.prepare(
+      'SELECT id FROM users WHERE email = ? OR wallet_address = ?'
+    ).bind(email, wallet_address).first()
+    
+    if (existing) {
+      return c.json({ success: false, error: 'User already exists' }, 400)
+    }
+    
+    // Generate user ID and referral code
+    const userId = generateUserId()
+    const myReferralCode = generateReferralCode()
+    
+    // Insert user
+    await db.prepare(`
+      INSERT INTO users (
+        id, email, name, phone, wallet_address, password_hash,
+        referral_code, referred_by, social_provider, status, created_at, last_login
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'email', 'active', ?, ?)
+    `).bind(
+      userId, email, name, phone, wallet_address,
+      password, // In production, use bcrypt/argon2
+      myReferralCode,
+      referral_code || null,
+      nowIso(),
+      nowIso()
+    ).run()
+    
+    // If referred by someone, create reward record
+    if (referral_code) {
+      const referrer = await db.prepare(
+        'SELECT id FROM users WHERE referral_code = ?'
+      ).bind(referral_code).first()
+      
+      if (referrer) {
+        const rewardId = `rwd_${Date.now()}`
+        await db.prepare(`
+          INSERT INTO referral_rewards (
+            id, referrer_id, referred_user_id, reward_amount, reward_type, status, created_at
+          ) VALUES (?, ?, ?, 10.0, 'signup', 'pending', ?)
+        `).bind(rewardId, String(referrer.id), userId, nowIso()).run()
+        
+        // Update referrer's count
+        await db.prepare(
+          'UPDATE users SET referral_count = referral_count + 1 WHERE id = ?'
+        ).bind(String(referrer.id)).run()
+      }
+    }
+    
+    return c.json({
+      success: true,
+      user: {
+        id: userId,
+        email,
+        name,
+        referral_code: myReferralCode
+      }
+    })
+  } catch (error: any) {
+    console.error('Error registering user:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// POST /api/auth/login - Login with email
+app.post('/api/auth/login', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { email, password } = body
+    
+    const user = await db.prepare(
+      'SELECT * FROM users WHERE email = ? AND password_hash = ?'
+    ).bind(email, password).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'Invalid credentials' }, 401)
+    }
+    
+    // Update last login
+    await db.prepare(
+      'UPDATE users SET last_login = ? WHERE id = ?'
+    ).bind(nowIso(), user.id).run()
+    
+    return c.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        wallet_address: user.wallet_address,
+        referral_code: user.referral_code,
+        referral_count: user.referral_count,
+        referral_rewards: user.referral_rewards
+      }
+    })
+  } catch (error: any) {
+    console.error('Error logging in:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// POST /api/auth/social/kakao - Kakao OAuth callback
+app.post('/api/auth/social/kakao', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { kakao_id, email, name, avatar_url, referral_code } = body
+    
+    // Check if user exists
+    let user = await db.prepare(
+      'SELECT * FROM users WHERE kakao_id = ?'
+    ).bind(kakao_id).first()
+    
+    if (!user) {
+      // Create new user
+      const userId = generateUserId()
+      const myReferralCode = generateReferralCode()
+      
+      await db.prepare(`
+        INSERT INTO users (
+          id, email, name, kakao_id, avatar_url, referral_code,
+          referred_by, social_provider, status, created_at, last_login
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'kakao', 'active', ?, ?)
+      `).bind(
+        userId, email, name, kakao_id, avatar_url,
+        myReferralCode, referral_code || null, nowIso(), nowIso()
+      ).run()
+      
+      // Handle referral reward
+      if (referral_code) {
+        const referrer = await db.prepare(
+          'SELECT id FROM users WHERE referral_code = ?'
+        ).bind(referral_code).first()
+        
+        if (referrer) {
+          const rewardId = `rwd_${Date.now()}`
+          await db.prepare(`
+            INSERT INTO referral_rewards (
+              id, referrer_id, referred_user_id, reward_amount, reward_type, status, created_at
+            ) VALUES (?, ?, ?, 10.0, 'signup', 'pending', ?)
+          `).bind(rewardId, String(referrer.id), userId, nowIso()).run()
+          
+          await db.prepare(
+            'UPDATE users SET referral_count = referral_count + 1 WHERE id = ?'
+          ).bind(String(referrer.id)).run()
+        }
+      }
+      
+      user = { id: userId, email, name, referral_code: myReferralCode, referral_count: 0, referral_rewards: 0 }
+    } else {
+      // Update last login
+      await db.prepare(
+        'UPDATE users SET last_login = ? WHERE id = ?'
+      ).bind(nowIso(), user.id).run()
+    }
+    
+    return c.json({ success: true, user })
+  } catch (error: any) {
+    console.error('Error with Kakao login:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// Similar endpoints for Facebook, Instagram, X (Twitter)
+app.post('/api/auth/social/facebook', async (c) => {
+  // Similar to Kakao implementation
+  return c.json({ success: false, error: 'Not implemented yet' }, 501)
+})
+
+app.post('/api/auth/social/instagram', async (c) => {
+  return c.json({ success: false, error: 'Not implemented yet' }, 501)
+})
+
+app.post('/api/auth/social/twitter', async (c) => {
+  return c.json({ success: false, error: 'Not implemented yet' }, 501)
+})
+
+// ========== CHAT ROUTES ==========
+
+// GET /api/chat/messages - Get user's chat messages
+app.get('/api/chat/messages/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    const db = c.env.DB
+    
+    const { results } = await db.prepare(`
+      SELECT * FROM chat_messages
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT 100
+    `).bind(userId).all()
+    
+    return c.json({ success: true, messages: results })
+  } catch (error: any) {
+    console.error('Error fetching messages:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// POST /api/chat/messages - Send message
+app.post('/api/chat/messages', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { user_id, message, message_type = 'text', file_url = null } = body
+    
+    const msgId = `msg_${Date.now()}`
+    
+    await db.prepare(`
+      INSERT INTO chat_messages (
+        id, user_id, message, message_type, file_url, is_admin_reply, is_read, created_at
+      ) VALUES (?, ?, ?, ?, ?, FALSE, FALSE, ?)
+    `).bind(msgId, user_id, message, message_type, file_url, nowIso()).run()
+    
+    return c.json({
+      success: true,
+      message: {
+        id: msgId,
+        user_id,
+        message,
+        message_type,
+        file_url,
+        created_at: nowIso()
+      }
+    })
+  } catch (error: any) {
+    console.error('Error sending message:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// POST /api/chat/admin/reply - Admin reply to message
+app.post('/api/chat/admin/reply', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { user_id, admin_id, message } = body
+    
+    const msgId = `msg_${Date.now()}`
+    
+    await db.prepare(`
+      INSERT INTO chat_messages (
+        id, user_id, admin_id, message, message_type, is_admin_reply, is_read, created_at
+      ) VALUES (?, ?, ?, ?, 'text', TRUE, FALSE, ?)
+    `).bind(msgId, user_id, admin_id, message, nowIso()).run()
+    
+    return c.json({ success: true, message_id: msgId })
+  } catch (error: any) {
+    console.error('Error sending admin reply:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// ========== REFERRAL ROUTES ==========
+
+// GET /api/referrals/stats/:userId - Get referral stats
+app.get('/api/referrals/stats/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    const db = c.env.DB
+    
+    const user = await db.prepare(
+      'SELECT referral_code, referral_count, referral_rewards FROM users WHERE id = ?'
+    ).bind(userId).first()
+    
+    if (!user) {
+      return c.json({ success: false, error: 'User not found' }, 404)
+    }
+    
+    // Get pending rewards
+    const { results: pending } = await db.prepare(`
+      SELECT * FROM referral_rewards
+      WHERE referrer_id = ? AND status = 'pending'
+      ORDER BY created_at DESC
+    `).bind(userId).all()
+    
+    // Get paid rewards
+    const { results: paid } = await db.prepare(`
+      SELECT * FROM referral_rewards
+      WHERE referrer_id = ? AND status = 'paid'
+      ORDER BY paid_at DESC
+      LIMIT 20
+    `).bind(userId).all()
+    
+    return c.json({
+      success: true,
+      referral_code: user.referral_code,
+      total_referrals: user.referral_count,
+      total_rewards: user.referral_rewards,
+      pending_rewards: pending,
+      paid_rewards: paid
+    })
+  } catch (error: any) {
+    console.error('Error fetching referral stats:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// POST /api/referrals/claim - Claim pending rewards
+app.post('/api/referrals/claim', async (c) => {
+  try {
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    const { user_id } = body
+    
+    // Get all pending rewards
+    const { results: pending } = await db.prepare(`
+      SELECT * FROM referral_rewards
+      WHERE referrer_id = ? AND status = 'pending'
+    `).bind(user_id).all()
+    
+    if (pending.length === 0) {
+      return c.json({ success: false, error: 'No pending rewards' }, 400)
+    }
+    
+    // Calculate total
+    const total = pending.reduce((sum: number, r: any) => sum + r.reward_amount, 0)
+    
+    // Mark all as paid
+    await db.prepare(`
+      UPDATE referral_rewards
+      SET status = 'paid', paid_at = ?
+      WHERE referrer_id = ? AND status = 'pending'
+    `).bind(nowIso(), user_id).run()
+    
+    // Update user's total rewards
+    await db.prepare(
+      'UPDATE users SET referral_rewards = referral_rewards + ? WHERE id = ?'
+    ).bind(total, user_id).run()
+    
+    return c.json({
+      success: true,
+      claimed_amount: total,
+      claimed_count: pending.length
+    })
+  } catch (error: any) {
+    console.error('Error claiming rewards:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
