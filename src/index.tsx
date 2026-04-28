@@ -349,17 +349,7 @@ app.post('/api/issues/batch', async (c) => {
   }
 })
 
-// Serve index.html for root path
-app.get('/', async (c) => {
-  try {
-    const html = await fetch(new URL('./index.html', import.meta.url)).then(r => r.text())
-    return c.html(html)
-  } catch {
-    return c.text('Loading...')
-  }
-})
-
-// Serve static files - fallback for other paths
+// Serve static files first (including index.html)
 app.use('/*', serveStatic({ root: './' }))
 
 export default app
