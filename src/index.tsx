@@ -146,21 +146,62 @@ app.post('/api/issues', async (c) => {
     const yes_bet = toNum(body.yes_bet, Math.floor(initial_usdt * randomYesRatio))
     const no_bet = toNum(body.no_bet, initial_usdt - yes_bet)
     
+    // ✅ outcomes 확률 계산
+    const totalBet = yes_bet + no_bet
+    const probYes = totalBet > 0 ? yes_bet / totalBet : 0.5
+    const probNo = totalBet > 0 ? no_bet / totalBet : 0.5
+    
     const newIssue = {
       id: `iss_${Date.now()}`,
       title_ko: body.title_ko || '',
       title_en: body.title_en || '',
       title_zh: body.title_zh || '',
       title_ja: body.title_ja || '',
+      description_ko: body.description_ko || '',
+      description_en: body.description_en || '',
+      description_zh: body.description_zh || '',
+      description_ja: body.description_ja || '',
+      resolution_criteria_ko: body.resolution_criteria_ko || '공식 결과 확인',
+      resolution_criteria_en: body.resolution_criteria_en || 'Verify official result',
+      resolution_criteria_zh: body.resolution_criteria_zh || '确认官方结果',
+      resolution_criteria_ja: body.resolution_criteria_ja || '公式結果確認',
       category: body.category || 'politics',
+      category_id: 0,
+      category_slug: body.category || 'politics',
       initial_usdt,
       yes_bet,
       no_bet,
       expire_days: body.expire_days || 7,
       expire_date: new Date(Date.now() + (body.expire_days || 7) * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'active',
+      end_date: new Date(Date.now() + (body.expire_days || 7) * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: nowIso(),
       createdAt: nowIso(),
-      updatedAt: nowIso()
+      updatedAt: nowIso(),
+      status: 'active',
+      total_volume: initial_usdt * 10000,
+      participants: Math.floor(initial_usdt * 100 + Math.random() * 100),
+      outcomes: [
+        {
+          id: `${Date.now()}_yes`,
+          name_ko: '예',
+          name_en: 'Yes',
+          name_zh: '是',
+          name_ja: 'はい',
+          name: '예',
+          probability: probYes,
+          total_bets: yes_bet
+        },
+        {
+          id: `${Date.now()}_no`,
+          name_ko: '아니오',
+          name_en: 'No',
+          name_zh: '否',
+          name_ja: 'いいえ',
+          name: '아니오',
+          probability: probNo,
+          total_bets: no_bet
+        }
+      ]
     }
     
     // 3) items에 추가
