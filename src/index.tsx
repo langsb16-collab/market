@@ -349,7 +349,7 @@ app.post('/api/issues/batch', async (c) => {
   }
 })
 
-// Serve static files first (including index.html)
+// Serve static files
 app.use('/*', serveStatic({ root: './' }))
 
 export default app
