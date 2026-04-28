@@ -1,0 +1,195 @@
+═══════════════════════════════════════════════════════════════════
+    즉시 복구용 DB.D1 까지 - 백업 검증 보고서
+═══════════════════════════════════════════════════════════════════
+
+📦 백업 정보
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+백업 이름: 즉시 복구용 DB.D1 까지
+백업 일시: 2026-04-28 20:51 UTC
+백업 크기: 86.1 MB
+다운로드: https://www.genspark.ai/api/files/s/FnqrLkJI
+상태: ✅ 완료
+
+🗄️ D1 데이터베이스 백업
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+데이터베이스 이름: cashiq-db
+데이터베이스 ID: c61bfbe7-d512-4a6b-8e61-c420eeb6a261
+바인딩 이름: DB
+
+로컬 백업:
+  파일: backup-d1-local-final.sql
+  크기: 55 KB
+  라인: 292
+
+프로덕션 백업:
+  파일: backup-d1-production-final.sql
+  크기: 114 KB
+  라인: 293
+  
+데이터 내역:
+  총 이슈: 151개
+  카테고리: 8개 (Climate, Culture, Economy, Entertainment, Politics, Science, Sports, Technology)
+  테이블: d1_migrations, users, categories, events, issues, _cf_KV
+
+📁 백업 파일 목록
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 소스 코드:
+  - src/index.tsx (메인 애플리케이션 - Hono + TypeScript)
+  - src/routes/ (API 라우트)
+  - public/index.html (메인 페이지)
+  - public/admin-new.html (관리자 페이지)
+  - public/static/style.css (프리미엄 버튼 스타일)
+  - public/static/app.js (프론트엔드 로직)
+
+✅ 데이터베이스:
+  - backup-d1-local-final.sql (로컬 D1 전체 백업)
+  - backup-d1-production-final.sql (프로덕션 D1 전체 백업)
+  - migrations/0001_initial_schema.sql
+  - migrations/0001_create_issues.sql
+  - migrations/0002_create_issues_table.sql
+  - seed-full.sql (150개 초기 이슈)
+
+✅ 설정 파일:
+  - wrangler.jsonc (Cloudflare Pages 설정, D1 바인딩 포함)
+  - package.json (npm 의존성 목록)
+  - vite.config.ts (빌드 설정)
+  - ecosystem.config.cjs (PM2 프로세스 관리)
+  - tsconfig.json (TypeScript 설정)
+
+✅ 복구 문서:
+  - RECOVERY_GUIDE_FINAL.md (완전한 복구 가이드)
+  - README.md (프로젝트 문서)
+  - BACKUP_VERIFICATION_FINAL.txt (이 파일)
+
+✅ Git:
+  - .git/ (전체 Git 히스토리)
+  - .gitignore (버전 관리 설정)
+
+🎯 복구 시나리오
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+시나리오 A: 전체 복구 (제로부터 시작)
+  1. 백업 다운로드 및 압축 해제
+  2. npm install
+  3. D1 데이터베이스 생성/연결
+  4. backup-d1-production-final.sql 복구
+  5. npm run build && 배포
+  
+시나리오 B: 데이터베이스만 복구
+  1. backup-d1-production-final.sql 추출
+  2. npx wrangler d1 execute cashiq-db --remote --file=backup-d1-production-final.sql
+  
+시나리오 C: 로컬 개발 환경
+  1. 백업 압축 해제
+  2. npm install
+  3. backup-d1-local-final.sql 복구
+  4. npm run build && PM2 실행
+
+📊 데이터 검증
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+테스트 쿼리:
+  SELECT COUNT(*) FROM issues
+  결과: 151
+
+  SELECT COUNT(DISTINCT category) FROM issues  
+  결과: 8
+
+  SELECT id, title_ko FROM issues LIMIT 3
+  결과:
+    1. iss_1777381451907 - "미국 이란 전쟁 종식 선언"
+    2. 1 - "2024 미국 대선: 트럼프 vs 바이든"
+    3. 2 - "2024 파리 올림픽 금메달 1위 국가"
+
+API 검증:
+  curl https://www.cashiq.my/api/issues
+  ✅ success: true
+  ✅ total: 151
+  ✅ outcomes: [예, 아니오] with probabilities
+
+🎨 UI 기능 검증
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 버튼 색상: Tiffany Blue (예) & Premium Orange (아니오)
+✅ CSS 로드: /static/style.css
+✅ 그라데이션: linear-gradient(135deg, ...)
+✅ Box Shadow: 0 0 15px rgba(...)
+✅ Hover 효과: translateY(-2px)
+✅ 정수 퍼센트: 65% (not 65.0%)
+
+🚀 배포 정보
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+프로덕션:
+  도메인: https://www.cashiq.my
+  상태: ✅ 활성
+  
+관리자 페이지:
+  URL: https://www.cashiq.my/admin-new
+  기능: ✅ 생성, 수정, 삭제
+  
+API:
+  엔드포인트: https://www.cashiq.my/api/issues
+  상태: ✅ 정상 작동
+  
+GitHub:
+  저장소: https://github.com/langsb16-collab/market
+  브랜치: main
+  상태: ✅ 푸시 완료
+
+Cloudflare Pages:
+  프로젝트: cashiq
+  배포 ID: 8a1c4edf
+  상태: ✅ 프로덕션 배포
+
+⚡ 빠른 복구 명령어
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 1단계: 압축 해제
+tar -xzf backup-즉시복구용-DB.D1까지.tar.gz
+cd /home/user/webapp
+
+# 2단계: 패키지 설치
+npm install
+
+# 3단계: D1 데이터베이스 복구 (프로덕션)
+export CLOUDFLARE_API_TOKEN="your-token"
+npx wrangler d1 execute cashiq-db --remote \
+  --file=./backup-d1-production-final.sql
+
+# 4단계: 검증
+npx wrangler d1 execute cashiq-db --remote \
+  --command="SELECT COUNT(*) as total FROM issues"
+# 예상 결과: total = 151
+
+# 5단계: 빌드 및 배포
+npm run build
+npx wrangler pages deploy dist --project-name cashiq
+
+# 6단계: 최종 확인
+curl https://www.cashiq.my/api/issues | jq '.issues | length'
+# 예상 결과: 151
+
+🔒 백업 무결성 확인
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ D1 로컬 백업: 55 KB, 292 lines, SHA256 검증 완료
+✅ D1 프로덕션 백업: 114 KB, 293 lines, SHA256 검증 완료
+✅ 마이그레이션 파일: 3개, 모두 존재
+✅ 소스 코드: Git 히스토리 포함, 완전함
+✅ 설정 파일: wrangler.jsonc, package.json 존재
+✅ CSS 스타일: style.css 존재 (프리미엄 버튼)
+✅ 복구 가이드: RECOVERY_GUIDE_FINAL.md 포함
+
+📝 참고 사항
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. D1 데이터베이스 ID는 wrangler.jsonc에 하드코딩되어 있음
+2. GitHub 저장소는 이미 최신 코드로 푸시됨
+3. Cloudflare Pages는 main 브랜치 자동 배포 설정
+4. CSS 스타일시트는 index.html에 링크됨
+5. 관리자 페이지는 /admin-new 경로 (확장자 없음)
+
+✅ 백업 검증 완료
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+모든 파일과 데이터베이스가 정상적으로 백업되었습니다.
+언제든지 이 백업을 사용하여 전체 시스템을 복구할 수 있습니다.
+
+백업 다운로드: https://www.genspark.ai/api/files/s/FnqrLkJI
+백업 크기: 86.1 MB
+복구 가이드: RECOVERY_GUIDE_FINAL.md
+
+═══════════════════════════════════════════════════════════════════
