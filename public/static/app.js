@@ -54,16 +54,8 @@ function calcYesNoPercent(issue) {
     const outcome2 = issue.outcomes[1];
     
     if (outcome1.probability !== undefined && outcome2.probability !== undefined) {
-      const yesVal = Math.round(outcome1.probability * 100);
-      const noVal = Math.round(outcome2.probability * 100);
-      const total = yesVal + noVal;
-      
-      if (total === 0) {
-        return { yesPct: "0", noPct: "0", yes: 0, no: 0, total: 0 };
-      }
-      
-      const yesPct = Math.round((yesVal / total) * 100).toFixed(1);
-      const noPct = Math.round((noVal / total) * 100).toFixed(1);
+      const yesPct = (outcome1.probability * 100).toFixed(0);
+      const noPct = (outcome2.probability * 100).toFixed(0);
       
       console.log('EventBET: Using API probability', issue.id, 'Yes:', yesPct + '%', 'No:', noPct + '%');
       
