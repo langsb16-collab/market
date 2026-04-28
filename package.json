@@ -1,12 +1,19 @@
 {
-  "name": "webapp",
+  "name": "cashiq",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:d1": "wrangler pages dev dist --d1=cashiq-db --local --ip 0.0.0.0 --port 3000",
     "build": "vite build && node scripts/copy-admin.mjs",
     "preview": "wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist",
-    "deploy:prod": "npm run build && wrangler pages deploy dist --project-name=predictchain --branch=main"
+    "deploy": "npm run build && wrangler pages deploy dist --project-name cashiq",
+    "db:migrate:local": "wrangler d1 migrations apply cashiq-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply cashiq-db --remote",
+    "db:seed:local": "wrangler d1 execute cashiq-db --local --file=./seed-full.sql",
+    "db:seed:prod": "wrangler d1 execute cashiq-db --remote --file=./seed-full.sql",
+    "db:query:local": "wrangler d1 execute cashiq-db --local --command",
+    "db:query:prod": "wrangler d1 execute cashiq-db --remote --command",
+    "db:import": "node import-gist-to-d1.cjs && npm run db:seed:local"
   },
   "dependencies": {
     "hono": "^4.10.5"
