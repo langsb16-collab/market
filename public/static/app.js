@@ -901,20 +901,20 @@ function renderMarkets() {
                 const outcomeName = outcome[`name_${currentLang}`] || outcome.name || getOutcomeName(outcome.name)
                 const isYes = outcome.name_ko === '예' || outcome.name === '예' || outcome.name === 'yes' || outcome.name === 'Yes' || outcome.name === '是' || outcome.name === 'はい'
                 const isNo = outcome.name_ko === '아니오' || outcome.name === '아니오' || outcome.name === 'no' || outcome.name === 'No' || outcome.name === '否' || outcome.name === 'いいえ'
-                const bgColor = isYes ? 'bg-green-50' : isNo ? 'bg-red-50' : 'bg-blue-50'
-                const textColor = isYes ? 'text-green-700' : isNo ? 'text-red-700' : 'text-blue-700'
-                const percentColor = isYes ? 'text-green-600' : isNo ? 'text-red-600' : 'text-blue-600'
-                const barColor = isYes ? 'bg-green-200' : isNo ? 'bg-red-200' : 'bg-blue-200'
+                
+                // ✅ Premium 디자인: Tiffany Blue & Orange with Glow
+                const btnClass = isYes ? 'btn-yes-premium' : isNo ? 'btn-no-premium' : 'bg-blue-500'
+                const barClass = isYes ? 'progress-bar-yes' : isNo ? 'progress-bar-no' : 'bg-blue-200'
                 
                 // ✅ calcYesNoPercent 결과 사용 (실제 베팅액 기반)
                 const displayPercent = isYes ? percentCalc.yesPct : percentCalc.noPct;
                 const barWidth = isYes ? parseFloat(percentCalc.yesPct) : parseFloat(percentCalc.noPct);
                 
-                card += '<div class="relative overflow-hidden rounded border ' + bgColor + ' hover:shadow-md transition-all">'
-                card += '<div class="absolute inset-0 ' + barColor + ' opacity-20" style="width: ' + barWidth + '%; transition: width 0.3s ease;"></div>'
-                card += '<div class="relative z-10 flex items-center justify-between p-1.5">'
-                card += '<span class="font-bold text-xs ' + textColor + '">' + outcomeName + '</span>'
-                card += '<span class="text-base font-bold ' + percentColor + '">' + displayPercent + '%</span>'
+                card += '<div class="relative overflow-hidden rounded-lg border ' + btnClass + ' cursor-pointer transition-all duration-300">'
+                card += '<div class="absolute inset-0 ' + barClass + '" style="width: ' + barWidth + '%; transition: width 0.3s ease;"></div>'
+                card += '<div class="relative z-10 flex items-center justify-between p-2">'
+                card += '<span class="font-bold text-sm text-white drop-shadow-md">' + outcomeName + '</span>'
+                card += '<span class="text-lg font-bold text-white drop-shadow-md">' + displayPercent + '%</span>'
                 card += '</div>'
                 card += '</div>'
             })

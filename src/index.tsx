@@ -204,6 +204,114 @@ app.post('/api/issues', async (c) => {
   }
 })
 
+// PATCH /api/issues/:id - Update issue
+app.patch('/api/issues/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const body = await c.req.json()
+    const db = c.env.DB
+    
+    // Calculate values
+    const initial_usdt = toNum(body.initial_usdt ?? 60, 60)
+    const yes_bet = toNum(body.yes_bet, initial_usdt * 0.5)
+    const no_bet = toNum(body.no_bet, initial_usdt - yes_bet)
+    const totalBet = yes_bet + no_bet
+    const probYes = totalBet > 0 ? yes_bet / totalBet : 0.5
+    const probNo = totalBet > 0 ? no_bet / totalBet : 0.5
+    
+    const expire_days = toNum(body.expire_days, 7)
+    const expire_date = new Date(Date.now() + expire_days * 24 * 60 * 60 * 1000).toISOString()
+    const total_volume = initial_usdt * 10000
+    const participants = Math.floor(initial_usdt * 100 + Math.random() * 100)
+    
+    // Update in D1
+    await db.prepare(`
+      UPDATE issues SET
+        title_ko = ?1,
+        title_en = ?2,
+        title_zh = ?3,
+        title_ja = ?4,
+        category = ?5,
+        category_slug = ?6,
+        initial_usdt = ?7,
+        yes_bet = ?8,
+        no_bet = ?9,
+        expire_days = ?10,
+        expire_date = ?11,
+        end_date = ?12,
+        updated_at = ?13,
+        total_volume = ?14,
+        participants = ?15
+      WHERE id = ?16
+    `).bind(
+      body.title_ko || '',
+      body.title_en || '',
+      body.title_zh || '',
+      body.title_ja || '',
+      body.category || 'politics',
+      body.category || 'politics',
+      initial_usdt,
+      yes_bet,
+      no_bet,
+      expire_days,
+      expire_date,
+      expire_date,
+      nowIso(),
+      total_volume,
+      participants,
+      id
+    ).run()
+    
+    // Return updated issue with outcomes
+    const updatedIssue = {
+      id,
+      title_ko: body.title_ko || '',
+      title_en: body.title_en || '',
+      title_zh: body.title_zh || '',
+      title_ja: body.title_ja || '',
+      category: body.category || 'politics',
+      category_slug: body.category || 'politics',
+      initial_usdt,
+      yes_bet,
+      no_bet,
+      expire_days,
+      expire_date,
+      end_date: expire_date,
+      status: 'active',
+      updated_at: nowIso(),
+      total_volume,
+      participants,
+      outcomes: [
+        {
+          id: `${id}_yes`,
+          name_ko: '예',
+          name_en: 'Yes',
+          name_zh: '是',
+          name_ja: 'はい',
+          name: '예',
+          probability: probYes,
+          total_bets: yes_bet
+        },
+        {
+          id: `${id}_no`,
+          name_ko: '아니오',
+          name_en: 'No',
+          name_zh: '否',
+          name_ja: 'いいえ',
+          name: '아니오',
+          probability: probNo,
+          total_bets: no_bet
+        }
+      ]
+    }
+    
+    return c.json({ success: true, issue: updatedIssue })
+  } catch (error: any) {
+    console.error('Error updating issue:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 // DELETE /api/issues/:id - Delete issue
 app.delete('/api/issues/:id', async (c) => {
   try {

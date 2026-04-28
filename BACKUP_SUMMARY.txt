@@ -1,0 +1,47 @@
+===================================
+즉시 복구용 백업 0428 요약
+===================================
+
+📦 백업 정보
+- 백업명: 즉시복구용0428
+- 생성일: 2026-04-28
+- 크기: 85.8 MB
+- 다운로드: https://www.genspark.ai/api/files/s/PWnN42zv
+
+📊 백업 내용
+✅ 전체 프로젝트 소스코드
+✅ D1 데이터베이스 스키마 (migrations/)
+✅ 로컬 D1 백업 (backup-d1-local.sql - 55KB, 151 issues)
+✅ 프로덕션 D1 백업 (backup-d1-production.sql - 114KB, 151 issues)
+✅ Seed 데이터 (seed-full.sql - 150 issues)
+✅ Cloudflare 설정 (wrangler.jsonc - D1 바인딩 포함)
+✅ 복구 가이드 (RECOVERY.md)
+
+🔧 D1 데이터베이스
+- Database Name: cashiq-db
+- Database ID: c61bfbe7-d512-4a6b-8e61-c420eeb6a261
+- Binding: DB
+- 총 이슈: 151개
+- 카테고리: 8개
+
+📁 주요 파일
+- src/index.tsx (Hono + D1 통합 API)
+- migrations/ (D1 스키마 마이그레이션)
+- backup-d1-local.sql (로컬 DB 전체 백업)
+- backup-d1-production.sql (프로덕션 DB 전체 백업)
+- wrangler.jsonc (D1 바인딩 설정)
+- RECOVERY.md (상세 복구 가이드)
+
+🚀 빠른 복구 (3단계)
+1. tar -xzf 즉시복구용0428.tar.gz && cd webapp
+2. npm install && npm run db:migrate:prod
+3. npx wrangler d1 execute cashiq-db --remote --file=./backup-d1-production.sql
+
+✅ 검증
+- D1 데이터: SELECT COUNT(*) FROM issues → 151개
+- API 테스트: curl /api/issues → 151 issues
+- 관리자: /admin-new.html → 새 이슈 등록 가능
+
+📞 지원
+- GitHub: https://github.com/langsb16-collab/market
+- 배포 URL: https://www.cashiq.my
