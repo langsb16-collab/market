@@ -7,8 +7,8 @@
 - **데이터베이스**: Cloudflare D1 (SQLite 기반 분산 데이터베이스)
 
 ## 🌐 URL
-- **프로덕션 (메인 도메인)**: https://www.cashiq.my ✅
-- **최신 배포 (프리뷰)**: 다음 배포 대기 중 (Cloudflare API 토큰 재설정 필요)
+- **프로덕션 (메인 도메인)**: https://www.cashiq.my ✅ 텍스트 변경 완료
+- **최신 배포 (프리뷰)**: https://c9b29712.cashiq-e8i.pages.dev
 - **관리자 페이지**: https://www.cashiq.my/admin-new (⚠️ `.html` 없이 접속)
 - **GitHub**: https://github.com/langsb16-collab/market
 
@@ -149,9 +149,13 @@ npm run db:migrate:prod   # 프로덕션
 - **Version Control**: Git + GitHub
 
 ## 📝 최근 업데이트
-- **2026-04-28 20:58 UTC**: 히어로 섹션 텍스트 업데이트
+- **2026-04-28 21:12 UTC**: ✅ 프로덕션 배포 완료!
   - "유일하게 지원되는 암호화폐" → "가장 빠른 전송 암호화폐 테더 USDT"
   - "전 세계 이슈와 당신의 예측이 만나는 곳" → "전 세계 이슈와 당신의 예측을 등록해 승부 내는 곳"
+  - Cloudflare Pages 배포 완료 (커밋: 8565d07)
+  - 프로덕션: https://www.cashiq.my ✅
+  - 프리뷰: https://c9b29712.cashiq-e8i.pages.dev ✅
+- **2026-04-28 20:58 UTC**: 히어로 섹션 텍스트 업데이트
   - GitHub 푸시 완료 (커밋: 40ef6ef)
 - **2026-04-28**: GitHub Gist에서 Cloudflare D1로 마이그레이션 완료
 - 150개 기존 이벤트 성공적으로 import
