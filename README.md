@@ -8,18 +8,20 @@
 
 ## 🌐 URL
 - **프로덕션**: https://www.cashiq.my
-- **최신 배포**: https://81ca2fdc.cashiq-e8i.pages.dev
-- **관리자 페이지**: https://81ca2fdc.cashiq-e8i.pages.dev/admin-new.html
+- **최신 배포**: https://796c314a.cashiq-e8i.pages.dev
+- **관리자 페이지**: https://796c314a.cashiq-e8i.pages.dev/admin-new (⚠️ `.html` 없이 접속)
 - **GitHub**: https://github.com/langsb16-collab/market
 
 ## ✅ 완료된 기능
 - ✅ 150개 예측 이벤트 (8개 카테고리)
-- ✅ 관리자 페이지에서 새 이슈 등록
-- ✅ 예/아니오 비율 커스터마이징 (25%-75% 범위)
+- ✅ 관리자 페이지에서 새 이슈 등록/수정/삭제
+- ✅ 이슈 수정 기능 (파란색 수정 버튼)
+- ✅ 예/아니오 비율 커스터마이징 (0%-100% 범위)
 - ✅ 다국어 지원 (한국어, 영어, 중국어, 일본어)
 - ✅ Cloudflare D1 데이터베이스로 전환 완료
 - ✅ 실시간 데이터 업데이트
 - ✅ 날짜순, 배팅규모, 참여자 수 정렬
+- ✅ Premium 버튼 디자인 (Yes: Tiffany Blue, No: Premium Orange)
 
 ## 📊 데이터 구조
 ### D1 Database Schema
@@ -48,6 +50,8 @@ CREATE TABLE issues (
 ### API Endpoints
 - `GET /api/issues` - 모든 이슈 조회 (outcomes 포함)
 - `POST /api/issues` - 새 이슈 생성
+- `PATCH /api/issues/:id` - 이슈 수정
+- `DELETE /api/issues/:id` - 이슈 삭제
 - `DELETE /api/issues/:id` - 이슈 삭제
 
 ### 응답 예시
