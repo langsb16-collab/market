@@ -21,9 +21,7 @@ function toNum(v: any, fallback = 0) {
 // CORS for API
 app.use('/api/*', cors())
 
-// Serve static files
-app.use('/static/*', serveStatic({ root: './' }))
-app.use('/admin/*', serveStatic({ root: './' }))
+// API routes only - no static file handling in Worker
 
 // GET /api/issues - Fetch all issues with outcomes
 app.get('/api/issues', async (c) => {
@@ -328,13 +326,5 @@ app.delete('/api/issues/:id', async (c) => {
     return c.json({ success: false, error: error.message }, 500)
   }
 })
-
-// Root route
-app.get('/', (c) => {
-  return c.html(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=/index.html"></head></html>`)
-})
-
-// Catch-all for static files
-app.use('/*', serveStatic({ root: './' }))
 
 export default app
