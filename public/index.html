@@ -5,10 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventBET - Decentralized Prediction Market</title>
     
-    <!-- 강력한 캐시 무효화 -->
+    <!-- 캐시 완전 무효화 v3 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="version" content="20260428-v3">
+    
+    <!-- 강제 캐시 클리어 스크립트 -->
+    <script>
+    (function() {
+        // Service Worker 제거
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
+        // 모든 캐시 삭제
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) {
+                    caches.delete(name);
+                }
+            });
+        }
+        
+        // 로컬/세션 스토리지 클리어
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+        } catch(e) {}
+        
+        // 페이지 강제 리로드 (버전 체크)
+        const version = '20260428-v3';
+        const storedVersion = sessionStorage.getItem('page-version');
+        if (storedVersion !== version) {
+            sessionStorage.setItem('page-version', version);
+            if (storedVersion) {
+                location.reload(true);
+            }
+        }
+    })();
+    </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
