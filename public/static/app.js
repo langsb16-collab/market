@@ -48,6 +48,22 @@ function toNumber(v) {
 
 // ========== Yes/No 퍼센트 계산 (실제 베팅액 기반) ==========
 function calcYesNoPercent(issue) {
+  // ✅ API outcomes에서 probability 직접 사용
+  if (issue.outcomes && issue.outcomes.length >= 2) {
+    const outcome1 = issue.outcomes[0];
+    const outcome2 = issue.outcomes[1];
+    
+    if (outcome1.probability !== undefined && outcome2.probability !== undefined) {
+      const yesPct = (outcome1.probability * 100).toFixed(1);
+      const noPct = (outcome2.probability * 100).toFixed(1);
+      
+      console.log('EventBET: Using API probability', issue.id, 'Yes:', yesPct + '%', 'No:', noPct + '%');
+      
+      return { yesPct, noPct, yes: outcome1.probability, no: outcome2.probability, total: 1 };
+    }
+  }
+  
+  // ✅ Fallback: 베팅 금액 기반 계산
   const yes = toNumber(issue.yesBet ?? issue.yes_bet ?? issue.yesAmount ?? 0);
   const no = toNumber(issue.noBet ?? issue.no_bet ?? issue.noAmount ?? 0);
   
