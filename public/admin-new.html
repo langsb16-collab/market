@@ -195,6 +195,9 @@
                             <p class="text-sm text-gray-600">${issue.title_ja || 'N/A'}</p>
                         </div>
                         <div class="flex gap-2">
+                            <button onclick="editIssue('${issue.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-edit"></i> 수정
+                            </button>
                             <button onclick="deleteIssue('${issue.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors">
                                 <i class="fas fa-trash"></i> 삭제
                             </button>
@@ -215,7 +218,7 @@
             console.log('✅ Render complete')
         }
         
-        // Submit form
+        // Submit form (등록 또는 수정)
         document.getElementById('issueForm').addEventListener('submit', async (e) => {
             e.preventDefault()
             
@@ -236,6 +239,9 @@
             const yesBet = Math.round(initialUsdt * yesRatio / 100)
             const noBet = Math.round(initialUsdt * noRatio / 100)
             
+            const editId = document.getElementById('edit_id').value
+            const isEdit = editId !== ''
+            
             const formData = {
                 title_ko: document.getElementById('title_ko').value,
                 title_en: document.getElementById('title_en').value,
@@ -250,11 +256,14 @@
                 expire_days: parseInt(document.getElementById('expire_days').value)
             }
             
-            console.log('📝 Submitting issue with ratios:', formData)
+            console.log(isEdit ? '📝 수정:' : '📝 등록:', formData)
             
             try {
-                const response = await fetch(API_BASE, {
-                    method: 'POST',
+                const url = isEdit ? `${API_BASE}/${editId}` : API_BASE
+                const method = isEdit ? 'PATCH' : 'POST'
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -264,17 +273,69 @@
                 const result = await response.json()
                 
                 if (result.success) {
-                    alert('✅ 등록되었습니다!\n\n메인 페이지를 Ctrl + Shift + R로 새로고침하면 표시됩니다.')
+                    alert(isEdit ? '✅ 수정되었습니다!\n\n메인 페이지를 Ctrl + Shift + R로 새로고침하면 표시됩니다.' : '✅ 등록되었습니다!\n\n메인 페이지를 Ctrl + Shift + R로 새로고침하면 표시됩니다.')
                     document.getElementById('issueForm').reset()
+                    document.getElementById('edit_id').value = ''
+                    document.getElementById('submitText').textContent = '등록'
+                    document.getElementById('cancelBtn').classList.add('hidden')
                     await loadIssues()
                 } else {
-                    alert('❌ 등록 실패: ' + (result.error || '알 수 없는 오류'))
+                    alert('❌ ' + (isEdit ? '수정' : '등록') + ' 실패: ' + (result.error || '알 수 없는 오류'))
                 }
             } catch (error) {
-                console.error('등록 실패:', error)
-                alert('❌ 등록 중 오류가 발생했습니다.')
+                console.error(isEdit ? '수정 실패:' : '등록 실패:', error)
+                alert('❌ ' + (isEdit ? '수정' : '등록') + ' 중 오류가 발생했습니다.')
             }
         })
+        
+        // Edit issue
+        async function editIssue(id) {
+            console.log('📝 Edit issue:', id)
+            const issue = allIssues.find(i => i.id === id || i.id === String(id))
+            if (!issue) {
+                alert('이슈를 찾을 수 없습니다.')
+                return
+            }
+            
+            // Scroll to form
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+            
+            // Fill form with issue data
+            document.getElementById('edit_id').value = issue.id
+            document.getElementById('title_ko').value = issue.title_ko || ''
+            document.getElementById('title_en').value = issue.title_en || ''
+            document.getElementById('title_zh').value = issue.title_zh || ''
+            document.getElementById('title_ja').value = issue.title_ja || ''
+            document.getElementById('category').value = issue.category || 'politics'
+            document.getElementById('initial_usdt').value = issue.initial_usdt || 60
+            document.getElementById('expire_days').value = issue.expire_days || 7
+            
+            // Calculate yes/no ratios from bet amounts
+            const yesBet = parseFloat(issue.yes_bet) || 0
+            const noBet = parseFloat(issue.no_bet) || 0
+            const total = yesBet + noBet
+            
+            if (total > 0) {
+                const yesRatio = Math.round((yesBet / total) * 100)
+                const noRatio = 100 - yesRatio
+                document.getElementById('yes_ratio').value = yesRatio
+                document.getElementById('no_ratio').value = noRatio
+            } else {
+                document.getElementById('yes_ratio').value = 50
+                document.getElementById('no_ratio').value = 50
+            }
+            
+            // Update button text
+            document.getElementById('submitText').textContent = '수정'
+            document.getElementById('cancelBtn').classList.remove('hidden')
+            
+            // Highlight form
+            const formContainer = document.querySelector('.bg-white.rounded-lg')
+            formContainer.classList.add('ring-4', 'ring-blue-300')
+            setTimeout(() => {
+                formContainer.classList.remove('ring-4', 'ring-blue-300')
+            }, 2000)
+        }
         
         // Delete issue
         async function deleteIssue(id) {
