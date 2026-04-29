@@ -574,6 +574,66 @@
                 font-size: 0.8rem;
             }
         }
+        
+        /* Service Link Buttons */
+        .service-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 140px;
+            height: 80px;
+            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .service-link-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .service-link-btn:active,
+        .service-link-btn.active {
+            background: linear-gradient(135deg, #FF9500 0%, #FF8000 100%);
+            box-shadow: 0 6px 16px rgba(255, 149, 0, 0.4);
+        }
+        
+        .service-btn-content {
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .service-btn-line1 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        
+        .service-btn-line2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Mobile optimization for service buttons */
+        @media (max-width: 640px) {
+            .service-link-btn {
+                width: 120px;
+                height: 70px;
+            }
+            
+            .service-btn-line1 {
+                font-size: 0.75rem;
+            }
+            
+            .service-btn-line2 {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -643,6 +703,25 @@
                     <div class="text-accent font-bold text-lg sm:text-xl">₮ USDT (Tether)</div>
                     <p class="text-xs text-secondary mt-1">가장 빠른 전송 암호화폐 테더 USDT</p>
                 </div>
+            </div>
+            
+            <!-- Service Links Section -->
+            <div class="flex justify-center gap-4 mt-6 mb-6">
+                <!-- 무료 파친코 Button -->
+                <a href="https://iqherb.net" target="_blank" id="pachinko-btn" class="service-link-btn">
+                    <div class="service-btn-content">
+                        <div class="service-btn-line1">무료</div>
+                        <div class="service-btn-line2">파친코</div>
+                    </div>
+                </a>
+                
+                <!-- 무료 홀덤 Button -->
+                <a href="https://puke365.biz" target="_blank" id="holdem-btn" class="service-link-btn">
+                    <div class="service-btn-content">
+                        <div class="service-btn-line1">무료</div>
+                        <div class="service-btn-line2">홀덤</div>
+                    </div>
+                </a>
             </div>
         </div>
 
