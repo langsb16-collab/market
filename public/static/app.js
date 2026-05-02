@@ -97,9 +97,46 @@ const CATEGORY_I18N = {
 };
 
 // ========== 카테고리 번역 함수 ==========
+// ✅ 카테고리 번역 캐시 (API로부터 로드)
+let categoriesTranslations = {};
+
+async function loadCategoryTranslations(lang = 'ko') {
+  try {
+    const response = await fetch(`/api/categories?lang=${lang}`);
+    const data = await response.json();
+    
+    if (data.success && Array.isArray(data.categories)) {
+      // 카테고리 번역 캐시 업데이트
+      categoriesTranslations[lang] = {};
+      data.categories.forEach(cat => {
+        categoriesTranslations[lang][cat.slug] = cat.name;
+      });
+      
+      console.log('EventBET: Loaded category translations for', lang, categoriesTranslations[lang]);
+      return categoriesTranslations[lang];
+    }
+  } catch (error) {
+    console.error('EventBET: Error loading category translations:', error);
+  }
+  
+  // Fallback to CATEGORY_I18N
+  return null;
+}
+
 function getCategoryName(categoryKey, lang = 'ko') {
+  // ✅ 1순위: API로부터 로드한 번역 사용
+  if (categoriesTranslations[lang] && categoriesTranslations[lang][categoryKey]) {
+    return categoriesTranslations[lang][categoryKey];
+  }
+  
+  // ✅ 2순위: 정적 번역 맵 사용
   const category = CATEGORY_I18N[categoryKey];
-  return category ? category[lang] : categoryKey;
+  if (category && category[lang]) {
+    return category[lang];
+  }
+  
+  // ✅ 3순위: 키 그대로 반환
+  return categoryKey;
 }
 
 // ========== 숫자 파싱 유틸리티 (콤마, 문자 제거) ==========
@@ -574,13 +611,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const langSelector = document.getElementById('language-selector')
     if (langSelector) langSelector.value = currentLang
     
+    // ✅ 카테고리 번역 먼저 로드
+    await loadCategoryTranslations(currentLang)
+    
     setupEventListeners()
     updateUITexts()
     renderCategories()
     
     console.log('EventBET: About to call renderMarkets()')
     try {
-        renderMarkets()
+        await renderMarkets()
         console.log('EventBET: renderMarkets() completed successfully')
     } catch (error) {
         console.error('EventBET: Error in renderMarkets():', error)
@@ -594,6 +634,10 @@ function setupEventListeners() {
         langSelector.addEventListener('change', async (e) => {
             currentLang = normalizeLang(e.target.value)
             localStorage.setItem('preferred_language', currentLang)
+            
+            // ✅ 카테고리 번역 먼저 로드
+            await loadCategoryTranslations(currentLang)
+            
             updateUITexts()
             renderCategories()  // ✅ 카테고리 다국어 재렌더링
             

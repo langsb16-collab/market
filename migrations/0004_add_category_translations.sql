@@ -25,8 +25,8 @@ INSERT OR IGNORE INTO category_translations (category_slug, language, name) VALU
 INSERT OR IGNORE INTO category_translations (category_slug, language, name) VALUES 
   ('technology', 'ko', '기술'),
   ('technology', 'en', 'Technology'),
-  ('technology', 'zh', '技术'),
-  ('technology', 'ja', 'テクノロジー');
+  ('technology', 'zh', '科技'),
+  ('technology', 'ja', '技術');
 
 -- Cryptocurrency
 INSERT OR IGNORE INTO category_translations (category_slug, language, name) VALUES 
