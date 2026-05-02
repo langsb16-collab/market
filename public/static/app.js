@@ -975,12 +975,12 @@ async function renderMarkets() {
         let card = '<div class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all market-card" onclick="openBetModal(' + event.id + ')">'
         card += '<div class="flex p-2 sm:p-3">'
         card += '<div class="flex-shrink-0 mr-2">'
-        card += '<img src="' + eventImage + '" alt="' + getCategoryName(category) + '" class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E' + category.icon + '%3C/text%3E%3C/svg%3E\'">'
+        card += '<img src="' + eventImage + '" alt="' + getCategoryName(category.slug, currentLang) + '" class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E' + category.icon + '%3C/text%3E%3C/svg%3E\'">'
         card += '</div>'
         card += '<div class="flex-1 min-w-0">'
         card += '<div class="flex items-center justify-between mb-1">'
         card += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">'
-        card += category.icon + ' ' + getCategoryName(category)
+        card += category.icon + ' ' + getCategoryName(category.slug, currentLang)
         card += '</span>'
         card += '<span class="text-xs font-bold text-green-600">$' + formatNumber(event.total_volume) + '</span>'
         card += '</div>'
@@ -1065,7 +1065,7 @@ function openBetModal(eventId) {
         <div class="space-y-4">
             <div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    ${category.icon} ${getCategoryName(category)}
+                    ${category.icon} ${getCategoryName(category.slug, currentLang)}
                 </span>
             </div>
             
