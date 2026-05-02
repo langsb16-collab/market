@@ -38,6 +38,70 @@ const CATEGORY_MAP = {
   "climate": "climate"
 };
 
+// ========== 카테고리 다국어 번역 맵 ==========
+const CATEGORY_I18N = {
+  all: {
+    ko: "전체",
+    en: "All",
+    zh: "全部",
+    ja: "すべて"
+  },
+  politics: {
+    ko: "정치",
+    en: "Politics",
+    zh: "政治",
+    ja: "政治"
+  },
+  sports: {
+    ko: "스포츠",
+    en: "Sports",
+    zh: "体育",
+    ja: "スポーツ"
+  },
+  technology: {
+    ko: "기술",
+    en: "Technology",
+    zh: "科技",
+    ja: "技術"
+  },
+  cryptocurrency: {
+    ko: "암호화폐",
+    en: "Cryptocurrency",
+    zh: "加密货币",
+    ja: "暗号通貨"
+  },
+  entertainment: {
+    ko: "엔터테인먼트",
+    en: "Entertainment",
+    zh: "娱乐",
+    ja: "エンターテインメント"
+  },
+  economy: {
+    ko: "경제",
+    en: "Economy",
+    zh: "经济",
+    ja: "経済"
+  },
+  science: {
+    ko: "과학",
+    en: "Science",
+    zh: "科学",
+    ja: "科学"
+  },
+  climate: {
+    ko: "기후",
+    en: "Climate",
+    zh: "气候",
+    ja: "気候"
+  }
+};
+
+// ========== 카테고리 번역 함수 ==========
+function getCategoryName(categoryKey, lang = 'ko') {
+  const category = CATEGORY_I18N[categoryKey];
+  return category ? category[lang] : categoryKey;
+}
+
 // ========== 숫자 파싱 유틸리티 (콤마, 문자 제거) ==========
 function toNumber(v) {
   if (v == null) return 0;
@@ -381,7 +445,7 @@ const generateEvents = async () => {
     let storedIssues = []
     try {
         console.log('EventBET: Fetching issues from API...')
-        const response = await fetch('/api/issues')
+        const response = await fetch(`/api/issues?lang=${currentLang}`)
         const data = await response.json()
         
         if (data.success && Array.isArray(data.issues)) {
@@ -527,11 +591,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
     const langSelector = document.getElementById('language-selector')
     if (langSelector) {
-        langSelector.addEventListener('change', (e) => {
+        langSelector.addEventListener('change', async (e) => {
             currentLang = normalizeLang(e.target.value)
             localStorage.setItem('preferred_language', currentLang)
             updateUITexts()
-            renderMarkets()
+            renderCategories()  // ✅ 카테고리 다국어 재렌더링
+            
+            // ✅ 언어 변경 시 이벤트 다시 로드 (API 호출 포함)
+            await renderMarkets()
         })
     }
     
@@ -768,12 +835,15 @@ function renderCategories() {
         
         console.log('EventBET: Category count', category.slug, ':', categoryCount);
         
+        // ✅ 다국어 카테고리 이름 사용
+        const categoryName = getCategoryName(category.slug, currentLang);
+        
         return `
         <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3 hover:shadow-md transition-shadow cursor-pointer ${isActive ? 'ring-2 ring-blue-500' : ''}"
              onclick="filterByCategory('${category.slug}')">
             <div class="text-center">
                 <div class="text-xl sm:text-2xl mb-1">${category.icon}</div>
-                <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${getCategoryName(category)}</h4>
+                <h4 class="text-xs sm:text-sm font-semibold text-gray-900">${categoryName}</h4>
                 <span class="text-xs text-gray-500">${categoryCount}</span>
             </div>
         </div>
@@ -787,11 +857,6 @@ function filterByCategory(categorySlug) {
     displayedMarkets = MARKETS_PER_PAGE
     renderCategories()
     renderMarkets()
-}
-
-// Get category name
-const getCategoryName = (category) => {
-    return category[`name_${currentLang}`] || category.name_en
 }
 
 // Get event title
@@ -846,7 +911,7 @@ const formatNumber = (num) => {
 }
 
 // Render markets
-function renderMarkets() {
+async function renderMarkets() {
     console.log('EventBET: renderMarkets() called')
     const container = document.getElementById('markets-container')
     if (!container) {

@@ -36,10 +36,11 @@ app.use('/api/*', cors())
 
 // API routes only - no static file handling in Worker
 
-// GET /api/issues - Fetch all issues with outcomes
+// GET /api/issues - Fetch all issues with outcomes (multi-language support)
 app.get('/api/issues', async (c) => {
   try {
     const db = c.env.DB
+    const lang = c.req.query('lang') || 'ko'
     
     // Fetch all active issues
     const { results } = await db.prepare(`
@@ -48,14 +49,21 @@ app.get('/api/issues', async (c) => {
       ORDER BY created_at DESC
     `).all()
     
-    // Add outcomes to each issue
+    // Add outcomes to each issue with language-specific title
     const issues = results.map((issue: any) => {
       const totalBet = (issue.yes_bet || 0) + (issue.no_bet || 0)
       const probYes = totalBet > 0 ? issue.yes_bet / totalBet : 0.5
       const probNo = totalBet > 0 ? issue.no_bet / totalBet : 0.5
       
+      // Select title based on language, fallback to Korean
+      let title = issue.title_ko
+      if (lang === 'en' && issue.title_en) title = issue.title_en
+      else if (lang === 'zh' && issue.title_zh) title = issue.title_zh
+      else if (lang === 'ja' && issue.title_ja) title = issue.title_ja
+      
       return {
         ...issue,
+        title, // Current language title
         outcomes: [
           {
             id: `${issue.id}_yes`,
@@ -63,7 +71,7 @@ app.get('/api/issues', async (c) => {
             name_en: 'Yes',
             name_zh: '是',
             name_ja: 'はい',
-            name: '예',
+            name: lang === 'en' ? 'Yes' : lang === 'zh' ? '是' : lang === 'ja' ? 'はい' : '예',
             probability: probYes,
             total_bets: issue.yes_bet || 0
           },
@@ -73,7 +81,7 @@ app.get('/api/issues', async (c) => {
             name_en: 'No',
             name_zh: '否',
             name_ja: 'いいえ',
-            name: '아니오',
+            name: lang === 'en' ? 'No' : lang === 'zh' ? '否' : lang === 'ja' ? 'いいえ' : '아니오',
             probability: probNo,
             total_bets: issue.no_bet || 0
           }
@@ -81,7 +89,7 @@ app.get('/api/issues', async (c) => {
       }
     })
     
-    return c.json({ success: true, issues })
+    return c.json({ success: true, issues, lang })
   } catch (error: any) {
     console.error('Error fetching issues:', error)
     return c.json({ success: false, error: error.message }, 500)
@@ -336,6 +344,33 @@ app.delete('/api/issues/:id', async (c) => {
     return c.json({ success: true, id })
   } catch (error: any) {
     console.error('Error deleting issue:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// GET /api/categories - Get categories with translations
+app.get('/api/categories', async (c) => {
+  try {
+    const db = c.env.DB
+    const lang = c.req.query('lang') || 'ko'
+    
+    // Fetch category translations
+    const { results } = await db.prepare(`
+      SELECT * FROM category_translations
+      WHERE language = ?
+      ORDER BY category_slug
+    `).bind(lang).all()
+    
+    // Create category map
+    const categories = results.map((cat: any) => ({
+      slug: cat.category_slug,
+      name: cat.name,
+      language: cat.language
+    }))
+    
+    return c.json({ success: true, categories, lang })
+  } catch (error: any) {
+    console.error('Error fetching categories:', error)
     return c.json({ success: false, error: error.message }, 500)
   }
 })
