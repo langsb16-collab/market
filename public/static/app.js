@@ -262,6 +262,10 @@ const translations = {
         notice: '공지',
         login: '로그인',
         register: '회원가입',
+        serviceBtn1Line1: '무료 바둑',
+        serviceBtn1Line2: '장기 체스',
+        serviceBtn2Line1: '토너먼트',
+        serviceBtn2Line2: '홀덤',
     },
     en: {
         title: 'EventBET - Blockchain Betting Platform',
@@ -285,6 +289,10 @@ const translations = {
         notice: 'Notice',
         login: 'Login',
         register: 'Register',
+        serviceBtn1Line1: 'Free Go',
+        serviceBtn1Line2: 'Janggi & Chess',
+        serviceBtn2Line1: 'Tournament',
+        serviceBtn2Line2: "Hold'em",
     },
     zh: {
         title: 'EventBET - 区块链博彩平台',
@@ -308,6 +316,10 @@ const translations = {
         notice: '公告',
         login: '登录',
         register: '注册',
+        serviceBtn1Line1: '免费围棋',
+        serviceBtn1Line2: '象棋 国际象棋',
+        serviceBtn2Line1: '锦标赛',
+        serviceBtn2Line2: '德州扑克',
     },
     ja: {
         title: 'EventBET - ブロックチェーン賭博プラットフォーム',
@@ -331,6 +343,10 @@ const translations = {
         notice: '通知',
         login: 'ログイン',
         register: '登録',
+        serviceBtn1Line1: '無料囲碁',
+        serviceBtn1Line2: 'チャンギ チェス',
+        serviceBtn2Line1: 'トーナメント',
+        serviceBtn2Line2: 'ホールデム',
     }
 }
 
@@ -668,6 +684,23 @@ function setupEventListeners() {
     const submitIssueBtn = document.getElementById('submit-issue-btn')
     if (submitIssueBtn) submitIssueBtn.addEventListener('click', openSubmitIssueModal)
     
+    // Service button click effects (change to orange on click)
+    const serviceBtn1 = document.getElementById('service-btn-1')
+    if (serviceBtn1) {
+        serviceBtn1.addEventListener('click', function() {
+            this.classList.add('active')
+            setTimeout(() => this.classList.remove('active'), 300)
+        })
+    }
+    
+    const serviceBtn2 = document.getElementById('service-btn-2')
+    if (serviceBtn2) {
+        serviceBtn2.addEventListener('click', function() {
+            this.classList.add('active')
+            setTimeout(() => this.classList.remove('active'), 300)
+        })
+    }
+    
     // Close submit modal buttons
     const closeSubmitModal = document.getElementById('close-submit-modal')
     if (closeSubmitModal) closeSubmitModal.addEventListener('click', closeSubmitIssueModal)
@@ -765,6 +798,19 @@ function updateUITexts() {
     
     const searchInput = document.getElementById('search-input')
     if (searchInput) searchInput.placeholder = t.searchPlaceholder
+    
+    // Update service button texts
+    const serviceBtn1Line1 = document.getElementById('service-btn-1-line1')
+    if (serviceBtn1Line1) serviceBtn1Line1.textContent = t.serviceBtn1Line1
+    
+    const serviceBtn1Line2 = document.getElementById('service-btn-1-line2')
+    if (serviceBtn1Line2) serviceBtn1Line2.textContent = t.serviceBtn1Line2
+    
+    const serviceBtn2Line1 = document.getElementById('service-btn-2-line1')
+    if (serviceBtn2Line1) serviceBtn2Line1.textContent = t.serviceBtn2Line1
+    
+    const serviceBtn2Line2 = document.getElementById('service-btn-2-line2')
+    if (serviceBtn2Line2) serviceBtn2Line2.textContent = t.serviceBtn2Line2
     
     updateMarketCount()
 }
