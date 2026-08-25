@@ -317,7 +317,7 @@ const translations = {
         login: '登录',
         register: '注册',
         serviceBtn1Line1: '免费围棋',
-        serviceBtn1Line2: '象棋 国际象棋',
+        serviceBtn1Line2: '朝鲜象棋 国际象棋',
         serviceBtn2Line1: '锦标赛',
         serviceBtn2Line2: '德州扑克',
     },
